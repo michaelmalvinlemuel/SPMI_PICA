@@ -18,8 +18,8 @@ class CreateTaskJobsView extends Migration
                 , tasks.job_id
                 , jobs.name
             FROM
-                spmilaravel.tasks
-            INNER JOIN spmilaravel.jobs 
+                tasks
+            INNER JOIN jobs 
                 ON (tasks.job_id = jobs.id)
             GROUP BY tasks.user_id
                 , tasks.job_id

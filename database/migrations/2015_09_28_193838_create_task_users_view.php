@@ -21,8 +21,8 @@ class CreateTaskUsersView extends Migration
                 , users.address
                 , users.type
             FROM
-                spmilaravel.tasks
-            INNER JOIN spmilaravel.users 
+                tasks
+            INNER JOIN users 
                 ON (tasks.user_id = users.id)
             GROUP BY tasks.user_id
                 , users.nik
