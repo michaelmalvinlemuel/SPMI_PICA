@@ -60,6 +60,6 @@
        	</div>
    	</div>
 
-<div ng-show="debug">
-{{ forms }}
-</div>
+<pre ng-if="debug">
+{{ forms | json }}
+</pre>

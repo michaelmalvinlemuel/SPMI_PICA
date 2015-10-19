@@ -94,6 +94,6 @@
 	   	</div>
 	</div>
 
-<div ng-show="debug">
-{{ input }}
-</div>
+<pre ng-if="debug">
+{{ input | json }}
+</pre>

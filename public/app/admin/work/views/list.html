@@ -93,6 +93,6 @@
        	</div>
    	</div>
 
-<div ng-show="debug">
-{{ works  }}
-</div>
+<pre ng-if="debug">
+{{ works | json }}
+</pre>

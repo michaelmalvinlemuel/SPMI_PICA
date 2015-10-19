@@ -7,7 +7,7 @@
 
 function AdminController ($scope, $state, Session, $timeout, UserService) {
 	$scope.user = {}
-	$scope.debug = true
+	$scope.debug = false
 
 	$scope.load = function () {
 

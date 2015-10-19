@@ -52,6 +52,6 @@
    	</div>
 	</div>
 
-<div ng-show="debug">
-{{ universities }}
-</div>
+<pre ng-if="debug">
+{{ universities | json }}
+</pre>

@@ -160,7 +160,9 @@
 			                				<div class="form-group">
 			                					<label>Pekerjaan diberikan setiap jam</label>
 			                					<timepicker ng-model="input.time_start" ng-change="changeTime()" show-meridian="false"></timepicker>
-			                					{{ input.time_start }}
+			                					<pre ng-if="debug">
+			                						{{ input.time_start }}
+			                					</pre>
 			                				</div>
 
 
@@ -198,7 +200,9 @@
 				  										<i class="fa fa-close fa-lg"></i>
 				  									</span><br/>
 					                				<small style="color: #a94442;"  ng-show="!hasDays && dirtyDay">* Pilih minimal satu hari.</small>
-				                					{{ days }}
+					                				<pre ng-if="debug">
+				                						{{ days }}
+				                					</pre>
 				                				</div>
 				                			</div>
 
@@ -222,7 +226,9 @@
 				  									</span><br/>
 					                				<small style="color: #a94442;"  ng-show="!input.day_start && WorkForm.day_start.$dirty">* Tipe User harus diisi.</small>
 				                				</div>
-				                				{{ input.day_start }}
+				                				<pre ng-if="debug">
+				                					{{ input.day_start }}
+				                				</pre>
 				                			</div>
 
 				                			<div ng-if="input.type == 3">
@@ -378,6 +384,6 @@
 
 	</div>
 
-<div ng-show="debug">
-{{ input }}
-</div>
+<pre ng-if="debug">
+{{ input | json }}
+</pre>

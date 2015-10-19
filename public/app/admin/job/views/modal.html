@@ -94,9 +94,9 @@
     	</div>
     </div>
 </div>
-<div ng-show="debug">
-{{ input }}
-</div>
+<pre ng-if="debug">
+{{ input | json}}
+</pre>
 <div class="modal-footer clearfix">
     <div class="panel-title pull-right">
     	<div class="form-inline">

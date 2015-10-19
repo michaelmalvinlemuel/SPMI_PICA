@@ -123,10 +123,12 @@
 	   	</div>
 	</div>
 
-<div ng-show="true">
-{{ input }}
-<hr/>
-{{ universities }}
-<hr/>
-{{ departments }}
-</div>
+<pre ng-if="debug">
+	{{ input | json }}
+</pre>
+<pre ng-if="debug">
+	{{ universities | json }}
+</pre>
+<pre ng-if="debug">
+	{{ departments | json }}
+</pre>

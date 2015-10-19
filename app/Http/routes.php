@@ -14,7 +14,6 @@
 
 
 Route::get('/', ['as' => 'main', function () {
-	
 	return view('main');
 }]);
 
