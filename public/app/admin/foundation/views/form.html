@@ -1,0 +1,45 @@
+
+	<div class="row">
+	    <div class="col-lg-12">
+	        <h1 class="page-header">Universitas</h1>
+	    </div>
+	</div>
+
+	<div class="row">
+		<div class="col-lg-6">
+	    	<div class="panel panel-default">
+	            <div class="panel-heading clearfix">
+	            	<div class="panel-title pull-left">
+	            		<h4>Formulir</h4>
+	            	</div>
+	            </div>
+
+             	<div class="panel-body">
+	                <div class="row">
+	                	<div class="col-lg-12">
+	                		<form role="form" enctype="multipart/form-data">
+
+	                			<div class="form-group">
+	                				<label>Nama Universitas</label>
+	                				<input ng-model="input.name" type="text" class="form-control">
+	                			</div>
+
+	                		</form>
+	                	</div>
+	                </div>
+	            </div>
+
+	            <div class="panel-footer clearfix">
+	                <div class="panel-title pull-right">
+	                	<div class="form-inline">
+		                	<a ui-sref="main.admin.university" class="btn btn-default"><i class="fa fa-undo"></i></a>
+		                	<a ng-click="submit()" class="btn btn-primary"><i class="fa fa-save"></i></a>
+		                </div>
+	                </div>
+	            </div>
+
+	        </div>
+	   	</div>
+	</div>
+
+{{ input }}

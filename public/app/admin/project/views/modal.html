@@ -1,0 +1,70 @@
+
+<div class="modal-header clearfix">
+    <div class="modal-title pull-left">
+        <h4>Formulir</h4>
+    </div>
+</div>
+
+<div class="modal-body">
+    <div class="row">
+        <div class="col-lg-12">
+            <form name="ProjectForm" role="form" ng-submit="submit()" enctype="multipart/form-data">
+
+                <div class="form-group has-feedback" ng-class="{
+                    'has-error': false
+                }">
+                    <label class="control-label">Nama Sub Project</label>&nbsp;<label style="color: #a94442;">*</label>
+                    <input type="text" name="header" class="form-control" ng-model="input.header">
+                    <span class="form-control-feedback" 
+                        ng-show="false" aria-hidden="true">
+                        <i class="fa" ng-class="{ 
+                            'fa-close fa-lg': false}"></i>
+                    </span>
+                    <span ng-show="loadingJob" class="form-control-feedback" aria-hidden="true">
+                        <i class="fa fa-spinner fa-pulse fa-lg"></i>
+                    </span>
+                    <div style="color: #a94442;" ng-messages="ProjectForm.header.$error" 
+                        ng-if="ProjectForm.header.$dirty">
+                        <small ng-message="required">* Jabatan harus ditentukan terlebih dahulu.</small>
+                    </div>
+                </div>
+
+                <div class="form-group has-feedback" ng-class="{
+                    'has-error': false
+                }">
+                    <label class="control-label">Nama Sub Project</label>&nbsp;<label style="color: #a94442;">*</label>
+                    <textarea name="description" class="form-control" ng-model="input.description"></textarea>
+                    
+                    <span class="form-control-feedback" 
+                        ng-show="false" aria-hidden="true">
+                        <i class="fa" ng-class="{ 
+                            'fa-close fa-lg': false}"></i>
+                    </span>
+                    <span ng-show="loadingJob" class="form-control-feedback" aria-hidden="true">
+                        <i class="fa fa-spinner fa-pulse fa-lg"></i>
+                    </span>
+                    <div style="color: #a94442;" ng-messages="ProjectForm.description.$error" 
+                        ng-if="ProjectForm.description.$dirty">
+                        <small ng-message="required">* Jabatan harus ditentukan terlebih dahulu.</small>
+                    </div>
+                </div>
+
+                <input type="submit" style="position: absolute; left: -9999px; width: 1px; height: 1px;" tabindex="-1" />
+                
+            </form>
+        </div>
+    </div>
+</div>
+<div ng-show="debug">
+{{ input }}
+</div>
+<div class="modal-footer clearfix">
+    <div class="panel-title pull-right">
+        <div class="form-inline">
+            <button ng-click="close()" class="btn btn-default"><i class="fa fa-undo"></i></button>
+            <button ng-click="submit()" ng-disabled="(UserJobForm.$invalid && validated) || existJob || occupied" class="btn btn-primary">
+                <i class="fa fa-plus"></i>
+            </button>
+        </div>
+    </div>
+</div>
