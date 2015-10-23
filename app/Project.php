@@ -11,13 +11,20 @@ class Project extends Model
 
     protected $dates = ['deleted_at'];
 
-    public function forms()
-    {
-    	return $this->morphMany('App\ProjectForm', 'project');
+    public function projects() {
+        return $this->morphMany('App\ProjectNode', 'project');
     }
 
-    public function roots()
-    {
-    	return $this->morphMany('App\ProjectRoot', 'project');
+    public function users() {
+    	return $this->belongsToMany('App\User', 'project_users')->whereNull('project_users.deleted_at');
     }
+
+    public function projectUsers() {
+        return $this->hasMany('App\ProjectUser');
+    }
+
+    public function leader() {
+    	return $this->belongsTo('App\User', 'user_id');
+    }
+
 }

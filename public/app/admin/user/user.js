@@ -207,6 +207,18 @@ function UserService ($http, $q, $timeout, $state, $stateParams) {
       	},
       	jobs: function(request) {
       		return $http.get('/user/jobs/' + request)
+      	},
+      	register: function(request) {
+      		var deferred = $q.defer();
+      		
+      		$http.post('/user/register', request)
+      			.then(function(response) {
+      				deferred.resolve(response.data)
+      			}, function(response) {
+      				deferred.reject(response)
+      			})
+
+      		return deferred.promise
       	}
     };
 }

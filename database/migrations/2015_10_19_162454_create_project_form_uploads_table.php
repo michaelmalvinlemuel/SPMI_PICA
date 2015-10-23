@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateProjectsTable extends Migration
+class CreateProjectFormUploadsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -12,17 +12,15 @@ class CreateProjectsTable extends Migration
      */
     public function up()
     {
-        Schema::create('projects', function (Blueprint $table) {
+        Schema::create('project_form_uploads', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('code');
-            $table->string('name');
-            $table->string('description');
-            $table->date('date_start');
-            $table->date('date_ended');
+            $table->integer('project_form_item_id')->unsigned();
+            $table->foreign('project_form_item_id')->references('id')->on('project_form_items')->onDelete('cascade');
+            $table->string('document');
+            $table->string('upload');
             $table->integer('user_id')->unsigned();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->char('status', 1);
-            $table->unique(['name', 'deleted_at']);
+            $table->datetime('uploaded_at');
             $table->timestamps();
             $table->softDeletes();
         });
@@ -35,6 +33,6 @@ class CreateProjectsTable extends Migration
      */
     public function down()
     {
-        Schema::drop('projects');
+        Schema::drop('project_form_uploads');
     }
 }

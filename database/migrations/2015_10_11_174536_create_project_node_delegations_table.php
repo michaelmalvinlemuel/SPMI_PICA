@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateProjectsTable extends Migration
+class CreateProjectNodeDelegationsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -12,17 +12,13 @@ class CreateProjectsTable extends Migration
      */
     public function up()
     {
-        Schema::create('projects', function (Blueprint $table) {
+        Schema::create('project_node_delegations', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('code');
-            $table->string('name');
-            $table->string('description');
-            $table->date('date_start');
-            $table->date('date_ended');
+            $table->integer('project_node_id')->unsigned();
+            $table->foreign('project_node_id')->references('id')->on('project_nodes')->onDelete('cascade');
             $table->integer('user_id')->unsigned();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->char('status', 1);
-            $table->unique(['name', 'deleted_at']);
+            $table->unique(['project_node_id', 'user_id', 'deleted_at'], 'unique_delegations');
             $table->timestamps();
             $table->softDeletes();
         });
@@ -35,6 +31,6 @@ class CreateProjectsTable extends Migration
      */
     public function down()
     {
-        Schema::drop('projects');
+        Schema::drop('project_node_delegations');
     }
 }

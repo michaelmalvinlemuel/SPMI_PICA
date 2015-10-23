@@ -12,15 +12,26 @@ class CreateUsersTable extends Migration
      */
     public function up()
     {
+        DB::unprepared("
+            DELETE FROM mysql.event
+                WHERE db = '" . env('DB_DATABASE', 'forge') . "';
+        ");
+        DB::unprepared("
+            DELETE FROM mysql.proc
+                WHERE db = '" . env('DB_DATABASE', 'forge') . "';
+        ");
+        
         Schema::create('users', function (Blueprint $table) {
             $table->increments('id');
-            $table->char('nik', 12);
+            $table->string('nik', 16);
             $table->string('name');
             $table->date('born');
             $table->string('address');
-            $table->string('email')->unique();
+            $table->string('email');
             $table->string('password', 60);
-            $table->char('type',1);
+            $table->char('type',1)->nullable();
+            $table->char('status', 1);
+            $table->unique(['nik', 'email', 'deleted_at']);
             $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();

@@ -15,7 +15,7 @@ class GroupJob extends Model
     }
 
     public function jobs() {
-    	return $this->belongsToMany('App\Job', 'group_job_details');
+    	return $this->belongsToMany('App\Job', 'group_job_details')->whereNull('group_job_details.deleted_at');
     }
 
     public function works() {

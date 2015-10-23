@@ -127,10 +127,21 @@
                             </accordion>
                         -->
 
-                         
+                        <div ng-if="ctrl == 'create'">
                             <node-list ng-model="projects" node-controller="CreateProjectController"></node-list>
                         </div>
+                        <div ng-if="ctrl == 'update'">
+                            <node-list ng-model="projects" node-controller="UpdateProjectController"></node-list>
+                        </div>
+                            
+                        </div>
                     </div>
+                    <hr/>
+                    <strong ng-if="msg" style="color: #a94442;">Error:</strong>
+                    <ul ng-repeat="err in msg track by $index">
+                        <li><small style="color: #a94442;">{{ err }}</small></li>
+                    </ul>
+
                 </div>
 
 
@@ -150,10 +161,7 @@
     </div>
 {{ test }}
 
-<pre>
-{{ input | json }}
+<pre ng-if="debug">
+    {{ input | json }}
 </pre>
 
-<div ng-show="debug">
-{{ input }}
-</div>

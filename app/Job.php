@@ -33,10 +33,10 @@ class Job extends Model
     }
 
     public function users() {
-        return $this->belongsToMany('App\User', 'user_jobs');
+        return $this->belongsToMany('App\User', 'user_jobs')->whereNull('user_jobs.deleted_at');
     }
 
     public function groupJobs () {
-        return $this->belongsToMany('App\GroupJob', 'group_job_details');
+        return $this->belongsToMany('App\GroupJob', 'group_job_details')->whereNull('group_job_details');
     }
 }

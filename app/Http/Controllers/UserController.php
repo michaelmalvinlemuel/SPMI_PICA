@@ -10,10 +10,12 @@ use App\Http\Controllers\Controller;
 use Response;
 use App\User;
 use App\UserJob;
+use App\UserRegistration;
 use Auth;
 use Hash;
 use DB;
 use App\Task;
+use Mail;
 
 class UserController extends Controller
 {
@@ -65,6 +67,7 @@ class UserController extends Controller
         $user->email = $request->input('email');
         $user->password = Hash::make($request->input('password'));
         $user->type = $request->input('type');
+        $user->status = '3';
         $user->touch();
         $user->save();
 
@@ -153,6 +156,45 @@ class UserController extends Controller
 
     public function subs ($id) {
         
+    }
+
+    public function register (Request $request) {
+
+        $user = new User;
+        $user->nik = $request->input('nik');
+        $user->name = $request->input('name');
+        $user->born = $request->input('born');
+        $user->address = $request->input('address');
+        $user->email = $request->input('email');
+        $user->password = Hash::make($request->input('password'));
+        $user->type = $request->input('type');
+        $user->status = '1';
+        $user->touch();
+        $user->save();
+
+        $token = new UserRegistration;
+        $token->user_id = $user->id;
+        $token->token = Hash::make('myrandom');
+        $token->touch();
+        $token->save();
+
+        Mail::send('emails.information', ['user' => $user, 'token' => $token->token], function ($m) use ($user) {
+            $m->from('stevanaji@gmail.com', 'SPMI')->to($user->email, $user->name)->subject('Authentication Required');
+        });
+
+    }
+
+    public function checkToken($token) {
+        $userToken = UserRegistration::where('token', '=', $token)->get();
+
+        if (count($userToken) > 0) {
+            $user = User::find($userToken[0]->user_id);
+            $user->status = '2';
+            $user->touch();
+            $user->save();
+            return redirect()->route('main');
+            //$userToken->delete();
+        }
     }
 
 }

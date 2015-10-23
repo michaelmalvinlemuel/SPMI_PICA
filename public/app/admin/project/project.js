@@ -4,7 +4,7 @@
 		.factory('ProjectService', ['$http', '$state', '$q', ProjectService])
 		.controller('ProjectController', ['$scope', '$state', '$timeout', 'ProjectService', ProjectController])
 		.controller('CreateProjectController', ['$rootScope', '$scope', '$state', '$stateParams', '$modal', '$timeout', 'ProjectService', CreateProjectController])
-		.controller('UpdateProjectController', ['$scope', '$state', '$stateParams', '$modalInstance', '$timeout', 'ProjectService', UpdateProjectController])
+		.controller('UpdateProjectController', ['$rootScope', '$scope', '$state', '$stateParams', '$modal', '$timeout', 'ProjectService', UpdateProjectController])
 		.controller('ModalUserProjectController', ['$scope', '$timeout', '$modalInstance', 'user', 'UserService', ModalUserProjectController])
 		.controller('ModalProjectController', ['$scope', '$timeout', '$modalInstance', 'project', 'ProjectService', ModalProjectController])
 
@@ -30,7 +30,7 @@
 	                		+ '<node ng-repeat="item in nodes track by $index" ng-model="item" nodes="nodes" node-index="$index + 1" parent-index="' + $scope.parentIndex + '" node-controller="' + $scope.nodeController + '"></node>'
 	                		+ '<div class="pull-left" style="margin-top: 5px;">'
 	                			+ '<button ng-if="!node.forms" ng-click="create(nodes)" class="btn btn-primary"><i class="fa fa-plus"></i></button>&nbsp;'
-	            				+ '<button ng-if="parentIndex && !nodes.length && !node.forms" ng-click="form(node)" class="btn btn-warning"><i class="fa fa-file-text-o"></i></button>'
+	            				+ '<button ng-if="parentIndex && !nodes.length && !node.forms" ng-click="createNodeForm(node)" class="btn btn-warning"><i class="fa fa-file-text-o"></i></button>'
 	            			+ '</div>'
 	                	+ '</accordion>'
 
@@ -166,7 +166,7 @@
 									+ '<div class="col-md-6">'									
 										+ '<div class="form-group has-feedback">'
 		                                	+ '<label class="control-label">Bobot Pekerjaan</label>&nbsp;<label style="color: #a94442;">*</label>'
-			                				+ '<input type="text" ng-model="node.weight" name="name" class="form-control">'
+			                				+ '<input type="number" ng-model="node.weight" name="name" class="form-control">'
 			                			+ '</div>'
 			                		+ '</div>'
 			                	+ '</div>'
@@ -176,12 +176,12 @@
 	                    				+ '<div class="panel-title pull-left">'
 	                    					+ '<div class="form-inline">'
 		                						+ '<div class="form-group">'
-		                        					+ '<button ng-click="createForm(node)" class="btn btn-primary btn-xs"><i class="fa fa-plus fa-xs"></i></button>'
+		                        					+ '<button ng-click="createNodeFormItem(node)" class="btn btn-primary btn-xs"><i class="fa fa-plus fa-xs"></i></button>'
 		                        				+ '</div>'
 		                        			+ '</div>'
 	                    				+ '</div>'
 	                    				+ '<div class="pull-right">'
-							           		+ '<button ng-click="deleteForm(node)" class="btn btn-danger btn-xs"><i class="fa fa-close fa-xs"></i></button>'
+							           		+ '<button ng-click="deleteNodeForm(node)" class="btn btn-danger btn-xs"><i class="fa fa-close fa-xs"></i></button>'
 							           	+ '</div>'
 	                				+ '</div>'
 	                				+ '<div class="panel-body">'
@@ -201,8 +201,8 @@
 								                                + '<td>{{ $index + 1 }}</td>'
 								                                + '<td>{{ object.description }}</td>'
 								                                + '<td>'
-									                                + '<button popover="Update" popover-trigger="mouseenter" ng-click="updateFormItem($index, node.forms, node)" class="btn btn-success btn-xs"><i class="fa fa-edit"></i></button>&nbsp;|&nbsp;'
-									                                + '<button popover="Delete" popover-trigger="mouseenter" ng-click="deleteNodeForm($index, node.forms)" class="btn btn-danger btn-xs"><i class="fa fa-close"></i></button>'
+									                                + '<button popover="Update" popover-trigger="mouseenter" ng-click="updateNodeFormItem($index, node.forms, node)" class="btn btn-success btn-xs"><i class="fa fa-edit"></i></button>&nbsp;|&nbsp;'
+									                                + '<button popover="Delete" popover-trigger="mouseenter" ng-click="deleteNodeFormItem($index, node.forms)" class="btn btn-danger btn-xs"><i class="fa fa-close"></i></button>'
 								                                + '</td>'
 								                            + '</tr>'
 								                        + '</tbody>'
@@ -232,11 +232,12 @@ function Node(name, children) {
 function ProjectService ($http, $state, $q) {
 
 	var project = {}
-	var deferred = $q.defer();
+	
 	var createNode = function() {}
 	var updateNode = function() {}
 	var deleteNode = function() {}
 
+	var createNodeForm = function() {}
 	var deleteNodeForm = function() {}
 
 	var createNodeFormItem = function() {}
@@ -244,10 +245,18 @@ function ProjectService ($http, $state, $q) {
 	var deleteNodeFormItem = function() {}
 
 	project.flushNode = function() {
-		this.createNode = undefined
-		this.updateNode = undefined
-		this.deleteNode = undefined
-		this.deleteNodeForm = undefined
+
+		this.createNode = function() {}
+		this.updateNode = function() {}
+		this.deleteNode = function() {}
+
+		this.createNodeForm = function() {}
+		this.deleteNodeForm = function() {}
+
+		this.createNodeFormItem = function() {}
+		this.updateNodeFormItem = function() {}
+		this.deleteNodeFormItem = function() {}
+
 	}
 
 	project.setCreateNode = function(fn) {
@@ -262,9 +271,15 @@ function ProjectService ($http, $state, $q) {
 		this.deleteNode = fn
 	}
 
+
+	project.setCreateNodeForm = function(fn) {
+		this.createNodeForm = fn
+	}
+
 	project.setDeleteNodeForm = function(fn) {
 		this.deleteNodeForm = fn
 	}
+
 
 	project.setCreateNodeFormItem = function(fn){
 		this.createNodeFormItem = fn
@@ -282,6 +297,7 @@ function ProjectService ($http, $state, $q) {
 	project.updateNode = this.updateNode
 	project.deleteNode = this.deleteNode
 
+	project.createNodeForm = createNodeForm
 	project.deleteNodeForm = deleteNodeForm
 
 	project.createNodeFormItem = this.createNodeFormItem
@@ -289,8 +305,8 @@ function ProjectService ($http, $state, $q) {
 	project.deleteNodeFormItem = this.deleteNodeFormItem
 
 	project.get = function () {
-
-		$http.get('/projects/get')
+		var deferred = $q.defer();
+		$http.get('/projects')
 			.then(function(response) {
 				deferred.resolve(response.data)
 			}, function(response) {
@@ -301,7 +317,8 @@ function ProjectService ($http, $state, $q) {
 	}
 
 	project.show = function (request) {
-		$http.get('/projects/show/' + request)
+		var deferred = $q.defer();
+		$http.get('/projects/' + request)
 			.then(function(response) {
 				deferred.resolve(response.data)
 			}, function(response) {
@@ -312,7 +329,8 @@ function ProjectService ($http, $state, $q) {
 	}
 
 	project.store = function (request) {
-		$http.get('/project/store')
+		var deferred = $q.defer();
+		$http.post('/project/store', request)
 			.then(function(response) {
 				deferred.resolve(response.data)
 			}, function(response) {
@@ -323,7 +341,8 @@ function ProjectService ($http, $state, $q) {
 	}
 
 	project.update = function (request) {
-		$http.get('/project/update')
+		var deferred = $q.defer();
+		$http.post('/project/update', request)
 			.then(function(response) {
 				deferred.resolve(response.data)
 			}, function(response) {
@@ -334,7 +353,8 @@ function ProjectService ($http, $state, $q) {
 	}
 
 	project.destroy = function (request) {
-		$http.get('/project/destroy')
+		var deferred = $q.defer();
+		$http.post('/project/destroy', request)
 			.then(function(response) {
 				deferred.resolve(response.data)
 			}, function(response) {
@@ -344,20 +364,42 @@ function ProjectService ($http, $state, $q) {
 		return deferred.promise;
 	}
 
-	return project;
+	return project
+
 }
 
-function ProjectController ($scope, $state, $timeout, ProjectController) {
-	$scope.projects = []
+function ProjectController ($scope, $state, $timeout, ProjectService) {
+	$scope.listprojects = []
 
+	$scope.load = function() {
+		ProjectService.flushNode
+
+		$scope.listprojects = []
+
+		ProjectService
+			.get()
+			.then(function(response) {
+				$scope.listprojects = response;
+			})
+	}
 
 	$scope.detail = function (request) {
-		$state.go('main.admin.project.detail')
+		//alert(request)
+		$state.go('main.admin.project.update', {projectId: request})
 	}
 
 	$scope.destroy = function(request) {
-
+		var alert = confirm('Apakah anda yakin ingin menghapus project ini?');
+		if (alert == true) {
+			ProjectService
+				.destroy({id: request})
+				.then(function() {
+					$scope.load();
+				})
+		}
 	}
+
+	$scope.load();
 }
 
 
@@ -374,9 +416,15 @@ function CreateProjectController ($rootScope, $scope, $state, $stateParams, $mod
 
 	$scope.users = []
 
+	$scope.ctrl = 'create'
+
 	$scope.load = function() {
 
+		$scope.minDateStart = new Date();
+
 		ProjectService.flushNode()
+
+
 
 		ProjectService.setCreateNode(function(nodes) {
 
@@ -426,12 +474,21 @@ function CreateProjectController ($rootScope, $scope, $state, $stateParams, $mod
 			return alert
 		})
 
-		ProjectService.setDeleteNodeForm(function(index, forms) {
-			var alert = confirm('Apakah anda yakin ingin menghapus form ini?');
+
+
+		ProjectService.setCreateNodeForm(function (node) {
+			node.forms = []
+		})
+
+		ProjectService.setDeleteNodeForm(function (node) {
+			var alert = confirm('Apakah anda yakin ingin meghapus Formulir ini?')
 			if (alert == true) {
-				forms.splice(index, 1)
+				delete node.forms
+				delete node.weight
 			}
 		})
+
+
 
 		ProjectService.setCreateNodeFormItem(function (node) {
 			//node.forms.push({form: 'DummyForm', user: 'DummyUser'})
@@ -480,6 +537,13 @@ function CreateProjectController ($rootScope, $scope, $state, $stateParams, $mod
 
 			})
 		})
+
+		ProjectService.setDeleteNodeFormItem(function(index, forms) {
+			var alert = confirm('Apakah anda yakin ingin menghapus form ini?');
+			if (alert == true) {
+				forms.splice(index, 1)
+			}
+		})
 	}
 
 	$scope.addProjectMember = function() {
@@ -505,6 +569,8 @@ function CreateProjectController ($rootScope, $scope, $state, $stateParams, $mod
 		})
 	}
 
+
+
 	$scope.create = function (nodes) {
 		ProjectService.createNode(nodes)
 	}
@@ -519,28 +585,31 @@ function CreateProjectController ($rootScope, $scope, $state, $stateParams, $mod
 		}
 	}
 
-	$scope.form = function (node) {
-		node.forms = []
+
+
+	$scope.createNodeForm = function(node) {
+		ProjectService.createNodeForm(node)
 	}
 
-	$scope.createForm = function(node) {
+	$scope.deleteNodeForm = function(node) {
+		ProjectService.deleteNodeForm(node);
+	}
+
+
+
+	$scope.createNodeFormItem = function (node) {
 		ProjectService.createNodeFormItem(node)
 	}
 
-	$scope.deleteForm = function(node) {
-		var alert = confirm('Apakah anda yakin ingin meghapus Formulir ini?')
-		if (alert == true) {
-			node.forms = undefined	
-		}
-	}
-
-	$scope.updateFormItem = function(index, forms, node) {
+	$scope.updateNodeFormItem = function(index, forms, node) {
 		ProjectService.updateNodeFormItem(index, forms, node)
 	}
 
-	$scope.deleteNodeForm = function(index, forms) {
-		ProjectService.deleteNodeForm(index, forms)
+	$scope.deleteNodeFormItem = function(index, forms) {
+		ProjectService.deleteNodeFormItem(index, forms)
 	}
+
+
 
 	$scope.setLeader = function(object) {
 		for (var i = 0 ; i < $scope.users.length ; i++) {
@@ -603,21 +672,442 @@ function CreateProjectController ($rootScope, $scope, $state, $stateParams, $mod
 	$scope.submit = function() {
 		$scope.input.projects = $scope.projects 
 		$scope.input.users = $scope.users 
+		$scope.msg = []
+		$scope.weight = 0
+
+		if ($scope.input.users.length == 0) {
+			$scope.msg.push('Project ini harus terdiri dari user')
+			return 0
+		} else {
+			var counter = 0
+			for(var i = 0 ; i < $scope.input.users.length ; i++) {
+				if ($scope.input.users[i].leader == true) {
+					break;
+				}
+				counter++
+			}
+
+			if (counter == $scope.input.users.length) {
+				$scope.msg.push('Project ini harus memiliki Pimpro');
+				return 0
+			}
+		}
+
+		if ($scope.projects.length == 0) {
+			$scope.msg.push('Project ini harus memiliki pekerjaan')
+			return 0
+		}
+
+		var recursiveNode = function recursiveNode(nodes) {
+			for (var i = 0 ; i < nodes.length ; i++) {
+				if (nodes[i].children.length > 0) {
+
+					recursiveNode(nodes[i].children)
+
+				} else {
+					if (nodes[i].forms) {
+						if (nodes[i].forms.length == 0) {
+							$scope.msg.push('Project ' + nodes[i].header + ' harus memiliki minimal satu form')
+							return 0
+						} else {
+							if (nodes[i].weight) {
+								$scope.weight += nodes[i].weight
+							} else {
+								$scope.msg.push('Project ' + nodes[i].header + ' harus ditentukan bobot pekerjaan')
+								return 0
+							}
+						}
+					} else {
+						$scope.msg.push('Project ' + nodes[i].header + ' harus memiliki child atau form')
+						return 0
+					}
+				}
+			}
+		}
+
+		if(recursiveNode($scope.projects) == 0) {
+			return 0
+		};
+
+		if ($scope.weight !== 100) {
+			$scope.msg.push('Bobot project ini tidak sama dengan 100 (' + $scope.weight + ')')
+			return 0
+		}
 
 		ProjectService
 			.store($scope.input)
 			.then(function() {
+				$state.go('main.admin.project')
+			}, function () {
 
+			})
+	}
+	$scope.load();
+}
+
+function UpdateProjectController ($rootScope, $scope, $state, $stateParams, $modal, $timeout, ProjectService) {
+	$scope.input = {}
+	$scope.input.projects = []
+	$scope.input.users = []
+
+	$scope.status = {}
+
+	$scope.projects = []
+
+	$scope.users = []
+
+	$scope.ctrl = 'update'
+
+	$scope.load = function() {
+
+		$scope.minDateStart = new Date();
+
+		ProjectService.flushNode()
+
+
+
+		ProjectService.setCreateNode(function(nodes) {
+
+			var modalInstance = $modal.open({
+	      		animation: true,
+	      		templateUrl: 'app/admin/project/views/modal.html',
+	      		controller: 'ModalProjectController',
+	      		resolve: {
+	        		project: function () {
+	          			return undefined;
+	        		}
+	      		}
+	    	})
+
+	    	modalInstance.result.then(function (project) {
+	    		$rootScope.pushIfUnique(nodes, project)
+	    		//nodes.push({name: 'a', open: false, children: []})
+	      		
+	    	}, function () {
+	      		//$log.info('Modal dismissed at: ' + new Date());
+	    	})
+		})
+
+		ProjectService.setUpdateNode(function(index, nodes) {
+
+			var modalInstance = $modal.open({
+				animation: true,
+				templateUrl: 'app/admin/project/views/modal.html',
+				controller: 'ModalProjectController',
+				resolve: {
+					project: function () {
+						return nodes;
+					}
+				}
+			})
+
+			modalInstance.result.then(function (project) {
+				nodes[index].header = project.header;
+				nodes[index].description = project.description
+			}, function () {
+
+			})
+		})
+
+
+		ProjectService.setDeleteNode(function() {
+			var alert = confirm('Apakah Anda yakin ingin menghapus butir ini?')
+			return alert
+		})
+
+
+
+		ProjectService.setCreateNodeForm(function (node) {
+			node.forms = []
+		})
+
+		ProjectService.setDeleteNodeForm(function (node) {
+			var alert = confirm('Apakah anda yakin ingin meghapus Formulir ini?')
+			if (alert == true) {
+				//node.children = []
+				delete node.forms
+				delete node.weight
+				
+			}
+		})
+
+		//console.log(ProjectService.deleteNodeForm(undefined));
+
+
+
+		ProjectService.setCreateNodeFormItem(function (node) {
+			//node.forms.push({form: 'DummyForm', user: 'DummyUser'})
+			var modalInstance = $modal.open({
+				animation: true,
+				templateUrl: 'app/admin/form/views/modal.html',
+				controller: 'CreateModalFormController',
+				resolve: {
+					forms: function() {
+						return node
+					}
+				}
+			})
+
+			modalInstance.result.then(function (forms) {
+				$rootScope.pushIfUnique(node.forms, forms.form)
+
+			}, function() {
+
+			})
+		})
+
+		ProjectService.setUpdateNodeFormItem(function (index, forms, node) {
+			$scope.tmp = []
+			$scope.tmp.form = forms[index]
+
+			var modalInstance = $modal.open({
+				animation: true,
+				templateUrl: 'app/admin/form/views/modal.html',
+				controller: 'UpdateModalFormController',
+				resolve: {
+					forms: function() {
+						return $scope.tmp
+					}
+				}
+			})
+
+			modalInstance.result.then(function (forms) {
+				console.log(forms)
+				if ($rootScope.findObject(node.forms, forms.form) == -1) {
+	    			node.forms[index] = forms.form
+	    		} else {
+	    			alert('Formulir ini sudah bagian dari pekerjaan')
+	    		}
+			}, function() {
+
+			})
+		})
+
+		ProjectService.setDeleteNodeFormItem(function(index, forms) {
+			var alert = confirm('Apakah anda yakin ingin menghapus form ini?');
+			if (alert == true) {
+				forms.splice(index, 1)
+			}
+		})
+
+
+
+		ProjectService
+			.show($stateParams.projectId)
+			.then(function(response) {
+				$scope.input = response
+
+				$scope.input.start = new Date(response.date_start)
+				$scope.input.ended = new Date(response.date_ended)
+
+				$scope.projects = $scope.input.projects
+				$scope.users = $scope.input.users
+
+				for (var i = 0 ; i < $scope.users.length ; i++) {
+					$scope.users[i].check = true
+				}
+
+			})
+	}
+
+	$scope.addProjectMember = function() {
+
+		var modalInstance = $modal.open({
+			animate: true,
+			templateUrl: 'app/admin/user/views/modal.html',
+			controller: 'ModalUserProjectController',
+			size: 'lg',
+			resolve: {
+				user: function () {
+					return $scope.users
+				}
+			}
+		})
+
+		modalInstance.result.then(function (user) {
+			console.log(user)
+			$scope.users = user
+			$scope.input.users = $scope.users
+		}, function () {
+
+		})
+	}
+
+
+
+	$scope.create = function (nodes) {
+		ProjectService.createNode(nodes)
+	}
+
+	$scope.update = function (index, nodes) {
+		ProjectService.updateNode(index, nodes[index - 1])
+	}
+
+	$scope.delete = function (index, nodes) {
+		if(ProjectService.deleteNode()) {
+			nodes.splice(index - 1, 1)
+		}
+	}
+
+
+
+	$scope.createNodeForm = function(node) {
+		ProjectService.createNodeForm(node)
+	}
+
+	$scope.deleteNodeForm = function(node) {
+		ProjectService.deleteNodeForm(node);
+	}
+
+
+
+	$scope.createNodeFormItem = function (node) {
+		ProjectService.createNodeFormItem(node)
+	}
+
+	$scope.updateNodeFormItem = function(index, forms, node) {
+		ProjectService.updateNodeFormItem(index, forms, node)
+	}
+
+	$scope.deleteNodeFormItem = function(index, forms) {
+		ProjectService.deleteNodeFormItem(index, forms)
+	}
+
+
+
+	$scope.setLeader = function(object) {
+		for (var i = 0 ; i < $scope.users.length ; i++) {
+			if ($scope.users[i].id == object.id) {
+				$scope.users[i].leader = true
+			} else {
+				$scope.users[i].leader = false
+			}
+		}
+		$scope.input.users = $scope.users
+	}
+
+	$scope.today = function() {
+		$scope.input.start = new Date();
+		//$scope.input.ended = new Date();
+	}
+
+  	$scope.toggleMin = function() {
+    	$scope.minDate = $scope.minDate ? null : new Date();
+  	};
+
+  	$scope.openStart = function($event) {
+    	$scope.status.openedStart = true;
+  	};
+
+  	$scope.openEnded = function($event) {
+    	$scope.status.openedEnded = true;
+  	};
+
+  	$scope.dateOptions = {
+    	formatYear: 'yy',
+    	startingDay: 1
+  	};
+
+  	$scope.statusStart = {
+    	openedStart: false
+  	};
+
+  	$scope.statusEnded = {
+    	openedEnded: false
+  	};
+
+  	$scope.pickStart = function() {
+		if ($scope.input.start > $scope.input.ended) {
+			$scope.minDateEnded = $scope.input.start
+			if ($scope.limit) {
+				$scope.input.ended = $scope.input.start
+			} else {
+				$scope.input.ended = undefined
+			}
+			
+		}
+	}
+
+	$scope.$watch('projects', function() {
+		$scope.input.projects = $scope.projects
+	})
+
+
+	$scope.submit = function() {
+		$scope.input.projects = $scope.projects 
+		$scope.input.users = $scope.users 
+		$scope.msg = []
+		$scope.weight = 0
+
+		if ($scope.input.users.length == 0) {
+			$scope.msg.push('Project ini harus terdiri dari user')
+			return 0
+		} else {
+			var counter = 0
+			for(var i = 0 ; i < $scope.input.users.length ; i++) {
+				if ($scope.input.users[i].leader == true) {
+					break;
+				}
+				counter++
+			}
+
+			if (counter == $scope.input.users.length) {
+				$scope.msg.push('Project ini harus memiliki Pimpro');
+				return 0
+			}
+		}
+
+		if ($scope.projects.length == 0) {
+			$scope.msg.push('Project ini harus memiliki pekerjaan')
+			return 0
+		}
+
+		var recursiveNode = function recursiveNode(nodes) {
+			for (var i = 0 ; i < nodes.length ; i++) {
+				if (nodes[i].children.length > 0) {
+
+					recursiveNode(nodes[i].children)
+
+				} else {
+					if (nodes[i].forms) {
+						if (nodes[i].forms.length == 0) {
+							$scope.msg.push('Project ' + nodes[i].header + ' harus memiliki minimal satu form')
+							return 0
+						} else {
+							if (nodes[i].weight) {
+								$scope.weight += nodes[i].weight
+							} else {
+								$scope.msg.push('Project ' + nodes[i].header + ' harus ditentukan bobot pekerjaan')
+								return 0
+							}
+						}
+					} else {
+						$scope.msg.push('Project ' + nodes[i].header + ' harus memiliki child atau form')
+						return 0
+					}
+				}
+			}
+		}
+
+		if(recursiveNode($scope.projects) == 0) {
+			return 0
+		};
+
+		if ($scope.weight !== 100) {
+			$scope.msg.push('Bobot project ini tidak sama dengan 100 (' + $scope.weight + ')')
+			return 0
+		}
+
+		ProjectService
+			.update($scope.input)
+			.then(function() {
+				$state.go('main.admin.project')
 			}, function () {
 
 			})
 	}
 
-
 	$scope.load();
-}
-
-function UpdateProjectController ($scope, $state, $stateParams, $timeout, ProjectService) {
 }
 
 function ModalUserProjectController ($scope, $timeout, $modalInstance, user, UserService) {
@@ -626,6 +1116,8 @@ function ModalUserProjectController ($scope, $timeout, $modalInstance, user, Use
 
 	$scope.load = function() {
 		$scope.userProject = user
+
+		console.log($scope.userProject)
 
 		UserService
 			.get()
@@ -674,7 +1166,6 @@ function ModalUserProjectController ($scope, $timeout, $modalInstance, user, Use
 		}
 
 		$scope.selected = counter + ' user selected from ' + $scope.users.length
-
 	}
 
 	$scope.submit = function () {

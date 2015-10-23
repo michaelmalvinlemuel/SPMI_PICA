@@ -54,6 +54,6 @@ class User extends Model implements AuthenticatableContract,
     }
 
     public function jobs () {
-        return $this->belongsToMany('App\Job', 'user_jobs');
+        return $this->belongsToMany('App\Job', 'user_jobs')->whereNull('user_jobs.deleted_at');
     }
 }

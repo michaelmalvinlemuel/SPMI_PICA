@@ -21,6 +21,8 @@ Route::get('/user', 'UserController@check');
 Route::post('/user/login', 'UserController@login');
 Route::get('/user/logout', 'UserController@logout');
 
+Route::get('user/token/{token}', 'UserController@checkToken');
+
 Route::get('users', 'UserController@index');
 Route::get('users/{id}', 'UserController@show');
 Route::post('user/store', 'UserController@store');
@@ -29,6 +31,7 @@ Route::post('user/destroy', 'UserController@destroy');
 Route::post('user/validating/nik', 'UserController@validatingNik');
 Route::post('user/validating/email', 'UserController@validatingEmail');
 Route::get('user/jobs/{id}', 'UserController@jobs');
+Route::post('user/register', 'UserController@register');
 
 Route::get('userjobs/get/{id}', 'UserJobController@index');
 Route::get('userjobs/{id}', 'UserJobController@show');
@@ -159,3 +162,9 @@ Route::get('tasks/retrive/{userId}/{jobId}', 'TaskController@retrive');
 Route::get('tasks/{userId}/{batchId}', 'TaskController@show');
 Route::get('task/users/{id}', 'TaskController@users');
 Route::post('task/update', 'TaskController@update');
+
+Route::get('projects', 'ProjectController@index');
+Route::get('projects/{id}', 'ProjectController@show');
+Route::post('project/store', 'ProjectController@store');
+Route::post('project/update', 'ProjectController@update');
+Route::post('project/destroy', 'ProjectController@destroy');

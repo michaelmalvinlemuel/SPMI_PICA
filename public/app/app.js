@@ -16,6 +16,8 @@
 		.factory('Authorization', ['$rootScope', '$state', '$q', 'UserService', Authorization])
 		.controller('AppController', ['$scope', '$state', 'Session', 'UserService', AppController])
 		.controller('LoginController', ['$rootScope', '$scope', '$state', '$stateParams', 'UserService', LoginController])
+		.controller('RegisterController', ['$rootScope', '$scope', '$state', '$timeout', '$modal', 'UserService', RegisterController])
+		.controller('InformationRegistrationController', ['$scope', '$state', '$stateParams', '$timeout', InformationRegistrationController])
 		
 })();
 
@@ -199,7 +201,7 @@ function AppConfiguration ($stateProvider, $urlRouterProvider, $httpProvider) {
 
 					UserService.identity()
 						.then(function() {
-							if($rootScope.toState.name == 'login') {
+							if($rootScope.toState.name == 'login' || $rootScope.toState.name == 'register') {
 								deferred.resolve()
 								$state.go($rootScope.fromState.name)
 							}
@@ -214,7 +216,61 @@ function AppConfiguration ($stateProvider, $urlRouterProvider, $httpProvider) {
 
 		})
 
+	$stateProvider
+		.state('register', {
+			url:'/register',
+			views: {
+				'': {
+					templateUrl: 'app/views/register.html',
+					controller: 'RegisterController'
+				}
+			},
+			data: {
+				type: []
+			},
+			resolve: {
+				back: function($rootScope, $q, $state, UserService) {
+					var deferred = $q.defer()
 
+					UserService.identity()
+						.then(function() {
+							if($rootScope.toState.name == 'login' || $rootScope.toState.name == 'register') {
+								deferred.resolve()
+								$state.go($rootScope.fromState.name)
+							}
+							deferred.resolve()
+						}, function() {
+							deferred.resolve()
+						})
+
+					return deferred.promise
+				}
+			}
+
+		})
+
+		.state('register.information', {
+			url: '/information',
+			params: { 
+		        // here we define default value for foo
+		        // we also set squash to false, to force injecting
+		        // even the default value into url
+		        email: {
+		          
+		        },
+		        // this param is not part of url
+		        // it could be passed with $state.go or ui-sref 
+		        hiddenParam: 'YES',
+	      	},
+			views: {
+				'@': {
+					templateUrl: 'app/views/information.html',
+					controller: 'InformationRegistrationController'
+				}
+			}
+		})
+
+	$stateProvider
 		.state('main.admin', {
 			url:'/admin',
 			parent: 'main',
@@ -753,9 +809,31 @@ function AppConfiguration ($stateProvider, $urlRouterProvider, $httpProvider) {
 
 		.state('main.denied', {
 			url: '/denies',
+			params: { 
+		        // here we define default value for foo
+		        // we also set squash to false, to force injecting
+		        // even the default value into url
+		        email: {
+		          
+		        },
+		        // this param is not part of url
+		        // it could be passed with $state.go or ui-sref 
+		        hiddenParam: 'YES',
+	      	},
 			views: {
 				'@': {
-					template: '<h1>Denies</h1>'
+					templateUrl: 'app/views/denied.html',
+					controller: function ($scope, $state, $stateParams, UserService) {
+						$scope.email = $stateParams.email
+
+						$scope.logout = function() {
+							UserService
+								.logout()
+								.then(function () {
+									$state.go('login');
+								})
+						}
+					}
 				}
 			},
 			data: {
@@ -854,7 +932,7 @@ function LoginController ($rootScope, $scope, $state, $stateParams, UserService)
 	$scope.alert = {}
 
 	$scope.load = function () {
-		console.log('persetan')
+		
 	}
 
 	$scope.submit = function () {
@@ -878,13 +956,21 @@ function LoginController ($rootScope, $scope, $state, $stateParams, UserService)
 						$scope.validated = true
 
 					} else {
-						if (response.type == '1') {
-							$state.go('main.app')
-						} else if (response.type == '2') {
-							$state.go('main.user')
-						} else {
-							$state.go('main.denied')
-						}	
+
+						if (response.status == '1') {
+							$state.go('register.information', {email: response.email})
+						}
+
+						if (response.status == '2') {
+							if (response.type == '1') {
+								$state.go('main.app')
+							} else if (response.type == '2') {
+								$state.go('main.user')
+							} else {
+								$state.go('main.denied')
+							}	
+						}
+							
 					}
 					
 				})
@@ -894,9 +980,123 @@ function LoginController ($rootScope, $scope, $state, $stateParams, UserService)
 		}
 	}
 
+	$scope.register = function() {
+		$state.go('register')
+	}
+
 	$scope.load();
 }
 
+function RegisterController($rootScope, $scope, $state, $timeout, $modal, UserService) {
+
+	var timeoutNikPromise, timeoutEmailPromise
+	$scope.input = {}
+	$scope.input.userJobs = []
+	$scope.years = {}
+	$scope.months = {}
+	$scope.days = {}
+	$scope.validated = false
+
+	$scope.load = function () {
+		$scope.submitting = false
+		$scope.years =  generateYear()
+	}
+
+	$scope.$watch('input.nik', function () {
+		var validInput = $scope.RegistrationForm.nik.$invalid
+		var dirtyInput = $scope.RegistrationForm.nik.$dirty
+		
+		if (!validInput && dirtyInput) {
+			$timeout.cancel(timeoutNikPromise)
+			$scope.loadingNik = true;
+			timeoutNikPromise = $timeout(function() {
+				UserService
+					.validatingNik($scope.input)
+					.then(function (response) {
+						if (response.data.length > 0) {
+							$scope.existNik = true
+						} else {
+							$scope.existNik = false
+						}
+						$scope.loadingNik = false;
+					})
+			}, 1000)
+		}		
+	})
+
+	$scope.$watch('input.email', function () {
+		var validInput = $scope.RegistrationForm.email.$invalid
+		var dirtyInput = $scope.RegistrationForm.email.$dirty
+		
+		if (!validInput && dirtyInput) {
+			$timeout.cancel(timeoutEmailPromise)
+			$scope.loadingEmail = true;
+			timeoutEmailPromise = $timeout(function() {
+				UserService
+					.validatingEmail($scope.input)
+					.then(function (response) {
+						console.log(response.data);
+						if (response.data.length > 0) {
+							$scope.existEmail = true
+						} else {
+							$scope.existEmail = false
+						}
+						$scope.loadingEmail = false;
+					})
+			}, 1000)
+		}		
+	})
+
+	$scope.selectYear = function () {
+		console.log('1')
+		$scope.month = undefined;
+		$scope.day = undefined;
+		$scope.months = generateMonth()
+		$scope.input.born = undefined
+	}
+
+	$scope.selectMonth = function () {
+		console.log('2')
+		$scope.day = undefined;
+		$scope.days = generateDay($scope.year, $scope.month)
+		$scope.input.born = undefined
+	}
+
+	$scope.selectDay = function () {
+		$scope.input.born = new Date($scope.year.year, $scope.month - 1, $scope.day.day + 1)
+	}
+
+	$scope.submit = function () {
+		
+		$scope.RegistrationForm.nik.$setDirty();
+		$scope.RegistrationForm.name.$setDirty();
+		$scope.RegistrationForm.day.$setDirty();
+		$scope.RegistrationForm.address.$setDirty();
+		$scope.RegistrationForm.email.$setDirty();
+		$scope.RegistrationForm.password.$setDirty();
+		$scope.RegistrationForm.confirmation.$setDirty();
+
+		if ($scope.RegistrationForm.$valid) {
+			$scope.submitting = true
+			UserService
+				.register($scope.input)
+				.then(function () {
+					$scope.submitting = false
+					$state.go('register.information', {email: $scope.input.email})
+					
+				})
+		} else {
+			$scope.validated = true;
+		}
+		
+	}
+
+	$scope.load();
+}
+
+function InformationRegistrationController($scope, $state, $stateParams, $timeout) {
+	$scope.email = $stateParams.email
+}
 
 
 

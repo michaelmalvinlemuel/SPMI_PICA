@@ -35,17 +35,33 @@
 	                                <th><a href="" ng-click="sortField = 'nama'		; reverse = !reverse">Nama</a></th>
 	                                <th><a href="" ng-click="sortField = 'start'	; reverse = !reverse">Mulai</a></th>
 	                                <th><a href="" ng-click="sortField = 'ended'	; reverse = !reverse">Berakhir</a></th>
+	                                <th><a href="" ng-click="sortField = 'pimpro'	; reverse = !reverse">Pimpro</a></th>
+	                                <th><a href="" ng-click="sortField = 'status'	; reverse = !reverse">Status</a></th>
 	                                <th>Action</th>
 	                            </tr>
 	                        </thead>
 	                        <tbody>
-	                            <tr ng-repeat="object in projects | filter:query | orderBy:sortField:reverse track by $index">
+	                            <tr ng-repeat="object in listprojects | filter:query | orderBy:sortField:reverse track by $index">
 	                                <td>{{ $index + 1 }}</td>
-	                                <td>Semester {{ object.type == 1 ? 'Ganjil' : object.type == 2 ? 'Genap' : 'Pendek'}} {{ object.year_start }} / {{ object.year_ended }}</td>
+	                                <td>{{ object.name }}</td>
 	                                <td>{{ object.date_start | date: 'dd-MM-yyyy' }}</td>
 	                                <td>{{ object.date_ended | date: 'dd-MM-yyyy' }}</td>
+	                                <td>{{ object.leader.name }}</td>
+	                                <td>{{ object.status == '1' ? 'Queued' : object.status == '2' ? 'On Progress' : object.status == '3' ? 'Waiting for Scorring' : object.status == '4' ? 'Complete' : object.status == '5' ? 'Closed' : 'Unknown' }}</td>
 	                                <td>
-	                                	<a ng-click="detail(object.id)" class="btn btn-info btn-xs" popover="Detail" popover-trigger="mouseenter">
+	                                	<div class="btn-group" dropdown dropdown-append-to-body>
+									      	<button id="btn-append-to-body" popover="Action" popover-trigger="mouseenter" type="button" class="btn btn-primary btn-xs" dropdown-toggle>
+									        	<i class="fa fa-legal"></i><span class="caret"></span>
+									      	</button>
+									      	<ul class="dropdown-menu" role="menu" aria-labelledby="btn-append-to-body">
+									        	<li role="menuitem"><a href="">Force Start</a></li>
+									        	<li role="menuitem"><a href="">Force End</a></li>
+									        	<li role="menuitem"><a href="">Scoring</a></li>
+									        	<li class="divider"></li>
+									        	<li role="menuitem"><a href="">Close</a></li>
+									      	</ul>&nbsp;|
+									    </div>
+	                                	<a ng-click="detail(object.id)" class="btn btn-success btn-xs" popover="Detail" popover-trigger="mouseenter">
 	                                		<i class="fa fa-edit"></i>
                                 		</a>&nbsp;|
 	                                	<a ng-click="destroy(object.id)" class="btn btn-danger btn-xs" popover="Delete" popover-trigger="mouseenter">
@@ -61,6 +77,6 @@
        	</div>
    	</div>
 
-<div ng-show="debug">
-	{{ semesters }}
-</div>
+<pre ng-if="debug">
+	{{ listprojects | json }}
+</pre>

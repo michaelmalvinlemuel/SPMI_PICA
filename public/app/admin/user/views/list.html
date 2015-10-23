@@ -34,8 +34,8 @@
 	                                <th>#</th>
 	                                <th><a href="" ng-click="sortField = 'nik' 		; reverse = !reverse">NIK</a></th>
 	                                <th><a href="" ng-click="sortField = 'name' 	; reverse = !reverse">Nama</a></th>
-	                                <th><a href="" ng-click="sortField = 'born' 	; reverse = !reverse">Tgl. Lahir</a></th>
 	                                <th><a href="" ng-click="sortField = 'email' 	; reverse = !reverse">Email</a></th>
+	                                <th><a href="" ng-click="sortField = 'status' 	; reverse = !reverse">Status</a></th>
 	                                <th>Action</th>
 	                            </tr>
 	                        </thead>
@@ -44,8 +44,8 @@
 	                                <td>{{ $index + 1 }}</td>
 	                                <td>{{ object.nik }}</td>
 	                                <td>{{ object.name }}</td>
-	                                <td>{{ object.born | date: 'dd-MM-yyyy' }}</td>
 	                                <td>{{ object.email }}</td>
+	                                <td>{{ object.status == '2' && object.type !== null ? 'Active' : object.status == '1' ? 'Auth Required': 'Unauthorized' }}</td>
 	                                <td><a ng-click="update(object.id)" class="btn btn-success btn-xs"><i class="fa fa-edit"></i></a>&nbsp;|&nbsp;<a ng-click="destroy(object.id)" class="btn btn-danger btn-xs"><i class="fa fa-close"></i></a></td>
 	                            </tr>
 	                        </tbody>
@@ -57,5 +57,5 @@
    	</div>
 
 <pre ng-if="debug">
-	{{ users }}
+	{{ users | json }}
 </pre>

@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateProjectRootsTable extends Migration
+class CreateUserRegistrationsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -12,16 +12,13 @@ class CreateProjectRootsTable extends Migration
      */
     public function up()
     {
-        Schema::create('project_roots', function (Blueprint $table) {
+        Schema::create('user_registrations', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('abstract');
-            $table->datetime('date_start');
-            $table->datetime('date_ended');
-            $table->integer('project_id');
-            $table->string('project_type');
-            $table->integer('user_id')->unsigned(); //pimpro
+            $table->integer('user_id')->unsigned();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->string('token', 60);
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
@@ -32,6 +29,6 @@ class CreateProjectRootsTable extends Migration
      */
     public function down()
     {
-        Schema::drop('project_roots');
+        Schema::drop('user_registrations');
     }
 }

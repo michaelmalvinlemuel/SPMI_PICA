@@ -69,6 +69,7 @@ function SubordinatController ($scope, $filter, $modal, UserService, JobService,
 					
 					child.push({
 							label: $scope.subordinate.jobs[i].name,
+							type: 'job',
 							id: $scope.subordinate.jobs[i].id,
 							onSelect: function(branch) {
 								$scope.selectedJob(branch);
@@ -99,6 +100,7 @@ function SubordinatController ($scope, $filter, $modal, UserService, JobService,
 					
 					child.push({
 							label: response.data[i].name,
+							type: 'job',
 							id: response.data[i].id,
 							onSelect: function(branch) {
 								$scope.selectedUser(branch);
@@ -126,6 +128,7 @@ function SubordinatController ($scope, $filter, $modal, UserService, JobService,
 					
 					child.push({
 							label: response.data.users[i].name,
+							type: 'user',
 							user_id: response.data.users[i].id,
 							job_id: response.data.id,
 							onSelect: function(branch) {
@@ -159,6 +162,7 @@ function SubordinatController ($scope, $filter, $modal, UserService, JobService,
 					
 					child.push({
 							label: response.data[i].name,
+							type: 'job',
 							id: response.data[i].id,
 							onSelect: function(branch) {
 								$scope.selectedUser(branch);

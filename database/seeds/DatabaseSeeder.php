@@ -537,6 +537,7 @@ class UserTableSeeder extends Seeder
                 'email'         => 'stevanadjie@gmail.com',
                 'password'      => Hash::make('12345'),
                 'type'          => 1,
+                'status'        => 2,
                 'created_at'    => new DateTime,
                 'updated_at'    => new DateTime
             ],
@@ -548,6 +549,7 @@ class UserTableSeeder extends Seeder
                 'email'         => 'yonathanarea@gmail.com',
                 'password'      => Hash::make('12345'),
                 'type'          => 2,
+                'status'        => 2,
                 'created_at'    => new DateTime,
                 'updated_at'    => new DateTime
             ],
@@ -559,6 +561,7 @@ class UserTableSeeder extends Seeder
                 'email'         => 'ninok@umn.ac.id',
                 'password'      => Hash::make('12345'),
                 'type'          => 2,
+                'status'        => 2,
                 'created_at'    => new DateTime,
                 'updated_at'    => new DateTime
             ],
@@ -570,6 +573,7 @@ class UserTableSeeder extends Seeder
                 'email'         => 'hira@umn.ac.id',
                 'password'      => Hash::make('12345'),
                 'type'          => 2,
+                'status'        => 2,
                 'created_at'    => new DateTime,
                 'updated_at'    => new DateTime
             ],
@@ -581,6 +585,7 @@ class UserTableSeeder extends Seeder
                 'email'         => 'andrey@umn.ac.id',
                 'password'      => Hash::make('12345'),
                 'type'          => 2,
+                'status'        => 2,
                 'created_at'    => new DateTime,
                 'updated_at'    => new DateTime
             ],
@@ -592,6 +597,7 @@ class UserTableSeeder extends Seeder
                 'email'         => 'ika@umn.ac.id',
                 'password'      => Hash::make('12345'),
                 'type'          => 2,
+                'status'        => 2,
                 'created_at'    => new DateTime,
                 'updated_at'    => new DateTime
             ],
@@ -603,6 +609,7 @@ class UserTableSeeder extends Seeder
                 'email'         => 'muliawati@umn.ac.id',
                 'password'      => Hash::make('12345'),
                 'type'          => 2,
+                'status'        => 2,
                 'created_at'    => new DateTime,
                 'updated_at'    => new DateTime
             ],
@@ -614,6 +621,7 @@ class UserTableSeeder extends Seeder
                 'email'         => 'kanisius@umn.ac.id',
                 'password'      => Hash::make('12345'),
                 'type'          => 2,
+                'status'        => 2,
                 'created_at'    => new DateTime,
                 'updated_at'    => new DateTime
             ],
@@ -625,6 +633,7 @@ class UserTableSeeder extends Seeder
                 'email'         => 'desi@umn.ac.id',
                 'password'      => Hash::make('12345'),
                 'type'          => 2,
+                'status'        => 2,
                 'created_at'    => new DateTime,
                 'updated_at'    => new DateTime
             ],
@@ -636,6 +645,7 @@ class UserTableSeeder extends Seeder
                 'email'         => 'wira@umn.ac.id',
                 'password'      => Hash::make('12345'),
                 'type'          => 2,
+                'status'        => 2,
                 'created_at'    => new DateTime,
                 'updated_at'    => new DateTime
             ],
@@ -647,6 +657,7 @@ class UserTableSeeder extends Seeder
                 'email'         => 'maria@umn.ac.id',
                 'password'      => Hash::make('12345'),
                 'type'          => 2,
+                'status'        => 2,
                 'created_at'    => new DateTime,
                 'updated_at'    => new DateTime
             ],
@@ -658,6 +669,7 @@ class UserTableSeeder extends Seeder
                 'email'         => 'ratnawati@umn.ac.id',
                 'password'      => Hash::make('12345'),
                 'type'          => 2,
+                'status'        => 2,
                 'created_at'    => new DateTime,
                 'updated_at'    => new DateTime
             ],
@@ -669,6 +681,7 @@ class UserTableSeeder extends Seeder
                 'email'         => 'dewi@umn.ac.id',
                 'password'      => Hash::make('12345'),
                 'type'          => 2,
+                'status'        => 2,
                 'created_at'    => new DateTime,
                 'updated_at'    => new DateTime
             ],
@@ -680,6 +693,7 @@ class UserTableSeeder extends Seeder
                 'email'         => 'berta@umn.ac.id',
                 'password'      => Hash::make('12345'),
                 'type'          => 2,
+                'status'        => 2,
                 'created_at'    => new DateTime,
                 'updated_at'    => new DateTime
             ],
@@ -691,6 +705,7 @@ class UserTableSeeder extends Seeder
                 'email'         => 'winarno@umn.ac.id',
                 'password'      => Hash::make('12345'),
                 'type'          => 2,
+                'status'        => 2,
                 'created_at'    => new DateTime,
                 'updated_at'    => new DateTime
             ]

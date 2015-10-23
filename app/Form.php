@@ -16,6 +16,6 @@ class Form extends Model
     }
 
     public function works() {
-    	return $this->belongsToMany('App\Work');
+    	return $this->belongsToMany('App\Work')->whereNull('work_forms.deleted_at');
     }
 }

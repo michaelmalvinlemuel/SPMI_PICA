@@ -16,10 +16,10 @@ class CreateProjectFormsTable extends Migration
             $table->increments('id');
             $table->integer('weight');
             $table->integer('score');
-            $table->integer('project_id');
-            $table->string('project_type');
-            $table->softDeletes();
+            $table->integer('project_node_id')->unsigned();
+            $table->foreign('project_node_id')->references('id')->on('project_nodes')->onDelete('cascade');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
