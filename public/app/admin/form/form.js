@@ -36,7 +36,6 @@ function FormService ($http, Upload) {
 			return $http.get('/forms/' + request)
 		},
 		store: function (request, file) {
-
 			return Upload.upload({
 				url: '/form/store',
 				method: 'POST',

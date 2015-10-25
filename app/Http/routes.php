@@ -164,7 +164,15 @@ Route::get('task/users/{id}', 'TaskController@users');
 Route::post('task/update', 'TaskController@update');
 
 Route::get('projects', 'ProjectController@index');
+Route::get('projectsLast/{id}', 'ProjectController@showLast');
 Route::get('projects/{id}', 'ProjectController@show');
 Route::post('project/store', 'ProjectController@store');
 Route::post('project/update', 'ProjectController@update');
 Route::post('project/destroy', 'ProjectController@destroy');
+
+Route::get('project/user/{id}', 'ProjectController@user');
+Route::post('project/delegate', 'ProjectController@delegate');
+Route::get('project/form/{id}', 'ProjectController@form');
+Route::get('project/leader/{id}', 'ProjectController@leader');
+Route::post('project/upload', 'ProjectController@upload');
+

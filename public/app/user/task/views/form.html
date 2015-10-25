@@ -100,7 +100,8 @@
 		                                <td>{{ object.id }}</td>
 		                                <td>{{ object.description }}</td>
 		                                <td>{{ object.status === '1' ? 'Pending' : 'Complete' }}</td>
-		                                <td><div class="form-inline">
+		                                <td>
+		                                	<div class="form-inline">
 			                				<a ng-href="/upload/form/{{ object.document }}" class="btn btn-info btn-xs"  
 			                					popover="Download Master Form" popover-trigger="mouseenter" target="_blank">
 		                						<i class="fa fa-arrow-down"></i>
@@ -110,7 +111,8 @@
 			                					popover="Download Uploaded Form" popover-trigger="mouseenter" target="_blank">
 		                						<i class="fa fa-arrow-down"></i>
 		                					</a>
-		                			</div></td>
+		                					</div>
+		                				</td>
 		                            </tr>
 		                        </tbody>
 		                    </table>

@@ -1,226 +1,16 @@
 (function() {
 
 	angular.module('app')
-		.factory('ProjectService', ['$http', '$state', '$q', ProjectService])
+		.factory('ProjectService', ['$http', '$state', '$q', 'Upload', ProjectService])
 		.controller('ProjectController', ['$scope', '$state', '$timeout', 'ProjectService', ProjectController])
 		.controller('CreateProjectController', ['$rootScope', '$scope', '$state', '$stateParams', '$modal', '$timeout', 'ProjectService', CreateProjectController])
 		.controller('UpdateProjectController', ['$rootScope', '$scope', '$state', '$stateParams', '$modal', '$timeout', 'ProjectService', UpdateProjectController])
 		.controller('ModalUserProjectController', ['$scope', '$timeout', '$modalInstance', 'user', 'UserService', ModalUserProjectController])
 		.controller('ModalProjectController', ['$scope', '$timeout', '$modalInstance', 'project', 'ProjectService', ModalProjectController])
 
-		.directive('nodeList', function($compile) {
-		    return {
-		        restrict: 'E',
-		        terminal: true,
-		        replace: true,
-		        transclude: true,
-		        scope: {
-		            nodes: '=ngModel',
-		            node: '=',
-		            nodeController: '@',
-		            parentIndex: '@'
-		        },
-		        controller: '@',
-		        name: 'nodeController',
-		        link: function ($scope, $element, $attrs) {
-
-		        	//$scope.parentIndex += 1
-		        	$scope.template = ''
-			        	+ '<accordion close-others="false">'
-	                		+ '<node ng-repeat="item in nodes track by $index" ng-model="item" nodes="nodes" node-index="$index + 1" parent-index="' + $scope.parentIndex + '" node-controller="' + $scope.nodeController + '"></node>'
-	                		+ '<div class="pull-left" style="margin-top: 5px;">'
-	                			+ '<button ng-if="!node.forms" ng-click="create(nodes)" class="btn btn-primary"><i class="fa fa-plus"></i></button>&nbsp;'
-	            				+ '<button ng-if="parentIndex && !nodes.length && !node.forms" ng-click="createNodeForm(node)" class="btn btn-warning"><i class="fa fa-file-text-o"></i></button>'
-	            			+ '</div>'
-	                	+ '</accordion>'
-
-	                //console.log($scope.template)
-		            if (angular.isArray($scope.nodes)) {
-		                $element.append($scope.template);
-		            } 
-		            $compile($element.contents())($scope.$new());
-		        }, 
-		    };
-		})
-
-		.directive('node', function($compile) {
-		    return {
-		        restrict: 'E',
-		        terminal: true,
-		        replace: true,
-		        transclude: true,
-		        scope: {
-		            node: '=ngModel',
-		            nodes: '=',
-		            nodeController: '@',
-		            nodeIndex: '=',
-		            parentIndex: '@'
-		        },
-		        controller: '@',
-		        name: 'nodeController',
-
-		        link: function ($scope, $element, $attrs) {
-		        	//console.log($scope.parentIndex);
-
-		        	if ($scope.parentIndex == 'undefined') {
-		        		//console.log('undefined: true')
-		        		$scope.parentIndexString = ''
-		        	} else {
-		        		//console.log('undefined: false')
-		        		$scope.parentIndexString = $scope.parentIndex + '.'
-		        	}
-
-		        	$scope.parentIndexStringNode = $scope.parentIndexString + $scope.nodeIndex
-		        	
-		            if (angular.isArray($scope.node.children) && $scope.node.children.length > 0) {
-		            	$scope.template = ''
-		            		+ '<div style="margin-top: 5px;">'
-		                		+ '<accordion-group is-open="node.open">'
-
-		                			+ '<accordion-heading>'
-		                				
-		                				+ '<i class="pull-left glyphicon" ng-class="{'
-								            + '\'glyphicon-chevron-down\': node.open,'
-								            + '\'glyphicon-chevron-right\': !node.open}">'
-							           	+ '</i>&nbsp;'
-							           	+ '{{ parentIndexString }}{{ nodeIndex }}. {{node.header}}'
-
-							           	+ '<div class="pull-right">'
-							           		+ '<button ng-click="update(nodeIndex, nodes)" class="btn btn-success btn-xs"><i class="fa fa-edit fa-xs"></i></button>&nbsp;'
-							           		+ '<button ng-click="delete(nodeIndex, nodes)" class="btn btn-danger btn-xs"><i class="fa fa-close fa-xs"></i></button>'
-							           	+ '</div>'
-		                			+ '</accordion-heading>'
-
-		                			+ '<h3>{{ parentIndexString }}{{ nodeIndex }}. {{ node.header }}</h3>'
-		                			+ '<h3>Deskripsi</h3>'
-	                				+ '<div class="col-md-12">'
-	                					+ '<p>{{ node.description }}</p>'
-	                				+ '</div><br/>'
-		                			+ '<div ng-if="node.forms">'
-		                				+ '<node-form-list ng-model="node" node-controller="' + $scope.nodeController + '"></node-form-list>'
-		                			+ '</div>'
-		                			+ '<node-list ng-model="node.children" node="node" node-controller="' + $scope.nodeController + '" parent-index="' + $scope.parentIndexStringNode + '"></node-list>'
-		                		+ '</accordion-group>'
-		 					+ '</div>'
-
-		                $element.append($scope.template);
-
-		            } else {
-
-		            	$scope.template = ''
-		            		+ '<div style="margin-top: 5px;">'
-		                		+ '<accordion-group>'
-		                			+ '<accordion-heading>'
-		                				+ '<i class="pull-left glyphicon" ng-class="{'
-								            + '\'glyphicon-chevron-down\': node.open,'
-								            + '\'glyphicon-chevron-right\': !node.open}">'
-							           	+ '</i>&nbsp;'
-							           	+ '{{ parentIndexString }}{{ nodeIndex }}. {{node.header}}'
-
-							           	+ '<div class="pull-right">'
-							           		+ '<button ng-click="update(nodeIndex, nodes)" class="btn btn-success btn-xs"><i class="fa fa-edit fa-xs"></i></button>&nbsp;'
-							           		+ '<button ng-click="delete(nodeIndex, nodes)" class="btn btn-danger btn-xs"><i class="fa fa-close fa-xs"></i></button>'
-							           	+ '</div>'
-		                			+ '</accordion-heading>'
-
-		                			+ '<h3>{{ parentIndexString }}{{ nodeIndex }}. {{ node.header }}</h3>'
-		                			+ '<h3>Deskripsi</h3>'
-		                			+ '<div class="col-md-12">'
-	                					+ '<p>{{ node.description }}</p>'
-	                				+ '</div><br/>'
-		                			+ '<div ng-if="node.forms">'
-		                				+ '<node-form-list ng-model="node" node-controller="' + $scope.nodeController + '"></node-form-list>'
-		                			+ '</div>'
-		                			+ '<node-list ng-model="node.children" node="node" node-controller="' + $scope.nodeController + '" parent-index="' + $scope.parentIndexStringNode + '"></node-list>'
-		                		+ '</accordion-group>'
-		              		+ '</div>'
-
-		                $element.append($scope.template);
-		            }
-
-		            $compile($element.contents())($scope.$new());
-		        }
-		    };
-		})
-
-		.directive('nodeFormList', function($compile) {
-			return {
-				restrict: 'E',
-				terminal: true,
-				replace: true,
-				transclude: true,
-				scope: {
-					node: '=ngModel',
-					nodes: '=',
-					nodeController: '@',
-				},
-				controller: '@',
-				name: 'nodeController',
-				link: function ($scope, $element, $attrs) {
-
-					$scope.template = ''
-						+ '<div class="row">'
-							+ '<div class="col-lg-12">'
-								+ '<h3>Formulir</h3>'
-								+ '<div class="row">'
-									+ '<div class="col-md-6">'									
-										+ '<div class="form-group has-feedback">'
-		                                	+ '<label class="control-label">Bobot Pekerjaan</label>&nbsp;<label style="color: #a94442;">*</label>'
-			                				+ '<input type="number" ng-model="node.weight" name="name" class="form-control">'
-			                			+ '</div>'
-			                		+ '</div>'
-			                	+ '</div>'
-	                			+ '<label class="control-label">Dafar Formulir Penugasan</label>&nbsp;<label style="color: #a94442;">*</label>'
-	            				+ '<div class="panel panel-default">'
-	                				+ '<div class="panel-heading clearfix">'
-	                    				+ '<div class="panel-title pull-left">'
-	                    					+ '<div class="form-inline">'
-		                						+ '<div class="form-group">'
-		                        					+ '<button ng-click="createNodeFormItem(node)" class="btn btn-primary btn-xs"><i class="fa fa-plus fa-xs"></i></button>'
-		                        				+ '</div>'
-		                        			+ '</div>'
-	                    				+ '</div>'
-	                    				+ '<div class="pull-right">'
-							           		+ '<button ng-click="deleteNodeForm(node)" class="btn btn-danger btn-xs"><i class="fa fa-close fa-xs"></i></button>'
-							           	+ '</div>'
-	                				+ '</div>'
-	                				+ '<div class="panel-body">'
-	                    				+ '<div class="row">'
-	                        				+ '<div class="col-md-12">'
-	                        					+ '<div class="table-responsive">'
-								                    + '<table class="table table-hover">'
-								                        + '<thead>'
-								                            + '<tr>'
-								                                + '<th>#</th>'
-								                                + '<th><a href="" ng-click="sortField = \'name\'	; reverse = !reverse">Formulir</a></th>'
-								                                + '<th>Action</th>'
-								                            + '</tr>'
-								                        + '</thead>'
-								                        + '<tbody>'
-								                            + '<tr ng-repeat="object in node.forms | filter:query |   orderBy:sortField:reverse track by $index">'
-								                                + '<td>{{ $index + 1 }}</td>'
-								                                + '<td>{{ object.description }}</td>'
-								                                + '<td>'
-									                                + '<button popover="Update" popover-trigger="mouseenter" ng-click="updateNodeFormItem($index, node.forms, node)" class="btn btn-success btn-xs"><i class="fa fa-edit"></i></button>&nbsp;|&nbsp;'
-									                                + '<button popover="Delete" popover-trigger="mouseenter" ng-click="deleteNodeFormItem($index, node.forms)" class="btn btn-danger btn-xs"><i class="fa fa-close"></i></button>'
-								                                + '</td>'
-								                            + '</tr>'
-								                        + '</tbody>'
-								                    + '</table>'
-												+ '</div>'
-	                        				+ '</div>'
-	                        			+ '</div>'
-	                        		+ '</div>'
-	                        	+ '</div>'
-	                        + '</div>'
-                       	+ '</div>	'
-
-					$element.append($scope.template);
-
-					$compile($element.contents())($scope.$new());
-				}
-			}
-		})
+		.directive('nodeList', ['$compile', nodeList])
+		.directive('node', ['$compile', node])
+		.directive('nodeFormList', ['$compile', nodeFormList])
 })();
 
 function Node(name, children) {
@@ -229,7 +19,221 @@ function Node(name, children) {
     this.children = children || [];
 }
 
-function ProjectService ($http, $state, $q) {
+function nodeFormList ($compile) {
+	return {
+		restrict: 'E',
+		terminal: true,
+		replace: true,
+		transclude: true,
+		scope: {
+			node: '=ngModel',
+			nodes: '=',
+			nodeController: '@',
+		},
+		controller: '@',
+		name: 'nodeController',
+		link: function ($scope, $element, $attrs) {
+
+			$scope.template = ''
+				+ '<div class="row">'
+					+ '<div class="col-lg-12">'
+						+ '<h3>Formulir</h3>'
+						+ '<div class="row">'
+							+ '<div class="col-md-6">'									
+								+ '<div class="form-group has-feedback">'
+                                	+ '<label class="control-label">Bobot Pekerjaan</label>&nbsp;<label style="color: #a94442;">*</label>'
+	                				+ '<input type="number" ng-model="node.weight" name="name" class="form-control">'
+	                			+ '</div>'
+	                		+ '</div>'
+	                	+ '</div>'
+            			+ '<label class="control-label">Dafar Formulir Penugasan</label>&nbsp;<label style="color: #a94442;">*</label>'
+        				+ '<div class="panel panel-default">'
+            				+ '<div class="panel-heading clearfix">'
+                				+ '<div class="panel-title pull-left">'
+                					+ '<div class="form-inline">'
+                						+ '<div class="form-group">'
+                        					+ '<button ng-click="createNodeFormItem(node)" class="btn btn-primary btn-xs"><i class="fa fa-plus fa-xs"></i></button>'
+                        				+ '</div>'
+                        			+ '</div>'
+                				+ '</div>'
+                				+ '<div class="pull-right">'
+					           		+ '<button ng-click="deleteNodeForm(node)" class="btn btn-danger btn-xs"><i class="fa fa-close fa-xs"></i></button>'
+					           	+ '</div>'
+            				+ '</div>'
+            				+ '<div class="panel-body">'
+                				+ '<div class="row">'
+                    				+ '<div class="col-md-12">'
+                    					+ '<div class="table-responsive">'
+						                    + '<table class="table table-hover">'
+						                        + '<thead>'
+						                            + '<tr>'
+						                                + '<th>#</th>'
+						                                + '<th><a href="" ng-click="sortField = \'name\'	; reverse = !reverse">Formulir</a></th>'
+						                                + '<th>Action</th>'
+						                            + '</tr>'
+						                        + '</thead>'
+						                        + '<tbody>'
+						                            + '<tr ng-repeat="object in node.forms | filter:query |   orderBy:sortField:reverse track by $index">'
+						                                + '<td>{{ $index + 1 }}</td>'
+						                                + '<td>{{ object.description }}</td>'
+						                                + '<td>'
+							                                + '<button popover="Update" popover-trigger="mouseenter" ng-click="updateNodeFormItem($index, node.forms, node)" class="btn btn-success btn-xs"><i class="fa fa-edit"></i></button>&nbsp;|&nbsp;'
+							                                + '<button popover="Delete" popover-trigger="mouseenter" ng-click="deleteNodeFormItem($index, node.forms)" class="btn btn-danger btn-xs"><i class="fa fa-close"></i></button>'
+						                                + '</td>'
+						                            + '</tr>'
+						                        + '</tbody>'
+						                    + '</table>'
+										+ '</div>'
+                    				+ '</div>'
+                    			+ '</div>'
+                    		+ '</div>'
+                    	+ '</div>'
+                    + '</div>'
+               	+ '</div>	'
+
+			$element.append($scope.template);
+
+			$compile($element.contents())($scope.$new());
+		}
+	}
+}
+
+function node ($compile) {
+    return {
+        restrict: 'E',
+        terminal: true,
+        replace: true,
+        transclude: true,
+        scope: {
+            node: '=ngModel',
+            nodes: '=',
+            nodeController: '@',
+            nodeIndex: '=',
+            parentIndex: '@'
+        },
+        controller: '@',
+        name: 'nodeController',
+
+        link: function ($scope, $element, $attrs) {
+        	//console.log($scope.parentIndex);
+
+        	if ($scope.parentIndex == 'undefined') {
+        		//console.log('undefined: true')
+        		$scope.parentIndexString = ''
+        	} else {
+        		//console.log('undefined: false')
+        		$scope.parentIndexString = $scope.parentIndex + '.'
+        	}
+
+        	$scope.parentIndexStringNode = $scope.parentIndexString + $scope.nodeIndex
+        	
+            if (angular.isArray($scope.node.children) && $scope.node.children.length > 0) {
+            	$scope.template = ''
+            		+ '<div style="margin-top: 5px;">'
+                		+ '<accordion-group is-open="node.open">'
+
+                			+ '<accordion-heading>'
+                				
+                				+ '<i class="pull-left glyphicon" ng-class="{'
+						            + '\'glyphicon-chevron-down\': node.open,'
+						            + '\'glyphicon-chevron-right\': !node.open}">'
+					           	+ '</i>&nbsp;'
+					           	+ '{{ parentIndexString }}{{ nodeIndex }}. {{node.header}}'
+
+					           	+ '<div class="pull-right">'
+					           		+ '<button ng-click="update(nodeIndex, nodes)" class="btn btn-success btn-xs"><i class="fa fa-edit fa-xs"></i></button>&nbsp;'
+					           		+ '<button ng-click="delete(nodeIndex, nodes)" class="btn btn-danger btn-xs"><i class="fa fa-close fa-xs"></i></button>'
+					           	+ '</div>'
+                			+ '</accordion-heading>'
+
+                			+ '<h3>{{ parentIndexString }}{{ nodeIndex }}. {{ node.header }}</h3>'
+                			+ '<h3>Deskripsi</h3>'
+            				+ '<div class="col-md-12">'
+            					+ '<p>{{ node.description }}</p>'
+            				+ '</div><br/>'
+                			+ '<div ng-if="node.forms">'
+                				+ '<node-form-list ng-model="node" node-controller="' + $scope.nodeController + '"></node-form-list>'
+                			+ '</div>'
+                			+ '<node-list ng-model="node.children" node="node" node-controller="' + $scope.nodeController + '" parent-index="' + $scope.parentIndexStringNode + '"></node-list>'
+                		+ '</accordion-group>'
+ 					+ '</div>'
+
+                $element.append($scope.template);
+
+            } else {
+
+            	$scope.template = ''
+            		+ '<div style="margin-top: 5px;">'
+                		+ '<accordion-group>'
+                			+ '<accordion-heading>'
+                				+ '<i class="pull-left glyphicon" ng-class="{'
+						            + '\'glyphicon-chevron-down\': node.open,'
+						            + '\'glyphicon-chevron-right\': !node.open}">'
+					           	+ '</i>&nbsp;'
+					           	+ '{{ parentIndexString }}{{ nodeIndex }}. {{node.header}}'
+
+					           	+ '<div class="pull-right">'
+					           		+ '<button ng-click="update(nodeIndex, nodes)" class="btn btn-success btn-xs"><i class="fa fa-edit fa-xs"></i></button>&nbsp;'
+					           		+ '<button ng-click="delete(nodeIndex, nodes)" class="btn btn-danger btn-xs"><i class="fa fa-close fa-xs"></i></button>'
+					           	+ '</div>'
+                			+ '</accordion-heading>'
+
+                			+ '<h3>{{ parentIndexString }}{{ nodeIndex }}. {{ node.header }}</h3>'
+                			+ '<h3>Deskripsi</h3>'
+                			+ '<div class="col-md-12">'
+            					+ '<p>{{ node.description }}</p>'
+            				+ '</div><br/>'
+                			+ '<div ng-if="node.forms">'
+                				+ '<node-form-list ng-model="node" node-controller="' + $scope.nodeController + '"></node-form-list>'
+                			+ '</div>'
+                			+ '<node-list ng-model="node.children" node="node" node-controller="' + $scope.nodeController + '" parent-index="' + $scope.parentIndexStringNode + '"></node-list>'
+                		+ '</accordion-group>'
+              		+ '</div>'
+
+                $element.append($scope.template);
+            }
+
+            $compile($element.contents())($scope.$new());
+        }
+    };
+}
+
+function nodeList ($compile) {
+    return {
+        restrict: 'E',
+        terminal: true,
+        replace: true,
+        transclude: true,
+        scope: {
+            nodes: '=ngModel',
+            node: '=',
+            nodeController: '@',
+            parentIndex: '@'
+        },
+        controller: '@',
+        name: 'nodeController',
+        link: function ($scope, $element, $attrs) {
+
+        	//$scope.parentIndex += 1
+        	$scope.template = ''
+	        	+ '<accordion close-others="false">'
+            		+ '<node ng-repeat="item in nodes track by $index" ng-model="item" nodes="nodes" node-index="$index + 1" parent-index="' + $scope.parentIndex + '" node-controller="' + $scope.nodeController + '"></node>'
+            		+ '<div class="pull-left" style="margin-top: 5px;">'
+            			+ '<button ng-if="!node.forms" ng-click="create(nodes)" class="btn btn-primary"><i class="fa fa-plus"></i></button>&nbsp;'
+        				+ '<button ng-if="parentIndex && !nodes.length && !node.forms" ng-click="createNodeForm(node)" class="btn btn-warning"><i class="fa fa-file-text-o"></i></button>'
+        			+ '</div>'
+            	+ '</accordion>'
+
+            //console.log($scope.template)
+            if (angular.isArray($scope.nodes)) {
+                $element.append($scope.template);
+            } 
+            $compile($element.contents())($scope.$new());
+        }, 
+    };
+}
+
+function ProjectService ($http, $state, $q, Upload) {
 
 	var project = {}
 	
@@ -244,6 +248,10 @@ function ProjectService ($http, $state, $q) {
 	var updateNodeFormItem = function() {}
 	var deleteNodeFormItem = function() {}
 
+	var delegateNode = function () {}
+	var detailForm = function() {}
+	
+	var userId = ''
 	project.flushNode = function() {
 
 		this.createNode = function() {}
@@ -257,6 +265,12 @@ function ProjectService ($http, $state, $q) {
 		this.updateNodeFormItem = function() {}
 		this.deleteNodeFormItem = function() {}
 
+		this.delegateNode = function() {}
+		this.detailForm = function() {}
+	}
+	
+	project.setUserId = function(userId) {
+		this.userId = userId
 	}
 
 	project.setCreateNode = function(fn) {
@@ -293,6 +307,15 @@ function ProjectService ($http, $state, $q) {
 		this.deleteNodeFormItem = fn
 	}
 
+
+	project.setDelegateNode = function(fn) {
+		this.delegateNode = fn
+	}
+
+	project.setDetailForm = function(fn) {
+		this.detailForm = fn
+	}
+
 	project.createNode = this.createNode
 	project.updateNode = this.updateNode
 	project.deleteNode = this.deleteNode
@@ -304,6 +327,11 @@ function ProjectService ($http, $state, $q) {
 	project.updateNodeFormItem = this.updateNodeFormItem
 	project.deleteNodeFormItem = this.deleteNodeFormItem
 
+	project.delegateNode = this.delegateNode
+	project.detailForm = this.detailForm
+	
+	project.userId = this.userId
+	
 	project.get = function () {
 		var deferred = $q.defer();
 		$http.get('/projects')
@@ -315,7 +343,19 @@ function ProjectService ($http, $state, $q) {
 
 		return deferred.promise;
 	}
+	
+	project.showLast = function (request) {
+		var deferred = $q.defer();
+		$http.get('/projectsLast/' + request)
+			.then(function(response) {
+				deferred.resolve(response.data)
+			}, function(response) {
+				deferred.reject(response)
+			})
 
+		return deferred.promise;
+	}
+	
 	project.show = function (request) {
 		var deferred = $q.defer();
 		$http.get('/projects/' + request)
@@ -336,7 +376,6 @@ function ProjectService ($http, $state, $q) {
 			}, function(response) {
 				deferred.reject(response)
 			})
-
 		return deferred.promise;
 	}
 
@@ -362,6 +401,65 @@ function ProjectService ($http, $state, $q) {
 			})
 
 		return deferred.promise;
+	}
+	
+	project.user = function (request) {
+		var deferred = $q.defer()
+		$http.get('/project/user/' + request)
+			.then(function(response) {
+				deferred.resolve(response.data)
+			}, function(response) {
+				deferred.reject(response)
+			})
+		
+		return deferred.promise
+	}
+
+	project.delegate = function (request) {
+		var deferred = $q.defer()
+		$http.post('/project/delegate', request)
+			.then(function (response) {
+				deferred.resolve(response.data)
+			}, function(response) {
+				deferred.reject(response)
+			})
+
+		return deferred.promise
+	}
+
+	project.form = function (request) {
+		var deferred = $q.defer()
+		$http.get('/project/form/' + request)
+			.then(function (response) {
+				deferred.resolve(response.data)
+			}, function(response) {
+				deferred.reject(response)
+			})
+		
+			return deferred.promise
+	}
+	
+	project.leader = function (request) {
+		var deferred = $q.defer()
+		$http.get('/project/leader/' + request)
+			.then(function (response) {
+				deferred.resolve(response.data)
+			}, function(response) {
+				deferred.reject(response)
+			})
+			
+		return deferred.promise
+	}
+	
+	project.upload = function (request, file) {
+		
+		return Upload.upload({
+			url: '/project/upload',
+			method: 'POST',
+			fields: request,
+			file: file,
+			fileFormDataName: 'document'
+		})
 	}
 
 	return project
@@ -572,6 +670,7 @@ function CreateProjectController ($rootScope, $scope, $state, $stateParams, $mod
 
 
 	$scope.create = function (nodes) {
+
 		ProjectService.createNode(nodes)
 	}
 
@@ -674,6 +773,7 @@ function CreateProjectController ($rootScope, $scope, $state, $stateParams, $mod
 		$scope.input.users = $scope.users 
 		$scope.msg = []
 		$scope.weight = 0
+		$scope.leader = {}
 
 		if ($scope.input.users.length == 0) {
 			$scope.msg.push('Project ini harus terdiri dari user')
@@ -682,6 +782,7 @@ function CreateProjectController ($rootScope, $scope, $state, $stateParams, $mod
 			var counter = 0
 			for(var i = 0 ; i < $scope.input.users.length ; i++) {
 				if ($scope.input.users[i].leader == true) {
+					$scope.leader = $scope.input.users[i]
 					break;
 				}
 				counter++
@@ -701,7 +802,8 @@ function CreateProjectController ($rootScope, $scope, $state, $stateParams, $mod
 		var recursiveNode = function recursiveNode(nodes) {
 			for (var i = 0 ; i < nodes.length ; i++) {
 				if (nodes[i].children.length > 0) {
-
+					nodes[i].delegations = []
+					nodes[i].delegations.push($scope.leader)
 					recursiveNode(nodes[i].children)
 
 				} else {
@@ -711,6 +813,8 @@ function CreateProjectController ($rootScope, $scope, $state, $stateParams, $mod
 							return 0
 						} else {
 							if (nodes[i].weight) {
+								nodes[i].delegations = []
+								nodes[i].delegations.push($scope.leader)
 								$scope.weight += nodes[i].weight
 							} else {
 								$scope.msg.push('Project ' + nodes[i].header + ' harus ditentukan bobot pekerjaan')
@@ -734,6 +838,8 @@ function CreateProjectController ($rootScope, $scope, $state, $stateParams, $mod
 			return 0
 		}
 
+		console.log($scope.input)
+		
 		ProjectService
 			.store($scope.input)
 			.then(function() {
@@ -741,6 +847,7 @@ function CreateProjectController ($rootScope, $scope, $state, $stateParams, $mod
 			}, function () {
 
 			})
+		
 	}
 	$scope.load();
 }
@@ -933,8 +1040,6 @@ function UpdateProjectController ($rootScope, $scope, $state, $stateParams, $mod
 		})
 	}
 
-
-
 	$scope.create = function (nodes) {
 		ProjectService.createNode(nodes)
 	}
@@ -1038,6 +1143,7 @@ function UpdateProjectController ($rootScope, $scope, $state, $stateParams, $mod
 		$scope.input.users = $scope.users 
 		$scope.msg = []
 		$scope.weight = 0
+		$scope.leader = {}
 
 		if ($scope.input.users.length == 0) {
 			$scope.msg.push('Project ini harus terdiri dari user')
@@ -1046,6 +1152,7 @@ function UpdateProjectController ($rootScope, $scope, $state, $stateParams, $mod
 			var counter = 0
 			for(var i = 0 ; i < $scope.input.users.length ; i++) {
 				if ($scope.input.users[i].leader == true) {
+					$scope.leader = $scope.input.users[i]
 					break;
 				}
 				counter++
@@ -1064,7 +1171,20 @@ function UpdateProjectController ($rootScope, $scope, $state, $stateParams, $mod
 
 		var recursiveNode = function recursiveNode(nodes) {
 			for (var i = 0 ; i < nodes.length ; i++) {
+
+				
+
 				if (nodes[i].children.length > 0) {
+					var counter = 0
+					for(var j = 0 ; j < nodes[i].delegations.length ; j++) {
+						if (nodes[i].delegations[j].id == $scope.leader.id) {
+							break;
+						}
+						counter++
+					}
+					if (counter == nodes[i].delegations.length) {
+						nodes[i].delegations.push($scope.leader)
+					}
 
 					recursiveNode(nodes[i].children)
 
@@ -1076,6 +1196,17 @@ function UpdateProjectController ($rootScope, $scope, $state, $stateParams, $mod
 						} else {
 							if (nodes[i].weight) {
 								$scope.weight += nodes[i].weight
+								var counter = 0
+								for(var j = 0 ; j < nodes[i].delegations.length ; j++) {
+									if (nodes[i].delegations[j].id == $scope.leader.id) {
+										break
+									}
+									counter++
+								}
+								if (counter == nodes[i].delegations.length) {
+									nodes[i].delegations.push($scope.leader)
+								}
+
 							} else {
 								$scope.msg.push('Project ' + nodes[i].header + ' harus ditentukan bobot pekerjaan')
 								return 0
@@ -1101,7 +1232,7 @@ function UpdateProjectController ($rootScope, $scope, $state, $stateParams, $mod
 		ProjectService
 			.update($scope.input)
 			.then(function() {
-				$state.go('main.admin.project')
+				//$state.go('main.admin.project')
 			}, function () {
 
 			})
@@ -1111,6 +1242,7 @@ function UpdateProjectController ($rootScope, $scope, $state, $stateParams, $mod
 }
 
 function ModalUserProjectController ($scope, $timeout, $modalInstance, user, UserService) {
+
 	$scope.users = []
 	$scope.input = []
 
@@ -1201,6 +1333,7 @@ function ModalProjectController($scope, $timeout, $modalInstance, project, Proje
 				console.log('insert')
 				$scope.input.open = false,
 				$scope.input.children = []
+				$scope.input.delegations = []
 				$modalInstance.close($scope.input)
 			}
 			

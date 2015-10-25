@@ -17,7 +17,6 @@ use App\Foundation;
 use App\University;
 use App\Department;
 use App\Job;
-use App\Period;
 use App\GroupJob;
 use App\GroupJobDetail;
 
@@ -837,36 +836,6 @@ class UserTableSeeder extends Seeder
 
         ]);
 
-        
-
-        DB::table('periods')->delete();
-        Period::insert([
-            [
-                'name'          => 'Harian',
-                'created_at'    => new DateTime,
-                'updated_at'    => new DateTime
-            ],
-            [
-                'name'          => 'Mingguan',
-                'created_at'    => new DateTime,
-                'updated_at'    => new DateTime
-            ],
-            [
-                'name'          => 'Bulanan',
-                'created_at'    => new DateTime,
-                'updated_at'    => new DateTime
-            ],
-            [
-                'name'          => 'Semesteran',
-                'created_at'    => new DateTime,
-                'updated_at'    => new DateTime
-            ],
-            [
-                'name'          => 'Tahunan',
-                'created_at'    => new DateTime,
-                'updated_at'    => new DateTime
-            ]
-        ]);
 
         DB::table('group_jobs')->delete();
         GroupJob::insert([

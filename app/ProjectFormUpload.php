@@ -11,4 +11,7 @@ class ProjectFormUpload extends Model
 
     protected $dates = ['deleted_at'];
     
+    public function users() {
+    	return $this->belongsTo('App\User', 'user_id');
+    }
 }

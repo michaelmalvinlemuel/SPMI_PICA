@@ -3,7 +3,9 @@
     <head>
         <title>SPMI</title>
        
+        <!--
         <link href="https://fonts.googleapis.com/css?family=Lato:100" rel="stylesheet" type="text/css">
+        -->
         
         <link href="css/sb-admin-2.css" rel="stylesheet" type="text/css">
         <link href="css/main.css" rel="stylesheet" type="text/css">
@@ -26,7 +28,10 @@
             <script src="bower_components/angular/angular.min.js"></script>
             <script src="bower_components/angular-ui-router/release/angular-ui-router.min.js"></script>
             <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+            <script src="js/abn_tree_directive.js"></script>
+            <!--
             <script src="bower_components/angular-bootstrap-nav-tree-js/dist/abn_tree_directive.js"></script>
+            -->
             <script src="bower_components/ng-file-upload/ng-file-upload-all.min.js"></script>
             <script src="bower_components/angular-chart.js/dist/angular-chart.min.js"></script>
             <script src="bower_components/angular-messages/angular-messages.min.js"></script>
@@ -85,6 +90,7 @@
         <script src="app/admin/project/project.js"></script>
 
         <script src="app/user/task/task.js"></script>
+        <script src="app/user/project/project.js"></script>
         <script src="app/user/subordinat/subordinat.js"></script>
 
     </head>

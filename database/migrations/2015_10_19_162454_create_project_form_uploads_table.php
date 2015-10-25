@@ -16,7 +16,6 @@ class CreateProjectFormUploadsTable extends Migration
             $table->increments('id');
             $table->integer('project_form_item_id')->unsigned();
             $table->foreign('project_form_item_id')->references('id')->on('project_form_items')->onDelete('cascade');
-            $table->string('document');
             $table->string('upload');
             $table->integer('user_id')->unsigned();
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');

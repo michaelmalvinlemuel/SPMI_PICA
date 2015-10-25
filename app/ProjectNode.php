@@ -10,6 +10,8 @@ class ProjectNode extends Model
 
 	use SoftDeletes;
 
+    //const UPDATED_AT = 'project_nodes.updated_at';
+
     protected $dates = ['deleted_at'];
 
     public function project() {
@@ -21,7 +23,7 @@ class ProjectNode extends Model
     }
 
     public function delegations() {
-    	return $this->hasMany('App\ProjectNodeDelegation');
+    	return $this->belongsToMany('App\User', 'project_node_delegations')->whereNull('project_node_delegations.deleted_at');
     }
 
     public function forms() {

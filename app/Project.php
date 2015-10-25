@@ -11,6 +11,8 @@ class Project extends Model
 
     protected $dates = ['deleted_at'];
 
+    //const UPDATED_AT = 'projects.updated_at';
+
     public function projects() {
         return $this->morphMany('App\ProjectNode', 'project');
     }
