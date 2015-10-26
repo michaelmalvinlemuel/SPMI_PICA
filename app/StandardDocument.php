@@ -14,4 +14,8 @@ class StandardDocument extends Model
     public function standard() {
     	return $this->belongsTo('App\Standard');
     }
+    
+    public function guides() {
+    	return $this->hasMany('App\Guide');
+    }
 }

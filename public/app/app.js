@@ -2,7 +2,7 @@
 	'use strict'
 
 	angular
-		.module('app', ['ui.router', 'ui.bootstrap', 'ngFileUpload', 'chart.js', 'ngMessages', 'jsonFormatter', 'angularBootstrapNavTree'])
+		.module('app', ['ui.router', 'ui.bootstrap', 'ngFileUpload', 'chart.js', 'ngMessages', 'jsonFormatter', 'angularBootstrapNavTree', 'pdf'])
 		.run(['$rootScope', '$state', '$stateParams', '$timeout', 'Authorization', 'UserService', AppRun])
 		.config(['$stateProvider', '$urlRouterProvider', '$httpProvider', AppConfiguration])
 		.filter('debug', function() {
@@ -159,7 +159,7 @@ function AppConfiguration ($stateProvider, $urlRouterProvider, $httpProvider) {
 	}
 
 	$urlRouterProvider.otherwise('/');
-	$httpProvider.defaults.cache = false;
+	$httpProvider.defaults.cache = true;
 
 	$stateProvider
 		.state('main', {
@@ -321,6 +321,17 @@ function AppConfiguration ($stateProvider, $urlRouterProvider, $httpProvider) {
 					controller: 'UpdateUserController'
 				},
 			}
+		})
+		
+		.state('main.admin.document', {
+			url: '/document',
+			views: {
+				'content@main.admin': {
+					templateUrl: 'app/admin/document/views/list.html',
+					controller: 'DocumentController'
+				}
+			},
+			resolve: resolve,
 		})
 
 

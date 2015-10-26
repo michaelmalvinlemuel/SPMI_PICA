@@ -15,10 +15,11 @@ class CreateUniversitiesTable extends Migration
         Schema::create('universities', function (Blueprint $table) {
             $table->increments('id');
             $table->integer('foundation_id')->unsigned();
-            $table->string('name')->unique();
+            $table->string('name');
             $table->string('address');
             $table->string('phone');
             $table->string('fax');
+            $table->unique(['name', 'deleted_at']);
             $table->timestamps();
             $table->softDeletes();
         });

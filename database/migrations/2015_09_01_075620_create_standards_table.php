@@ -14,9 +14,10 @@ class CreateStandardsTable extends Migration
     {
         Schema::create('standards', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('no')->unique();
+            $table->string('no');
             $table->date('date');
-            $table->string('description')->unique();
+            $table->string('description');
+            $table->unique(['description', 'deleted_at']);
             $table->timestamps();
             $table->softDeletes();
         });

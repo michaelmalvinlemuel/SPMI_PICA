@@ -21,7 +21,7 @@ class CreateJobsTable extends Migration
             $table->integer('department_id')->unsigned();
             $table->foreign('department_id')->references('id')->on('departments')->onDelete('cascade');
             $table->boolean('multiple');
-            $table->unique(['department_id', 'name']);
+            $table->unique(['department_id', 'deleted_at', 'name']);
             $table->timestamps();
             $table->softDeletes();
 

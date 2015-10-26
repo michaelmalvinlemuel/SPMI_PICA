@@ -10,15 +10,17 @@
         <link href="css/sb-admin-2.css" rel="stylesheet" type="text/css">
         <link href="css/main.css" rel="stylesheet" type="text/css">
 
-
+	
         @if (env('APP_ENV') == 'local')
-
+		
             <link href="bower_components/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet" type="text/css">
             <link href="bower_components/font-awesome-4.4.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
             <link href="bower_components/angular-bootstrap/ui-bootstrap-csp.css" rel="stylesheet" type="text/css">
             <link href="bower_components/angular-bootstrap-nav-tree-js/dist/abn_tree.css" rel="stylesheet" type="text/css">
             <link href="bower_components/angular-chart.js/dist/angular-chart.min.css" rel="stylesheet" type="text/css">
             <link href="bower_components/json-formatter/dist/json-formatter.css" rel="stylesheet" type="text/css">
+            
+            <script src="js/pdf.js"></script>
             
             <script src="bower_components/jquery/dist/jquery.min.js"></script>
             <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
@@ -29,6 +31,9 @@
             <script src="bower_components/angular-ui-router/release/angular-ui-router.min.js"></script>
             <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
             <script src="js/abn_tree_directive.js"></script>
+            
+            <script src="js/angular-pdf.min.js"></script>
+            
             <!--
             <script src="bower_components/angular-bootstrap-nav-tree-js/dist/abn_tree_directive.js"></script>
             -->
@@ -82,6 +87,7 @@
         <script src="app/admin/guide/guide.js"></script>
         <script src="app/admin/instruction/instruction.js"></script>
         <script src="app/admin/form/form.js"></script>
+        <script src="app/admin/document/document.js"></script>
 
         <script src="app/admin/user/user.js"></script>
         <script src="app/admin/semester/semester.js"></script>

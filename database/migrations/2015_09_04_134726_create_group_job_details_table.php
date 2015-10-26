@@ -18,7 +18,7 @@ class CreateGroupJobDetailsTable extends Migration
             $table->foreign('group_job_id')->references('id')->on('group_jobs')->onDelete('cascade');
             $table->integer('job_id')->unsigned();
             $table->foreign('job_id')->references('id')->on('jobs')->onDelete('cascade');
-            $table->unique(['group_job_id', 'job_id']);
+            $table->unique(['group_job_id', 'job_id', 'deleted_at']);
             $table->timestamps();
             $table->softDeletes();
         });

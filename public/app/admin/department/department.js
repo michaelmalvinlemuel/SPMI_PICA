@@ -2,38 +2,121 @@
 
 	angular
 		.module('app')
-		.factory('DepartmentService', ['$http', DepartmentService])
+		.factory('DepartmentService', ['$http', '$q', '$cacheFactory', DepartmentService])
 		.controller('DepartmentController', ['$scope', '$state', 'DepartmentService', DepartmentController])
 		.controller('CreateDepartmentController', ['$scope', '$state', '$timeout', 'UniversityService', 'DepartmentService', CreateDepartmentController])
-		.controller('UpdateDepartmentController', ['$scope', '$state', '$stateParams', '$timeout', 'UniversityService', 'DepartmentService', UpdateDepartmentController])
+		.controller('UpdateDepartmentController', ['$scope', '$state', '$stateParams', '$timeout', '$q', 'UniversityService', 'DepartmentService', UpdateDepartmentController])
 
 
 })();
 
-function DepartmentService ($http) {
-	return {
-		get: function () {
-			return $http.get('/departments')
-		},
-		show: function (request) {
-			return $http.get('/departments/' + request)
-		},
-		store: function(request) {
-			return $http.post('/department/store', request)
-		},
-		update: function (request) {
-			return $http.post('/department/update', request)
-		},
-		destroy: function (request) {
-			return $http.post('/department/destroy', request)
-		},
-		university: function (request) {
-			return $http.get('/department/university/' + request)
-		},
-		validating: function (request) {
-			return $http.post('/department/validating', request)
+function DepartmentService ($http, $q, $cacheFactory) {
+	
+	//var department = {}
+	//
+	
+	function DepartmentService() {
+		var cacheUniversity = null;
+		
+		var self = this
+		var $httpDefaultCache = $cacheFactory.get('$http');
+		
+		self.get = function () {
+			var deferred = $q.defer()
+			$http.get('/departments')
+				.then(function(response){
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				})
+			return deferred.promise
 		}
+		
+		self.show = function (request) {
+			var deferred = $q.defer()
+			$http.get('/departments/' + request)
+				.then(function(response){
+					deferred.resolve(response)
+				}, function(response) {
+					deferred.reject(response)
+				})
+			return deferred.promise
+		}
+			
+		self.store = function(request) {
+			var deferred = $q.defer()
+			$http.post('/department/store', request)
+				.then(function(response){
+					$httpDefaultCache.remove('/departments');
+					$httpDefaultCache.remove(cacheUniversity)
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				})
+			return deferred.promise
+		}
+			
+		self.update = function (request) {
+			var deferred = $q.defer()
+			$http.post('/department/update', request)
+				.then(function(response){
+					$httpDefaultCache.remove('/departments');
+					$httpDefaultCache.remove('/departments/' + request.id)
+					$httpDefaultCache.remove(cacheUniversity)
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				})
+			return deferred.promise
+		}
+			
+		self.destroy = function (request) {
+			var deferred = $q.defer()
+			$http.post('/department/destroy', request)
+				.then(function(response){
+					$httpDefaultCache.remove('/departments');
+					$httpDefaultCache.remove('/departments/' + request.id)
+					$httpDefaultCache.remove(cacheUniversity)
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				})
+			return deferred.promise
+		}
+		
+		
+		
+		self.university = function (request) {
+			var deferred = $q.defer()
+			$http.get('/department/university/' + request)
+				.then(function(response){
+					cacheUniversity = '/department/university/' + request;
+					$httpDefaultCache.put(cacheUniversity)
+					deferred.resolve(response, response.data)
+				}, function(response){
+					deferred.reject(response)
+				})
+			return deferred.promise
+				
+		}
+			
+		self.validating = function (request) {
+			var deferred = $q.defer()
+			$http.get('/department/validating/' + request.name + '/' + request.id + '/' + request.university_id)
+				.then(function(response){
+					$httpDefaultCache.remove('/departments/' + request.id)
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				})
+			return deferred.promise
+		}
+		
 	}
+	
+	
+	return new DepartmentService()
+	
 }
 
 function DepartmentController ($scope, $state, DepartmentService) {
@@ -155,40 +238,36 @@ function CreateDepartmentController ($scope, $state, $timeout, UniversityService
 
 }
 
-function UpdateDepartmentController ($scope, $state, $stateParams, $timeout, UniversityService, DepartmentService) {
+function UpdateDepartmentController ($scope, $state, $stateParams, $timeout, $q, UniversityService, DepartmentService) {
 	var timeoutPromise;
 	$scope.input = {}
-	$scope.departments = {}
-	$scope.universities = {}
+	$scope.departments = []
+	$scope.universities = []
 	$scope.validated = false;
 
 	$scope.load = function() {
 		
-
 		$scope.loadingUniversity = true
 		$scope.loadingDepartment = true
 		
 
-		DepartmentService
-			.show($stateParams.departmentId)
-			.then(function (response) {
+		DepartmentService.show($stateParams.departmentId)
+			.then(function(response){
 				$scope.input = response.data;
-
-				UniversityService
-					.get()
-					.then(function (response) {
-						$scope.universities = response;
-						$scope.loadingUniversity = false
-
-						DepartmentService
-							.university($scope.input.university_id)
-							.then(function (response) {
-								$scope.departments = response.data
-								$scope.loadingDepartment = false
-							})
-
-				})
-		})
+				return UniversityService.get()
+			}, function(response){})
+			
+			.then(function (response) {
+				$scope.universities = response;
+				$scope.loadingUniversity = false
+				return DepartmentService.university($scope.input.university_id)
+			}, function(response){})
+			
+			.then(function (response) {
+				$scope.departments = response.data
+				$scope.loadingDepartment = false
+			}, function(response){})
+			
 	}
 
 	$scope.$watch('input.name', function () {

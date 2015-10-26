@@ -14,4 +14,8 @@ class Instruction extends Model
     public function guide() {
     	return $this->belongsTo('App\Guide');
     }
+    
+    public function forms() {
+    	return $this->hasMany('App\Form');
+    }
 }

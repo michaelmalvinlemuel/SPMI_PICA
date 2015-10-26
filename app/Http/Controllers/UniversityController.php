@@ -89,12 +89,12 @@ class UniversityController extends Controller
         $university->delete();
     }
 
-    public function validating (Request $request)
+    public function validating ($name, $id = false)
     {
-        if ($request->input('id')) {
-            return University::where('name', '=', $request->input('name'))->where('id', '<>', $request->input('id'))->get();
+        if ($id) {
+            return University::where('name', '=', $name)->where('id', '<>', $id)->get();
         } else {
-            return University::where('name', '=', $request->input('name'))->get();    
+            return University::where('name', '=', $name)->get();    
         }
         
     }

@@ -16,10 +16,12 @@ class CreateFormsTable extends Migration
             $table->increments('id');
             $table->integer('instruction_id')->unsigned();
             $table->foreign('instruction_id')->references('id')->on('instructions')->onDelete('cascade');
-            $table->string('no')->unique();
+            $table->string('no');
             $table->date('date');
-            $table->string('description')->unique();
+            $table->string('description');
             $table->string('document');
+            $table->unique(['no', 'deleted_at']);
+            $table->unique(['description', 'deleted_at']);
             $table->timestamps();
             $table->softDeletes();
         });

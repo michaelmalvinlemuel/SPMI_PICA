@@ -541,6 +541,7 @@ function FormDetailUserProjectController($scope, $state, $stateParams, $timeout,
 	$scope.input = {}
 	
 	$scope.load = function() {
+		$scope.file = {}
 		
 		ProjectService
 			.form($stateParams.formId)

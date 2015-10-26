@@ -20,7 +20,7 @@ class CreateDepartmentsTable extends Migration
             $table->string('name');
             $table->integer('department_id')->unsigned()->nullable();
             $table->foreign('department_id')->references('id')->on('departments')->onDelete('cascade');
-            $table->unique(['university_id', 'name']);
+            $table->unique(['university_id', 'name', 'deleted_at']);
             $table->timestamps();
             $table->softDeletes();
         });

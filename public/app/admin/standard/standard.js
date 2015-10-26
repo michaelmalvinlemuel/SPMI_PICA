@@ -14,6 +14,9 @@ function StandardService ($http) {
 		get: function() {
 			return $http.get('/standards')
 		},
+		getAll: function() {
+			return $http.get('/standardsAll');
+		},
 		show: function(request) {
 			return $http.get('/standards/' + request)
 		},

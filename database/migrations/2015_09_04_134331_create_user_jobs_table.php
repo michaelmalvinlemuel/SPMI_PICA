@@ -18,7 +18,7 @@ class CreateUserJobsTable extends Migration
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->integer('job_id')->unsigned();
             $table->foreign('job_id')->references('id')->on('jobs')->onDelete('cascade');
-            $table->unique(['user_id','job_id']);
+            $table->unique(['user_id','job_id', 'deleted_at']);
             $table->timestamps();
             $table->softDeletes();
         });

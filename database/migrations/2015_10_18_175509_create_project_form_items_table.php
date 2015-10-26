@@ -19,7 +19,7 @@ class CreateProjectFormItemsTable extends Migration
             $table->integer('form_id')->unsigned();
             $table->foreign('form_id')->references('id')->on('forms')->onDelete('cascade');
             $table->string('document');
-            $table->unique(['project_form_id', 'form_id']);
+            $table->unique(['project_form_id', 'form_id', 'deleted_at']);
             $table->timestamps();
             $table->softDeletes();
         });

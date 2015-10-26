@@ -36,6 +36,9 @@ class CreateUsersTable extends Migration
             $table->timestamps();
             $table->softDeletes();
         });
+        
+        //$myfile = fopen("testfile.txt", "w");
+        
     }
 
     /**

@@ -18,7 +18,7 @@ class CreateWorksTable extends Migration
         ");
         Schema::create('works', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('name')->unique();
+            $table->string('name');
             $table->string('description');
             $table->datetime('start');
             $table->datetime('ended')->nullable();
@@ -30,6 +30,7 @@ class CreateWorksTable extends Migration
             $table->string('schedule_type');
             $table->string('schedule_name');
             $table->char('schedule_status',1);
+            $table->unique(['name', 'deleted_at']);
             $table->timestamps();
             $table->softDeletes();
         });

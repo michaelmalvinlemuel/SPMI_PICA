@@ -8,7 +8,7 @@ use App\Http\Requests;
 use App\Http\Controllers\Controller;
 
 use App\Standard;
-
+use Response;
 use Auth;
 
 class StandardController extends Controller
@@ -25,12 +25,12 @@ class StandardController extends Controller
         return Standard::get();
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  Request  $request
-     * @return Response
-     */
+	public function getAll() {
+		$standard = Standard::with('standardDocuments.guides.instructions.forms')->get();
+		return Response::json($standard, 200, [], JSON_PRETTY_PRINT);
+		
+	}
+	
     public function store(Request $request)
     {   
         if (Auth::check()) {

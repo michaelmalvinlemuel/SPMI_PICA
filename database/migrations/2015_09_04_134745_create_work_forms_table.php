@@ -18,7 +18,7 @@ class CreateWorkFormsTable extends Migration
             $table->foreign('work_id')->references('id')->on('works')->onDelete('cascade');
             $table->integer('form_id')->unsigned();
             $table->foreign('form_id')->references('id')->on('forms')->onDelete('cascade');
-            $table->unique(['work_id', 'form_id']);
+            $table->unique(['work_id', 'form_id', 'deleted_at']);
             $table->timestamps();
             $table->softDeletes();
         });

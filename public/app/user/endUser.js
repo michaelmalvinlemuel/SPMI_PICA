@@ -6,7 +6,7 @@
 })()
 
 function EndUserController ($scope, $state, UserService) {
-	$scope.debug = true
+	$scope.debug = false
 	$scope.load = function () {
 
 		$scope.user = UserService.session();

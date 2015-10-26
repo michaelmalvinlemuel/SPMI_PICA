@@ -14,8 +14,9 @@ class CreateGroupJobsTable extends Migration
     {
         Schema::create('group_jobs', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('name')->unique();
+            $table->string('name');
             $table->string('description');
+            $table->unique(['name', 'deleted_at']);
             $table->timestamps();
             $table->softDeletes();
         });

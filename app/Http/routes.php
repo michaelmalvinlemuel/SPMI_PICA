@@ -42,6 +42,7 @@ Route::post('userjob/validating/job', 'UserJobController@validatingJob');
 
 
 Route::get('standards', 'StandardController@index');
+Route::get('standardsAll', 'StandardController@getAll');
 Route::get('standards/{id}', 'StandardController@show');
 Route::post('standard/store', 'StandardController@store');
 Route::post('standard/update', 'StandardController@update');
@@ -91,7 +92,7 @@ Route::get('universities/{id}', 'UniversityController@show');
 Route::post('university/store', 'UniversityController@store');
 Route::post('university/update', 'UniversityController@update');
 Route::post('university/destroy', 'UniversityController@destroy');
-Route::post('university/validating', 'UniversityController@validating');
+Route::get('university/validating/{name}/{id?}', 'UniversityController@validating');
 
 Route::get('departments', 'DepartmentController@index');
 Route::get('departments/{id}', 'DepartmentController@show');
@@ -99,7 +100,7 @@ Route::post('department/store', 'DepartmentController@store');
 Route::post('department/update', 'DepartmentController@update');
 Route::post('department/destroy', 'DepartmentController@destroy');
 Route::get('department/university/{id}', 'DepartmentController@university');
-Route::post('department/validating', 'DepartmentController@validating');
+Route::get('department/validating/{name}/{id?}/{universityId}', 'DepartmentController@validating');
 
 Route::get('jobs', 'JobController@index');
 Route::get('jobs/{id}', 'JobController@show');

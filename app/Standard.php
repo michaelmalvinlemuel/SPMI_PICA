@@ -11,5 +11,7 @@ class Standard extends Model
     protected $dates = ['deleted_at'];
     
 
-    //
+    public function standardDocuments() {
+		return $this->hasMany('App\StandardDocument');
+	}
 }
