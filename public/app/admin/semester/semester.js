@@ -2,7 +2,7 @@
 
 	angular
 		.module('app')
-		.factory('SemesterService', ['$http', SemesterService])
+		.factory('SemesterService', ['$http', '$q', '$cacheFactory', SemesterService])
 		.controller('SemesterController', ['$scope', '$state', 'SemesterService', SemesterController])
 		.controller('CreateSemesterController', ['$scope', '$state', '$timeout', 'SemesterService', CreateSemesterController])
 		.controller('UpdateSemesterController', ['$scope', '$state', '$stateParams', '$timeout', 'SemesterService', UpdateSemesterController])
@@ -11,31 +11,95 @@
 
 
 
-function SemesterService ($http) {
-	return {
-		get: function () {
-			return $http.get('/semesters');
-		},
-		show: function (request) {
-			return $http.get('/semesters/' + request);
-		},
-		store: function (request) {
-			return $http.post('/semester/store', request)
-		},
-		update: function (request) {
-			return $http.post('/semester/update', request)
-		},
-		destroy: function (request) {
-			return $http.post('/semester/destroy', request)
-		},
-		intersect: function(request) {
-			return $http.post('/semester/intersect', request)
-		},
-		included: function (request) {
-			return $http.post('/semester/included', request);
+function SemesterService ($http, $q, $cacheFactory) {
+	
+	function SemesterService(){
+		
+		var self = this
+		var $httpDefaultCache = $cacheFactory.get('$http');
+		
+		self.get = function () {
+			var deferred = $q.defer()
+			$http.get('/semesters')
+				.then(function(response){
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				});
+			return deferred.promise; 
 		}
-
+		
+		self.show = function (request) {
+			var deferred = $q.defer()
+			$http.get('/semesters/' + request)
+				.then(function(response){
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				});
+			return deferred.promise; 
+		}
+		
+		self.store = function (request) {
+			var deferred = $q.defer()
+			$http.post('/semester/store', request)
+				.then(function(response){
+					$httpDefaultCache.removeAll()
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				});
+			return deferred.promise; 
+		}
+		
+		self.update = function (request) {
+			var deferred = $q.defer()
+			$http.post('/semester/update', request)
+				.then(function(response){
+					$httpDefaultCache.removeAll()
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				});
+			return deferred.promise; 
+		}
+		
+		self.destroy = function (request) {
+			var deferred = $q.defer()
+			$http.post('/semester/destroy', request)
+				.then(function(response){
+					$httpDefaultCache.removeAll()
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				});
+			return deferred.promise; 
+		}
+		
+		self.intersect = function(request) {
+			var deferred = $q.defer()
+			$http.get('/semester/intersect/' + request.date + '/' + request.id)
+				.then(function(response){
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				});
+			return deferred.promise; 
+		}
+		
+		self.included = function (request) {
+			var deferred = $q.defer()
+			$http.get('/semester/included/' + request.date_start + '/' + request.date_ended + '/' + request.id)
+				.then(function(response){
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				});
+			return deferred.promise; 
+		}
 	}
+	
+	return new SemesterService()
 }
 
 function SemesterController ($scope, $state, SemesterService) {

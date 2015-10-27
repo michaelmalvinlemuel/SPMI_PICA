@@ -70,18 +70,20 @@ class ProjectController extends Controller
                     $projectFormItem->touch();
                     $projectFormItem->save();
                     
-                    $projectUpload = $value1['uploads'];
-                    $projectUpload = json_decode(json_encode($projectUpload), true);
-                    
-                    foreach($projectUpload as $key2 => $value2) {
-                    	$upload = new ProjectFormUpload;
-                    	$upload->project_form_item_id = $projectFormItem->id;
-                    	$upload->upload = $value2['upload'];
-                    	$upload->user_id = $value2['user_id'];
-                    	$upload->touch();
-                    	$upload->save();
-                    	//echo $upload->id;
-                    }
+                   	if (isset($value1['uploads'])) {
+	                    $projectUpload = $value1['uploads'];
+	                    $projectUpload = json_decode(json_encode($projectUpload), true);
+	                    
+	                    foreach($projectUpload as $key2 => $value2) {
+	                    	$upload = new ProjectFormUpload;
+	                    	$upload->project_form_item_id = $projectFormItem->id;
+	                    	$upload->upload = $value2['upload'];
+	                    	$upload->user_id = $value2['user_id'];
+	                    	$upload->touch();
+	                    	$upload->save();
+	                    	//echo $upload->id;
+	                    }
+                   	}
                 }
 
                 //return 0;
@@ -112,7 +114,7 @@ class ProjectController extends Controller
     			$form = [];
     
     			foreach ($projectFormItem as $key1 => $value1) {
-    				$form[$key1] = Form::find($value1->form_id);
+    				$form[$key1] = Form::with('instruction.guide.standardDocument.standard')->find($value1->form_id);
     				$form[$key1]['project_form_item_id'] = $value1->id;
     
     				$projectUpload = ProjectFormUpload::where('project_form_item_id', '=', $value1->id)->get();
@@ -425,6 +427,18 @@ class ProjectController extends Controller
 		$uploadForm->upload = $filename;
 		$uploadForm->touch();
 		$uploadForm->save();
+	}
+	
+	public function validatingName($name, $id=false) {
+		
+		if ($id) {
+            return Project::where('name', '=', $name)
+                ->where('id', '<>', $id)
+                ->get();
+        } else {
+            return GProjectroupJob::where('name', '=', $name)
+                ->get();    
+        }
 	}
 
 

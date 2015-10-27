@@ -2,7 +2,7 @@
 
 	angular
 		.module('app')
-		.factory('GroupJobService', ['$http', GroupJobService])
+		.factory('GroupJobService', ['$http', '$q', '$cacheFactory', GroupJobService])
 		.factory('GroupJobDetailService', ['$http', GroupJobDetailService])
 		.controller('GroupJobController', ['$scope', '$state', 'GroupJobService', GroupJobController])
 		.controller('CreateGroupJobController', ['$rootScope', '$scope', '$state', '$timeout', '$modal', 'GroupJobService', CreateGroupJobController])
@@ -14,27 +14,83 @@
 		.controller('UpdateGroupJobDetailController', ['$scope', '$state', '$modalInstance', 'detailJob', 'UniversityService', 'DepartmentService', 'JobService', UpdateGroupJobDetailController])
 })()
 
-function GroupJobService ($http) {
-	return {
-		get: function () {
-			return $http.get('/groupjobs')
-		},
-		show: function (request) {
-			return $http.get('/groupjobs/' + request)
-		},
-		store: function (request) {
-			return $http.post('/groupjob/store', request)
-		},
-		update: function (request) {
-			return $http.post('/groupjob/update', request)
-		},
-		destroy: function (request) {
-			return $http.post('/groupjob/destroy', request)
-		},
-		validatingName: function (request) {
-			return $http.post('/groupjob/validating/name', request)
+function GroupJobService ($http, $q, $cacheFactory) {
+	
+	function GroupJobService() {
+		var self = this
+		var $httpDefaultCache = $cacheFactory.get('$http');
+		
+		self.get = function () {
+			var deferred = $q.defer()
+			$http.get('/groupjobs')
+				.then(function(response){
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				})
+			return deferred.promise
+		}
+		
+		self.show = function (request) {
+			var deferred = $q.defer()
+			$http.get('/groupjobs/' + request)
+				.then(function(response){
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				})
+			return deferred.promise
+		}
+			
+		self.store = function (request) {
+			var deferred = $q.defer()
+			$http.post('/groupjob/store', request)
+				.then(function(response){
+					$httpDefaultCache.removeAll()
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				})
+			return deferred.promise
+		}
+			
+		self.update = function (request) {
+			var deferred = $q.defer()
+			$http.post('/groupjob/update', request)
+				.then(function(response){
+					$httpDefaultCache.removeAll()
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				})
+			return deferred.promise
+		}
+			
+		self.destroy = function (request){
+			var deferred = $q.defer()
+			$http.post('/groupjob/destroy', request)
+				.then(function(response){
+					$httpDefaultCache.removeAll()
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				})
+			return deferred.promise
+		}
+			
+		self.validatingName = function (request){
+			var deferred = $q.defer()
+			$http.get('/groupjob/validating/name/' + request.name + '/' + request.id)
+				.then(function(response){
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				})
+			return deferred.promise
 		}
 	}
+	
+	return new GroupJobService()
 }
 
 function GroupJobDetailService ($http) {

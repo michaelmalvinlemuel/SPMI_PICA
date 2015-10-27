@@ -125,26 +125,26 @@ class UserController extends Controller
         $user->delete();
     }
 
-    public function validatingNik(Request $request)
+    public function validatingNik($nik , $id=false)
     {
-        if ($request->input('id')) {
-            return User::where('nik', '=', $request->input('nik'))
-                ->where('id', '<>', $request->input('id'))
+        if ($id) {
+            return User::where('nik', '=', $nik)
+                ->where('id', '<>', $id)
                 ->get();
         } else {
-            return User::where('nik', '=', $request->input('nik'))
+            return User::where('nik', '=', $nik)
                 ->get();    
         }
     }
 
-    public function validatingEmail(Request $request)
+    public function validatingEmail($email, $id=false)
     {
-        if ($request->input('id')) {
-            return User::where('email', '=', $request->input('email'))
-                ->where('id', '<>', $request->input('id'))
+        if ($id) {
+            return User::where('email', '=', $email)
+                ->where('id', '<>', $id)
                 ->get();
         } else {
-            return User::where('email', '=', $request->input('email'))
+            return User::where('email', '=', $email)
                 ->get();    
         }
     }
@@ -159,7 +159,9 @@ class UserController extends Controller
     }
 
     public function register (Request $request) {
-
+		
+    	
+    	
         $user = new User;
         $user->nik = $request->input('nik');
         $user->name = $request->input('name');
@@ -170,17 +172,23 @@ class UserController extends Controller
         $user->type = $request->input('type');
         $user->status = '1';
         $user->touch();
-        $user->save();
+       
 
         $token = new UserRegistration;
         $token->user_id = $user->id;
         $token->token = Hash::make('myrandom');
         $token->touch();
-        $token->save();
+        
+        if (Mail::send('emails.information', ['user' => $user, 'token' => $token->token], function ($m) use ($user) {
+        	$m->to($user->email, $user->name)->subject('Authentication Required');
+        })) {
+        	$user->save();
+        	$token->save();
+        }
+        
+        
 
-        Mail::send('emails.information', ['user' => $user, 'token' => $token->token], function ($m) use ($user) {
-            $m->from('stevanaji@gmail.com', 'SPMI')->to($user->email, $user->name)->subject('Authentication Required');
-        });
+        
 
     }
 

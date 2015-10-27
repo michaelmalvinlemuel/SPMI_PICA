@@ -124,26 +124,26 @@ class InstructionController extends Controller
         return Instruction::with('guide')->where('guide_id', '=', $id)->get();
     }
 
-    public function validatingNo(Request $request)
+    public function validatingNo($no, $id=false)
     {
-        if ($request->input('id')) {
-            return Instruction::where('no', '=', $request->input('no'))
-                ->where('id', '<>', $request->input('id'))
+        if ($id) {
+            return Instruction::where('no', '=', $no)
+                ->where('id', '<>', $id)
                 ->get();
         } else {
-            return Instruction::where('no', '=', $request->input('no'))
+            return Instruction::where('no', '=', $no)
                 ->get();    
         }
     } 
 
-    public function validatingDescription(Request $request)
+    public function validatingDescription($description, $id=false)
     {
-        if ($request->input('id')) {
-            return Instruction::where('description', '=', $request->input('description'))
-                ->where('id', '<>', $request->input('id'))
+        if ($id) {
+            return Instruction::where('description', '=', $description)
+                ->where('id', '<>', $id)
                 ->get();
         } else {
-            return Instruction::where('description', '=', $request->input('description'))
+            return Instruction::where('description', '=', $description)
                 ->get();    
         }
     }

@@ -2,37 +2,101 @@
 
 	angular
 		.module('app')
-		.factory('StandardService', ['$http', StandardService])
+		.factory('StandardService', ['$http', '$q', '$cacheFactory', StandardService])
 		.controller('StandardController', ['$scope', '$state', 'StandardService', StandardController])
 		.controller('CreateStandardController', ['$scope', '$state', '$timeout', 'StandardService', CreateStandardController])
 		.controller('UpdateStandardController', ['$scope', '$state', '$stateParams', '$timeout', 'StandardService', UpdateStandardController])
 
 })();
 
-function StandardService ($http) {
-	return {
-		get: function() {
-			return $http.get('/standards')
-		},
-		getAll: function() {
-			return $http.get('/standardsAll');
-		},
-		show: function(request) {
-			return $http.get('/standards/' + request)
-		},
-		store: function(request) {
-			return $http.post('/standard/store', request);
-		},
-		update: function(request) {
-			return $http.post('/standard/update', request)
-		},
-		destroy: function(request) {
-			return $http.post('/standard/destroy', request)
-		},
-		validating: function(request) {
-			return $http.post('/standard/validating', request)
+function StandardService ($http, $q, $cacheFactory) {
+	
+	function StandardService(){
+		var self = this
+		var $httpDefaultCache = $cacheFactory.get('$http');
+		
+		self.get = function() {
+			var deferred = $q.defer()
+			$http.get('/standards')
+				.then(function(response){
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				});
+			return deferred.promise;  
+		}
+		
+		self.getAll = function() {
+			var deferred = $q.defer()
+			$http.get('/standardsAll')
+				.then(function(response){
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				});
+			return deferred.promise;  
+		}
+		
+		self.show = function(request) {
+			var deferred = $q.defer()
+			$http.get('/standards/' + request)
+				.then(function(response){
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				});
+			return deferred.promise;  
+		}
+		
+		self.store = function(request) {
+			var deferred = $q.defer()
+			$http.post('/standard/store', request)
+				.then(function(response){
+					$httpDefaultCache.removeAll()
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				});
+			return deferred.promise;  
+		}
+		
+		self.update = function(request) {
+			var deferred = $q.defer()
+			$http.post('/standard/update', request)
+				.then(function(response){
+					$httpDefaultCache.removeAll()
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				});
+			return deferred.promise;  
+		}
+		
+		self.destroy = function(request) {
+			var deferred = $q.defer()
+			$http.post('/standard/destroy', request)
+				.then(function(response){
+					$httpDefaultCache.removeAll()
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				});
+			return deferred.promise;  
+		}
+		
+		self.validating = function(request) {
+			var deferred = $q.defer()
+			$http.get('/standard/validating/' + request.description + '/' + request.id)
+				.then(function(response){
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				});
+			return deferred.promise;  
 		}
 	}
+	
+	return new StandardService()
 }
 
 function StandardController ($scope, $state, StandardService) {

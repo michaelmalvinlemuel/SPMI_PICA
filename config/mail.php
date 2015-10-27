@@ -54,7 +54,7 @@ return [
     |
     */
 
-    'from' => ['address' => null, 'name' => null],
+    'from' => ['address' => 'administrator@spmi.umn.ac.id', 'name' => 'SPMI'],
 
     /*
     |--------------------------------------------------------------------------

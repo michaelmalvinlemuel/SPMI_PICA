@@ -47,8 +47,7 @@ function DepartmentService ($http, $q, $cacheFactory) {
 			var deferred = $q.defer()
 			$http.post('/department/store', request)
 				.then(function(response){
-					$httpDefaultCache.remove('/departments');
-					$httpDefaultCache.remove(cacheUniversity)
+					$httpDefaultCache.removeAll()
 					deferred.resolve(response)
 				}, function(response){
 					deferred.reject(response)
@@ -60,9 +59,7 @@ function DepartmentService ($http, $q, $cacheFactory) {
 			var deferred = $q.defer()
 			$http.post('/department/update', request)
 				.then(function(response){
-					$httpDefaultCache.remove('/departments');
-					$httpDefaultCache.remove('/departments/' + request.id)
-					$httpDefaultCache.remove(cacheUniversity)
+					$httpDefaultCache.removeAll()
 					deferred.resolve(response)
 				}, function(response){
 					deferred.reject(response)
@@ -74,9 +71,7 @@ function DepartmentService ($http, $q, $cacheFactory) {
 			var deferred = $q.defer()
 			$http.post('/department/destroy', request)
 				.then(function(response){
-					$httpDefaultCache.remove('/departments');
-					$httpDefaultCache.remove('/departments/' + request.id)
-					$httpDefaultCache.remove(cacheUniversity)
+					$httpDefaultCache.removeAll()
 					deferred.resolve(response)
 				}, function(response){
 					deferred.reject(response)
@@ -90,8 +85,6 @@ function DepartmentService ($http, $q, $cacheFactory) {
 			var deferred = $q.defer()
 			$http.get('/department/university/' + request)
 				.then(function(response){
-					cacheUniversity = '/department/university/' + request;
-					$httpDefaultCache.put(cacheUniversity)
 					deferred.resolve(response, response.data)
 				}, function(response){
 					deferred.reject(response)
@@ -104,7 +97,6 @@ function DepartmentService ($http, $q, $cacheFactory) {
 			var deferred = $q.defer()
 			$http.get('/department/validating/' + request.name + '/' + request.id + '/' + request.university_id)
 				.then(function(response){
-					$httpDefaultCache.remove('/departments/' + request.id)
 					deferred.resolve(response)
 				}, function(response){
 					deferred.reject(response)

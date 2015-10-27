@@ -80,16 +80,16 @@ class UserJobController extends Controller
         $userjob->delete();
     }
 
-    public function validatingJob(Request $request)
+    public function validatingJob($jobId, $userId, $id=false)
     {
-        if ($request->input('id')) {
-            return UserJob::where('job_id', '=', $request->input('job_id'))
-                ->where('user_id', '=', $request->input('user_id'))
-                ->where('id', '<>', $request->input('id'))
+        if ($id) {
+            return UserJob::where('job_id', '=', $jobId)
+                ->where('user_id', '=',$userId)
+                ->where('id', '<>', $id)
                 ->get();
         } else {
-            return UserJob::where('job_id', '=', $request->input('job_id'))
-                ->where('user_id', '=', $request->input('user_id'))
+            return UserJob::where('job_id', '=', $jobId)
+                ->where('user_id', '=', $userId)
                 ->get();    
         }
     }

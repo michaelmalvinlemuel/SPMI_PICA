@@ -36,5 +36,6 @@ class CreateProjectsTable extends Migration
     public function down()
     {
         Schema::drop('projects');
+        array_map('unlink', glob(env('APP_UPLOAD') . "/project/*"));
     }
 }

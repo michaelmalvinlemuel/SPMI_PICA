@@ -488,14 +488,14 @@ class WorkController extends Controller
         DB::unprepared("ALTER EVENT " . $request->input('name') . " " . $status); 
     }
 
-    public function validatingName(Request $request)
+    public function validatingName($name, $id=false)
     {
-        if ($request->input('id')) {
-            return Work::where('name', '=', $request->input('name'))
-                ->where('id', '<>', $request->input('id'))
+        if ($id) {
+            return Work::where('name', '=', $name)
+                ->where('id', '<>', $id)
                 ->get();
         } else {
-            return Work::where('name', '=', $request->input('name'))
+            return Work::where('name', '=', $name)
                 ->get();    
         }
     }

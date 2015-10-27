@@ -126,26 +126,26 @@ class StandardDocumentController extends Controller
         return StandardDocument::with('standard')->where('standard_id', '=', $id)->get();
     }
 
-    public function validatingNo(Request $request) 
+    public function validatingNo($no, $id=false) 
     {
-        if ($request->input('id')) {
-            return StandardDocument::where('no', '=', $request->input('no'))
-                ->where('id', '<>', $request->input('id'))
+        if ($id) {
+            return StandardDocument::where('no', '=', $no)
+                ->where('id', '<>', $id)
                 ->get();
         } else {
-            return StandardDocument::where('no', '=', $request->input('no'))
+            return StandardDocument::where('no', '=', $no)
                 ->get();    
         }
     }
 
-    public function validatingDescription(Request $request) 
+    public function validatingDescription($description, $id=false) 
     {
-        if ($request->input('id')) {
-            return StandardDocument::where('description', '=', $request->input('description'))
-                ->where('id', '<>', $request->input('id'))
+        if ($id) {
+            return StandardDocument::where('description', '=', $description)
+                ->where('id', '<>', $id)
                 ->get();
         } else {
-            return StandardDocument::where('description', '=', $request->input('description'))
+            return StandardDocument::where('description', '=', $description)
                 ->get();    
         }
     }

@@ -2,7 +2,7 @@
 	
 	angular
 		.module('app')
-		.factory('FormService', ['$http', 'Upload', FormService])
+		.factory('FormService', ['$http', '$q', '$cacheFactory', 'Upload', FormService])
 		.controller('FormController', ['$scope', '$state', 'FormService', FormController])
 		.controller('CreateFormController', ['$scope', '$state', '$timeout', 'StandardService', 'StandardDocumentService', 'GuideService', 'InstructionService', 'FormService', CreateFormController])
 		.controller('UpdateFormController', ['$scope', '$state', '$stateParams', '$timeout', 'StandardService', 'StandardDocumentService', 'GuideService', 'InstructionService', 'FormService', UpdateFormController])
@@ -27,45 +27,116 @@ function findObject(parent, child) {
 	}
 }
 
-function FormService ($http, Upload) {
-	return {
-		get: function () {
-			return $http.get('/forms')
-		},
-		show: function (request) {
-			return $http.get('/forms/' + request)
-		},
-		store: function (request, file) {
-			return Upload.upload({
+function FormService ($http, $q, $cacheFactory, Upload) {
+	
+	function FormService() {
+		var self = this
+		var $httpDefaultCache = $cacheFactory.get('$http');
+		
+		self.get = function () {
+			var deferred = $q.defer()
+			$http.get('/forms')
+				.then(function(response){
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				})
+			return deferred.promise
+		}
+		
+		self.show = function (request) {
+			var deferred = $q.defer()
+			$http.get('/forms/' + request)
+				.then(function(response){
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				})
+			return deferred.promise 
+		}
+			
+		self.store = function (request, file) {
+			var deferred = $q.defer()
+			
+			Upload.upload({
 				url: '/form/store',
 				method: 'POST',
 				fields: request,
 				file: file,
 				fileFormDataName: 'document'
+			}).then(function(response){
+				$httpDefaultCache.removeAll()
+				deferred.resolve(response)
+			}, function(response){
+				deferred.reject(response)
 			})
-		},
-		update: function (request, file) {
-			return Upload.upload({
+			return deferred.promise
+		}
+			
+		self.update = function (request, file) {
+			var deferred = $q.defer()
+			Upload.upload({
 				url: '/form/update',
 				method: 'POST',
 				fields: request,
 				file: file,
 				fileFormDataName: 'document'
+			}).then(function(response){
+				$httpDefaultCache.removeAll()
+				deferred.resolve(response)
+			}, function(response){
+				deferred.reject(response)
 			})
-		},
-		destroy: function (request) {
-			return $http.post('/form/destroy', request)
-		},
-		instruction: function(request) {
-			return $http.get('/form/instruction/' + request)
-		},
-		validatingNo: function(request) {
-			return $http.post('/form/validating/no', request)
-		},
-		validatingDescription: function(request) {
-			return $http.post('/form/validating/description', request)
+			return deferred.promise
+		}
+			
+		self.destroy = function (request) {
+			var deferred = $q.defer()
+			$http.post('/form/destroy', request)
+				.then(function(response){
+					$httpDefaultCache.removeAll()
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				})
+			return deferred.promise 
+		}
+			
+		self.instruction = function(request) {
+			var deferred = $q.defer()
+			$http.get('/form/instruction/' + request)
+				.then(function(response){
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				})
+			return deferred.promise 
+		}
+			
+		self.validatingNo = function(request) {
+			var deferred = $q.defer()
+			$http.get('/form/validating/no/' + request.no + '/' + request.id)
+				.then(function(response){
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				})
+			return deferred.promise 
+		}
+			
+		self.validatingDescription = function(request) {
+			var deferred = $q.defer()
+			$http.get('/form/validating/description/' + request.no + '/' + request.id)
+				.then(function(response){
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				})
+			return deferred.promise
 		}
 	}
+	
+	return new FormService()
 }
 
 function FormController ($scope, $state, FormService) {
@@ -590,57 +661,55 @@ function UpdateModalFormController ($scope, $state, $timeout, $modalInstance, fo
 	$scope.requiredUpload = true;
 
 	$scope.load = function () {
+		
 		$scope.loadingStandard = true;
-			
-			console.log($scope.form);
-			StandardService
-				.get()
-				.then(function (response) {
-					$scope.standards = response.data;
-					$scope.standard_id = $scope.form.form.instruction.guide.standard_document.standard_id
-					$scope.loadingStandard = false
-					$scope.loadingStandardDocument = true
-					$scope.hasStandard = true
-
-					StandardDocumentService
-						.standard($scope.standard_id)
-						.then(function (response) {
-							$scope.standarddocuments = response.data;
-							$scope.standard_document_id = $scope.form.form.instruction.guide.standard_document.id;
-							$scope.loadingStandardDocument = false
-							$scope.loadingGuide = true
-							$scope.hasStandardDocument = true
-
-							GuideService
-								.standarddocument($scope.standard_document_id)
-								.then(function (response) {
-									$scope.guides = response.data;
-									$scope.guide_id = $scope.form.form.instruction.guide.id;
-									$scope.loadingGuide = false
-									$scope.loadingInstruction = true
-									$scope.hasGuide = true
-
-									InstructionService
-										.guide($scope.guide_id)
-										.then(function (response) {
-											$scope.instructions = response.data;
-											$scope.instruction_id = $scope.form.form.instruction.id;
-											$scope.loadingInstruction = false
-											$scope.loadingForm = true
-											$scope.hasInstruction = true
-
-											FormService
-												.instruction($scope.instruction_id)
-												.then(function(response) {
-													$scope.forms = response.data
-													$scope.input.form =  $scope.forms[findObject($scope.forms, $scope.form.form)];
-													$scope.loadingForm = false
-													$scope.hasForm = true
-												})
-										})
-								})
-						})
-				})
+		
+		StandardService.get()
+			.then(function (response) {
+				$scope.standards = response.data;
+				$scope.standard_id = $scope.form.form.instruction.guide.standard_document.standard_id
+				$scope.loadingStandard = false
+				$scope.loadingStandardDocument = true
+				$scope.hasStandard = true
+				return StandardDocumentService.standard($scope.standard_id)
+			}, function(response){
+				console.log(response)
+			}).then(function (response) {
+				$scope.standarddocuments = response.data;
+				$scope.standard_document_id = $scope.form.form.instruction.guide.standard_document.id;
+				$scope.loadingStandardDocument = false
+				$scope.loadingGuide = true
+				$scope.hasStandardDocument = true
+				return GuideService.standarddocument($scope.standard_document_id)
+			}, function(response){
+				
+			}).then(function (response) {
+				$scope.guides = response.data;
+				$scope.guide_id = $scope.form.form.instruction.guide.id;
+				$scope.loadingGuide = false
+				$scope.loadingInstruction = true
+				$scope.hasGuide = true
+				return InstructionService.guide($scope.guide_id)
+			}, function(response){
+				
+			}).then(function (response) {
+				$scope.instructions = response.data;
+				$scope.instruction_id = $scope.form.form.instruction.id;
+				$scope.loadingInstruction = false
+				$scope.loadingForm = true
+				$scope.hasInstruction = true
+				return FormService.instruction($scope.instruction_id)
+			}, function(response){
+				
+			}).then(function(response) {
+				$scope.forms = response.data
+				console.log($scope.forms)
+				console.log($scope.form.form)
+				$scope.input.form =  $scope.forms[findObject($scope.forms, $scope.form.form)];
+				$scope.loadingForm = false
+				$scope.hasForm = true
+			})
+					
 	}
 
 	$scope.selectStandard = function (id) {

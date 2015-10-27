@@ -51,25 +51,25 @@ class SemesterController extends Controller
         $semester->delete();
     }
 
-    public function intersect(Request $request) {
-        if ($request->input('id')) {
-            return Semester::where('date_start', '<', $request->input('date'))
-            ->where('date_ended', '>', $request->input('date'))->where('id', '<>', $request->input('id'))->get();
+    public function intersect($date, $id=false) {
+        if ($id) {
+            return Semester::where('date_start', '<', $date)
+            ->where('date_ended', '>', $date)->where('id', '<>', $id)->get();
         } else {
-            return Semester::where('date_start', '<', $request->input('date'))
-            ->where('date_ended', '>', $request->input('date'))->get();
+            return Semester::where('date_start', '<', $date)
+            ->where('date_ended', '>', $date)->get();
         }
         
     }
 
-    public function included(Request $request) {
-        if ($request->input('id')) {
-            return Semester::whereBetween('date_start', [$request->input('date_start'), $request->input('date_ended')])
-            ->whereBetween('date_ended', [$request->input('date_start'), $request->input('date_ended')])
-            ->where('id', '<>', $request->input('id'))->get();
+    public function included($dateStart, $dateEnded, $id=false) {
+        if ($id) {
+            return Semester::whereBetween('date_start', [$dateStart, $dateEnded])
+            ->whereBetween('date_ended', [$dateStart, $dateEnded])
+            ->where('id', '<>', $id)->get();
         } else {
-            return Semester::whereBetween('date_start', [$request->input('date_start'), $request->input('date_ended')])
-            ->whereBetween('date_ended', [$request->input('date_start'), $request->input('date_ended')])->get();
+            return Semester::whereBetween('date_start', [$dateStart, $dateEnded])
+            ->whereBetween('date_ended', [$dateStart, $dateEnded])->get();
         }
         
     }

@@ -31,7 +31,6 @@ function UniversityService ($http, $q, $state, $cacheFactory) {
 		var deferred = $q.defer()
 		$http.get('/universities/' + request)
 			.then(function(response) {
-				$httpDefaultCache.put('/universities/' + request, response.data)
 				deferred.resolve(response)
 			}, function (response) {
 				deferred.reject(response)
@@ -43,7 +42,7 @@ function UniversityService ($http, $q, $state, $cacheFactory) {
 		var deferred = $q.defer()
 		$http.post('/university/store', request)
 			.then(function(response) {
-				$httpDefaultCache.remove('/universities');
+				$httpDefaultCache.removeAll();
 				deferred.resolve(response)
 			}, function() {
 				deferred.reject(response)
@@ -55,8 +54,7 @@ function UniversityService ($http, $q, $state, $cacheFactory) {
 		var deferred = $q.defer()
 		$http.post('/university/update', request)
 			.then(function(response){
-				$httpDefaultCache.remove('/universities/' + request.id)
-				$httpDefaultCache.remove('/universities');
+				$httpDefaultCache.removeAll();
 				deferred.resolve(response)
 			}, function(response) {
 				deferred.reject(response)
@@ -68,8 +66,7 @@ function UniversityService ($http, $q, $state, $cacheFactory) {
 		var deferred = $q.defer()
 		$http.post('/university/destroy', request)
 			.then(function(response) {
-				$httpDefaultCache.remove('/universities/' + request.id)
-				$httpDefaultCache.remove('/universities');
+				$httpDefaultCache.removeAll();
 				deferred.resolve(response)
 			}, function(response) {
 				deferred.reject(response)
@@ -81,8 +78,6 @@ function UniversityService ($http, $q, $state, $cacheFactory) {
 		var deferred = $q.defer()
 		$http.get('/university/validating/' + request.name + '/' + request.id)
 			.then(function(response) {
-				//$httpDefaultCache.put('/university/validating/' + request.name + '/' + request.id, response.data)
-				$httpDefaultCache.remove('/universities/' + request.id)
 				deferred.resolve(response)
 			}, function(response) {
 				deferred.reject(response)

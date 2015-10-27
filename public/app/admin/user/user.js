@@ -2,8 +2,8 @@
 	
 	angular
 		.module('app')
-		.factory('UserService', ['$http', '$q', '$timeout', '$state', '$stateParams', UserService])
-		.factory('UserJobService', ['$http', UserJobService])
+		.factory('UserService', ['$http', '$q', '$timeout', '$state', '$stateParams', '$cacheFactory', UserService])
+		.factory('UserJobService', ['$http', '$q', '$cacheFactory', UserJobService])
 
 		.controller('UserController', ['$scope', '$state', 'Session', 'UserService', UserController])
 		.controller('CreateUserController', ['$rootScope', '$scope', '$state', '$timeout', '$modal', 'UserService', CreateUserController])
@@ -59,33 +59,34 @@ function generateDay (year, month) {
 	return tanggal
 }
 
-function UserService ($http, $q, $timeout, $state, $stateParams) {
- 	var _identity = undefined,
-      	_authenticated = false;
-
-    return {
-      	isIdentityResolved: function() {
+function UserService ($http, $q, $timeout, $state, $stateParams, $cacheFactory) {
+ 	
+ 	function UserService(){
+ 		var self = this
+ 		var $httpDefaultCache = $cacheFactory.get('$http');
+ 		
+ 		var _identity = undefined
+ 		var _authenticated = false;
+ 		
+ 		
+ 		self.isIdentityResolved = function() {
         	return angular.isDefined(_identity);
-      	},
+      	}
       
-      	isAuthenticated: function() {
+      	self.isAuthenticated = function() {
         	return _authenticated;
-      	},
+      	}
       	
-      	isInRole: function(role) {
+      	self.isInRole = function(role) {
       		
         	if (!_authenticated || !_identity.type) {
         		return false;
         	}
-        	//console.log(_identity.type);
-        	//console.log(role);
         	var a = _identity.type;
-        	//console.log(a.indexOf(role))
         	return _identity.type.indexOf(role) !== -1;
-
-      	},
+      	}
       
-      	isInAnyRole: function(type) {
+      	self.isInAnyRole = function(type) {
         	if (!_authenticated || !_identity.type) {
         		return false;
         	}
@@ -97,153 +98,245 @@ function UserService ($http, $q, $timeout, $state, $stateParams) {
         	}
 
         	return false;
-      	},
+      	}
       
-      	authenticate: function(identity) {
+      	self.authenticate = function(identity) {
         	_identity = identity;
         	_authenticated = identity != null;
-      	},
+      	}
       	
-      	identity: function(force) {
+      	self.identity = function(force) {
         	var deferred = $q.defer();
-
         	if (force === true) _identity = undefined;
-
-        	// check and see if we have retrieved the identity data from the server. if we have, reuse it by immediately resolving
-        	/*
-        	if (angular.isDefined(_identity)) {
-          		deferred.resolve(_identity);
-          		return deferred.promise;
-        	}
-        	*/
-
-        	// otherwise, retrieve the identity data from the server, update the identity object, and then resolve.
-        	
-     
     		$http.get('/user')
         		.then(function (response) {
-        			//alert(response.status);
         			_identity = response.data;
         			_authenticated = true;
         			deferred.resolve(_identity);
         		}, function (response) {
-        			//$state.go('main.login')
     			 	_identity = null;
     	         	_authenticated = false;
     	         	console.log('identity failure');
-    	         	//$state.go('main.login')
     	         	deferred.reject(response);
         		})
-	        
-        	
-    	    	
-        	// for the sake of the demo, fake the lookup by using a timeout to create a valid
-        	// fake identity. in reality,  you'll want something more like the $http request
-        	// commented out above. in this example, we fake looking up to find the user is
-        	// not logged in
-        	/*
-        	var self = this;
-        	$timeout(function() {
-          		//self.authenticate(null);
-          		//deferred.resolve(_identity);
-
-          		_identity = {name: 'stevan', type: ['2']};
-        		_authenticated = true;
-        	    deferred.resolve(_identity);
-
-        	}, 1000);
-			*/
-
         	return deferred.promise;
-      	},
+      	}
 
-      	login: function (request) {
+      	self.login = function (request) {
       		var deferred = $q.defer();
-
       		$http.post('/user/login', request)
       			.then(function (response) {
         			_identity = response.data;
         			_authenticated = true;
+        			$httpDefaultCache.removeAll()
         			deferred.resolve(_identity);
         		}, function (response) {
     			 	_identity = null;
     	         	_authenticated = false;
     	         	deferred.resolve(response.data);
         		})
-
         	return deferred.promise;
-      	},
+      	}
 
-      	logout: function() {
+      	self.logout = function() {
       		_identity = null;
       		_authenticated = false;
-      		return $http.get('/user/logout')
-      	},
+      		var deferred = $q.defer()
+			$http.get('/user/logout')
+				.then(function(response){
+					$httpDefaultCache.removeAll()
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				});
+			return deferred.promise;   
+      	}
 
-      	session: function() {
+      	self.session = function() {
       		return _identity
-      	},
+      	}
 
-      	get: function () {
-      		return $http.get('/users')
-      	},
-      	show: function (request) {
-      		return $http.get('/users/' + request)
-      	},
-      	store: function (request) {
-      		return $http.post('/user/store', request)
-      	},
-      	update: function (request) {
-      		return $http.post('/user/update', request)
-      	},
-      	destroy: function (request) {
-      		return $http.post('/user/destroy', request)
-      	},
-      	validatingNik: function(request) {
-      		return $http.post('/user/validating/nik', request)
-      	},
-      	validatingEmail: function(request) {
-      		return $http.post('/user/validating/email', request)
-      	},
-      	jobs: function(request) {
-      		return $http.get('/user/jobs/' + request)
-      	},
-      	register: function(request) {
+      	self.get = function () {
+      		var deferred = $q.defer()
+			$http.get('/users')
+				.then(function(response){
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				});
+			return deferred.promise;   
+      	}
+      	
+      	self.show = function (request) {
+      		var deferred = $q.defer()
+			$http.get('/users/' + request)
+				.then(function(response){
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				});
+			return deferred.promise;   
+      	}
+      	
+      	self.store = function (request) {
+      		var deferred = $q.defer()
+			$http.post('/user/store', request)
+				.then(function(response){
+					$httpDefaultCache.removeAll()
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				});
+			return deferred.promise;   
+      	}
+      	
+      	self.update = function (request) {
+      		var deferred = $q.defer()
+			$http.post('/user/update', request)
+				.then(function(response){
+					$httpDefaultCache.removeAll()
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				});
+			return deferred.promise;   
+      	}
+      	
+      	self.destroy = function (request) {
+      		var deferred = $q.defer()
+			$http.post('/user/destroy', request)
+				.then(function(response){
+					$httpDefaultCache.removeAll()
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				});
+			return deferred.promise;   
+      	}
+      	
+      	self.validatingNik = function(request) {
+      		var deferred = $q.defer()
+			$http.get('/user/validating/nik/' + request.nik + '/' + request.id)
+				.then(function(response){
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				});
+			return deferred.promise;   
+      	}
+      	
+      	self.validatingEmail = function(request) {
+      		var deferred = $q.defer()
+			$http.get('/user/validating/email/' + request.email + '/' + request.id)
+				.then(function(response){
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				});
+			return deferred.promise;
+      	}
+      	
+      	self.jobs = function(request) {
+      		var deferred = $q.defer()
+			$http.get('/user/jobs/' + request)
+				.then(function(response){
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				});
+			return deferred.promise;   
+      	}
+      	
+      	self.register = function(request) {
       		var deferred = $q.defer();
-      		
       		$http.post('/user/register', request)
       			.then(function(response) {
+      				$httpDefaultCache.removeAll()
       				deferred.resolve(response.data)
       			}, function(response) {
       				deferred.reject(response)
       			})
-
       		return deferred.promise
       	}
-    };
+ 	}
+    return new UserService()
 }
 
-function UserJobService ($http) {
-	return {
-		get: function (request) {
-			return $http.get('/userjobs/get/' + request)
-		},
-		show: function (request) {
-			return $http.get('/userjobs/' + request)
-		},
-		store: function (request) {
-			return $http.post('/userjob/store', request)
-		},
-		update: function (request) {
-			return $http.post('/userjob/update', request)
-		},
-		destroy: function (request) {
-			return $http.post('/userjob/destroy', request)
-		},
-		validatingJob: function(request) {
-			return $http.post('/userjob/validating/job', request)
+function UserJobService ($http, $q, $cacheFactory) {
+	function UserJobService(){
+		var self = this
+		var $httpDefaultCache = $cacheFactory.get('$http');
+		
+		self.get = function (request) {
+			var deferred = $q.defer()
+			$http.get('/userjobs/get/' + request)
+				.then(function(response){
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				});
+			return deferred.promise;
+		}
+		
+		self.show = function (request) {
+			var deferred = $q.defer()
+			$http.get('/userjobs/' + request)
+				.then(function(response){
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				});
+			return deferred.promise;   
+		}
+		
+		self.store = function (request) {
+			var deferred = $q.defer()
+			$http.post('/userjob/store', request)
+				.then(function(response){
+					$httpDefaultCache.removeAll()
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				});
+			return deferred.promise;   
+		}
+		
+		self.update = function (request) {
+			var deferred = $q.defer()
+			$http.post('/userjob/update', request)
+				.then(function(response){
+					$httpDefaultCache.removeAll()
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				});
+			return deferred.promise;   
+		}
+		
+		self.destroy = function (request) {
+			var deferred = $q.defer()
+			$http.post('/userjob/destroy', request)
+				.then(function(response){
+					$httpDefaultCache.removeAll()
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				});
+			return deferred.promise;
+		}
+		
+		self.validatingJob = function(request) {
+			var deferred = $q.defer()
+			$http.get('/userjob/validating/job/' + request.job_id + '/' + request.user_id + '/' + request.id)
+				.then(function(response){
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				});
+			return deferred.promise;   
 		}
 	}
+	return new UserJobService()
 }
 
 function UserController ($scope, $state, Session, UserService) {

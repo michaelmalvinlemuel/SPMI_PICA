@@ -248,6 +248,35 @@ function AppConfiguration ($stateProvider, $urlRouterProvider, $httpProvider) {
 			}
 
 		})
+		
+		.state('error', {
+			views: {
+				'': {
+					templateUrl: 'app/views/error.html'
+				}
+			},
+			data: {
+				type: []
+			},
+			resolve: {
+				back: function($rootScope, $q, $state, UserService) {
+					var deferred = $q.defer()
+
+					UserService.identity()
+						.then(function() {
+							if($rootScope.toState.name == 'error') {
+								deferred.resolve()
+								$state.go($rootScope.fromState.name)
+							}
+							deferred.resolve()
+						}, function() {
+							deferred.resolve()
+						})
+
+					return deferred.promise
+				}
+			}
+		})
 
 		.state('register.information', {
 			url: '/information',
@@ -1128,6 +1157,8 @@ function RegisterController($rootScope, $scope, $state, $timeout, $modal, UserSe
 					$scope.submitting = false
 					$state.go('register.information', {email: $scope.input.email})
 					
+				}, function() {
+					$state.go('error')
 				})
 		} else {
 			$scope.validated = true;

@@ -34,7 +34,7 @@ class JobController extends Controller
         $job->department_id = $request->input('department_id');
         $job->name = $request->input('name');
         $job->job_id = $request->input('job_id');
-        $job->multiple = $request->input('multiple');
+        $job->multiple = $request->input('multiple') ? $request->input('multiple') : false;
         $job->touch();
         $job->save();
     }
@@ -95,16 +95,16 @@ class JobController extends Controller
         return Job::where('department_id', '=', $id)->with('department.university')->get();
     }
 
-    public function validating(Request $request)
+    public function validating($name, $departmentId, $id = false)
     {
-        if ($request->input('id')) {
-            return Job::where('name', '=', $request->input('name'))
-                ->where('id', '<>', $request->input('id'))
-                ->where('department_id', '<>', $request->input('department_id'))
+        if ($id) {
+            return Job::where('name', '=', $name)
+                ->where('id', '<>', $id)
+                ->where('department_id', '=', $departmentId)
                 ->get();
         } else {
-            return Job::where('name', '=', $request->input('name'))
-                ->where('department_id', '=', $request->input('department_id'))
+            return Job::where('name', '=', $name)
+                ->where('department_id', '=', $departmentId)
                 ->get();    
         }
     }

@@ -2,53 +2,126 @@
 
 	angular
 		.module('app')
-		.factory('GuideService', ['$http', 'Upload', GuideService])
+		.factory('GuideService', ['$http', '$q', '$cacheFactory', 'Upload', GuideService])
 		.controller('GuideController', ['$scope', '$state', 'GuideService', GuideController])
 		.controller('CreateGuideController', ['$scope', '$state', '$timeout', 'StandardService', 'StandardDocumentService', 'GuideService', CreateGuideController])
 		.controller('UpdateGuideController', ['$scope', '$state', '$stateParams', '$timeout', 'StandardService', 'StandardDocumentService', 'GuideService', UpdateGuideController])
 
 })()
 
-function GuideService ($http, Upload) {
-	return {
-		get: function () {
-			return $http.get('/guides')
-		},
-		show: function (request) {
-			return $http.get('/guides/' + request)
-		},
-		store: function (request, file) {
-
-			return Upload.upload({
+function GuideService ($http, $q, $cacheFactory, Upload) {
+	
+	function GuideService() {
+		var self = this
+		var $httpDefaultCache = $cacheFactory.get('$http');
+		
+		self.get = function (){
+			var deferred = $q.defer()
+			$http.get('/guides')
+				.then(function(response){
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				});
+			return deferred.promise; 
+		}
+		
+		self.show = function(request){
+			var deferred = $q.defer();
+			$http.get('/guides/' + request)
+				.then(function(response){
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				});
+			return deferred.promise;
+		}
+			
+		self.store = function (request, file) {
+			var deferred = $q.defer()
+			Upload.upload({
 				url: '/guide/store',
 				method: 'POST',
 				fields: request,
 				file: file,
 				fileFormDataName: 'document'
 			})
-		},
-		update: function (request, file) {
-			return Upload.upload({
+			.then(function(response){
+				$httpDefaultCache.removeAll()
+				deferred.resolve(response)
+			}, function(response){
+				deferred.reject(response)
+			});
+			
+			return deferred.promise;
+		}
+		
+		self.update = function (request, file) {
+			var deferred = $q.defer()
+			Upload.upload({
 				url: '/guide/update',
 				method: 'POST',
 				fields: request,
 				file: file,
 				fileFormDataName: 'document'
 			})
-		},
-		destroy: function (request) {
-			return $http.post('/guide/destroy', request)
-		},
-		standarddocument: function (request) {
-			return $http.get('/guide/standarddocument/' + request);
-		},
-		validatingNo: function(request) {
-			return $http.post('/guide/validating/no', request)
-		},
-		validatingDescription: function(request) {
-			return $http.post('/guide/validating/description', request)
+			.then(function(response){
+				$httpDefaultCache.removeAll()
+				deferred.resolve(response)
+			}, function(response){
+				deferred.reject(response)
+			});
+			
+			return deferred.promise;
+		}
+		
+		self.destroy = function(request) {
+			var deferred = $q.defer();
+			$http.post('/guide/destroy', request)
+				.then(function(response){
+					$httpDefaultCache.removeAll()
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				});
+			return deferred.promise;
+		}
+		
+		self.standarddocument = function (request) {
+			var deferred = $q.defer()
+			$http.get('/guide/standarddocument/' + request)
+				.then(function(response){
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				});
+			return deferred.promise; 
+		}
+		
+		self.validatingNo = function(request) {
+			var deferred = $q.defer()
+			$http.get('/guide/validating/no/' + request.no + '/' + request.id)
+				.then(function(response){
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				});
+			return deferred.promise; 
+		}
+		
+		self.validatingDescription = function(request) {
+			var deferred = $q.defer()
+			$http.get('/guide/validating/description/' + request.description + '/' + request.id)
+				.then(function(response){
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				})
+			return deferred.promise 
 		}
 	}
+	
+	return new GuideService()
 }
 
 function GuideController ($scope, $state, GuideService) {

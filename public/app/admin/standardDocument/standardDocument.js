@@ -2,53 +2,125 @@
 
 	angular
 		.module('app')
-		.factory('StandardDocumentService', ['$http', 'Upload', StandardDocumentService])
+		.factory('StandardDocumentService', ['$http', '$q', '$cacheFactory', 'Upload', StandardDocumentService])
 		.controller('StandardDocumentController', ['$scope', '$state', 'StandardDocumentService', StandardDocumentController])
 		.controller('CreateStandardDocumentController', ['$scope', '$state', '$timeout', 'StandardService', 'StandardDocumentService', CreateStandardDocumentController])
 		.controller('UpdateStandardDocumentController', ['$scope', '$state', '$stateParams', '$timeout', 'StandardService', 'StandardDocumentService', UpdateStandardDocumentController])
 
 })()
 
-function StandardDocumentService ($http, Upload) {
-	return {
-		get: function () {
-			return $http.get('/standarddocuments')
-		},
-		show: function (request) {
-			return $http.get('/standarddocuments/' + request)
-		},
-		store: function (request, file) {
-
-			return Upload.upload({
+function StandardDocumentService ($http, $q, $cacheFactory, Upload) {
+	
+	function StandardDocumentService(){
+		
+		var self = this
+		var $httpDefaultCache = $cacheFactory.get('$http');
+		
+		self.get = function () {
+			var deferred = $q.defer()
+			$http.get('/standarddocuments')
+				.then(function(response){
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				});
+			return deferred.promise;
+		}
+		
+		self.show = function (request) {
+			var deferred = $q.defer()
+			$http.get('/standarddocuments/' + request)
+				.then(function(response){
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				});
+			return deferred.promise;   
+		}
+		
+		self.store = function (request, file) {
+			var deferred = $q.defer()
+			Upload.upload({
 				url: '/standarddocument/store',
 				method: 'POST',
 				fields: request,
 				file: file,
 				fileFormDataName: 'document'
 			})
-		},
-		update: function (request, file) {
-			return Upload.upload({
+			.then(function(response){
+				$httpDefaultCache.removeAll()
+				deferred.resolve(response)
+			}, function(response){
+				deferred.reject(response)
+			});
+			return deferred.promise;   
+		}
+		
+		self.update = function (request, file) {
+			var deferred = $q.defer()
+			Upload.upload({
 				url: '/standarddocument/update',
 				method: 'POST',
 				fields: request,
 				file: file,
 				fileFormDataName: 'document'
 			})
-		},
-		destroy: function (request) {
-			return $http.post('/standarddocument/destroy', request)
-		},
-		standard: function (request) {
-			return $http.get('/standarddocument/standard/' + request);
-		},
-		validatingNo: function(request) {
-			return $http.post('/standarddocument/validating/no', request)
-		},
-		validatingDescription: function(request) {
-			return $http.post('/standarddocument/validating/description', request)
+			.then(function(response){
+				$httpDefaultCache.removeAll()
+				deferred.resolve(response)
+			}, function(response){
+				deferred.reject(response)
+			});
+			return deferred.promise;   
+		}
+		
+		self.destroy = function (request) {
+			var deferred = $q.defer()
+			$http.post('/standarddocument/destroy', request)
+				.then(function(response){
+					$httpDefaultCache.removeAll()
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				});
+			return deferred.promise;   
+		}
+		
+		self.standard = function (request) {
+			var deferred = $q.defer()
+			$http.get('/standarddocument/standard/' + request)
+				.then(function(response){
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				});
+			return deferred.promise;   
+		}
+		
+		self.validatingNo = function(request) {
+			var deferred = $q.defer()
+			$http.get('/standarddocument/validating/no/' + request.no + '/' + request.id)
+				.then(function(response){
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				});
+			return deferred.promise;   
+		}
+		
+		self.validatingDescription = function(request) {
+			var deferred = $q.defer()
+			$http.get('/standarddocument/validating/description/' + request.description + '/' + request.id)
+				.then(function(response){
+					deferred.resolve(response)
+				}, function(response){
+					deferred.reject(response)
+				});
+			return deferred.promise;   
 		}
 	}
+	
+	return new StandardDocumentService()
 }
 
 function StandardDocumentController ($scope, $state, StandardDocumentService) {
