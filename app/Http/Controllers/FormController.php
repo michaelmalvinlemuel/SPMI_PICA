@@ -39,11 +39,11 @@ class FormController extends Controller
      */
     public function store(Request $request)
     {
-        $filename = $request->file('document')->getClientOriginalName();
+        $filename = $request->file('file')->getClientOriginalName();
         $ext = pathinfo($filename, PATHINFO_EXTENSION);
         $filename = basename($request->input('description'), "." . $ext);
         $filename = strtoupper(preg_replace('/\s+/', '', $filename . "_" . date("YmdHis")))  . "." . $ext;
-        $upload = $request->file('document')->move(env('APP_UPLOAD') . '\form', $filename);
+        $upload = $request->file('file')->move(env('APP_UPLOAD') . '\form', $filename);
 
         $form = new Form;
         $form->instruction_id = $request->input('instruction_id');
@@ -84,19 +84,19 @@ class FormController extends Controller
      * @param  int  $id
      * @return Response
      */
-    public function update(Request $request)
+    public function update(Request $request, $id)
     {
-        $form = Form::find($request->input('id'));
+        $form = Form::find($id);
         $form->instruction_id = $request->input('instruction_id');
         $form->no = $request->input('no');
         $form->date = $request->input('date');
         $form->description = $request->input('description');
-        if ($request->file('document')) {
-            $filename = $request->file('document')->getClientOriginalName();
+        if ($request->file('file')) {
+            $filename = $request->file('file')->getClientOriginalName();
             $ext = pathinfo($filename, PATHINFO_EXTENSION);
             $filename = basename($request->input('description'), "." . $ext);
             $filename = strtoupper(preg_replace('/\s+/', '', $filename . "_" . date("YmdHis")))  . "." . $ext;
-            $upload = $request->file('document')->move(env('APP_UPLOAD') . '\form', $filename);
+            $upload = $request->file('file')->move(env('APP_UPLOAD') . '\form', $filename);
             $form->document = $filename;
         }
         $form->touch();
@@ -109,9 +109,9 @@ class FormController extends Controller
      * @param  int  $id
      * @return Response
      */
-    public function destroy(Request $request)
+    public function destroy($id)
     {
-        $form = Form::find($request->input('id'));
+        $form = Form::find($id);
         $form->delete();
     }
 

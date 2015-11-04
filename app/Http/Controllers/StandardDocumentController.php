@@ -42,12 +42,12 @@ class StandardDocumentController extends Controller
     public function store(Request $request)
     {
         
-
-        $filename = $request->file('document')->getClientOriginalName();
+        $file =  $request->file('file');
+        $filename = $file->getClientOriginalName();
         $ext = pathinfo($filename, PATHINFO_EXTENSION);
         $filename = basename($request->input('description'), "." . $ext);
         $filename = strtoupper(preg_replace('/\s+/', '', $filename . "_" . date("YmdHis")))  . "." . $ext;
-        $upload = $request->file('document')->move(env('APP_UPLOAD') . '\standardDocument', $filename);
+        $upload = $file->move(env('APP_UPLOAD') . '\standardDocument', $filename);
         
         $document = new StandardDocument;
         $document->standard_id = $request->input('standard_id');
@@ -89,20 +89,22 @@ class StandardDocumentController extends Controller
      * @param  int  $id
      * @return Response
      */
-    public function update(Request $request)
+    public function update(Request $request, $id)
     {
-        $document = StandardDocument::find($request->input('id'));
+        
+       
+        $document = StandardDocument::find($id);
         $document->standard_id = $request->input('standard_id');
         $document->no = $request->input('no');
         $document->date = $request->input('date');
         $document->description = $request->input('description');
 
-        if ($request->file('document')) {
-            $filename = $request->file('document')->getClientOriginalName();
+        if ($request->file('file')) {
+            $filename = $request->file('file')->getClientOriginalName();
             $ext = pathinfo($filename, PATHINFO_EXTENSION);
             $filename = basename($request->input('description'), "." . $ext);
             $filename = strtoupper(preg_replace('/\s+/', '', $filename . "_" . date("YmdHis")))  . "." . $ext;
-            $upload = $request->file('document')->move(env('APP_UPLOAD') . '\standardDocument', $filename);
+            $upload = $request->file('file')->move(env('APP_UPLOAD') . '\standardDocument', $filename);
             $document->document = $filename;
         }
         
@@ -116,9 +118,9 @@ class StandardDocumentController extends Controller
      * @param  int  $id
      * @return Response
      */
-    public function destroy(Request $request)
+    public function destroy($id)
     {
-        $document = StandardDocument::find($request->input('id'));
+        $document = StandardDocument::find($id);
         $document->delete();
     }
 

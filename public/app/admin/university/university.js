@@ -218,7 +218,7 @@ function UpdateUniversityController ($scope, $state, $stateParams, $timeout, Uni
 			UniversityService
 				.update($scope.input) 
 				.then(function (response) {
-						$state.go('main.admin.university')
+					//$state.go('main.admin.university')
 				})
 		} else {
 			$scope.validated = true;

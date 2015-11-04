@@ -19,7 +19,7 @@ class GroupJobController extends Controller
      */
     public function index()
     {
-        return  GroupJob::get();
+        return  Response::json(GroupJob::get());
     }
 
     /**
@@ -36,10 +36,10 @@ class GroupJobController extends Controller
         $groupJob->touch();
         $groupJob->save();
 
-        foreach ($request->input('groupJobs') as $k => $v) {
+        foreach ($request->input('jobs') as $key => $value) {
             $groupJobDetail = new GroupJobDetail;
             $groupJobDetail->group_job_id = $groupJob->id;
-            $groupJobDetail->job_id = $v['job']['id'];
+            $groupJobDetail->job_id = $value['id'];
             $groupJobDetail->touch();
             $groupJobDetail->save();
         }
@@ -53,7 +53,7 @@ class GroupJobController extends Controller
      */
     public function show($id)
     {
-        return GroupJob::with('groupJobDetail')->find($id);
+        return GroupJob::with('jobs.department.university')->find($id);
 
     }
 
@@ -64,9 +64,9 @@ class GroupJobController extends Controller
      * @param  int  $id
      * @return Response
      */
-    public function update(Request $request)
+    public function update(Request $request, $id)
     {
-        $groupjob = GroupJob::find($request->input('id'));
+        $groupjob = GroupJob::find($id);
         $groupjob->name = $request->input('name');
         $groupjob->description = $request->input('description');
         $groupjob->touch();
@@ -79,9 +79,9 @@ class GroupJobController extends Controller
      * @param  int  $id
      * @return Response
      */
-    public function destroy(Request $request)
+    public function destroy($id)
     {
-        $groupjob = GroupJob::find($request->input('id'));
+        $groupjob = GroupJob::find($id);
         $groupjob->delete();
     }
 

@@ -33,9 +33,9 @@ class SemesterController extends Controller
         return Semester::find($id);
     }
 
-    public function update(Request $request)
+    public function update(Request $request, $id)
     {
-        $semester = Semester::find($request->input('id'));
+        $semester = Semester::find($id);
         $semester->year_start = $request->input('year_start');
         $semester->year_ended = $request->input('year_ended');
         $semester->type = $request->input('type');
@@ -45,13 +45,15 @@ class SemesterController extends Controller
         $semester->save();
     }
 
-    public function destroy(Request $request)
+    public function destroy($id)
     {
-        $semester = Semester::find($request->input('id'));
+        $semester = Semester::find($id);
         $semester->delete();
     }
 
     public function intersect($date, $id=false) {
+       
+        //return $date;
         if ($id) {
             return Semester::where('date_start', '<', $date)
             ->where('date_ended', '>', $date)->where('id', '<>', $id)->get();
@@ -63,6 +65,8 @@ class SemesterController extends Controller
     }
 
     public function included($dateStart, $dateEnded, $id=false) {
+   
+        
         if ($id) {
             return Semester::whereBetween('date_start', [$dateStart, $dateEnded])
             ->whereBetween('date_ended', [$dateStart, $dateEnded])

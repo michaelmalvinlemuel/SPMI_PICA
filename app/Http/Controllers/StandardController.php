@@ -25,7 +25,7 @@ class StandardController extends Controller
         return Standard::get();
     }
 
-	public function getAll() {
+	public function all() {
 		$standard = Standard::with('standardDocuments.guides.instructions.forms')->get();
 		return Response::json($standard, 200, [], JSON_PRETTY_PRINT);
 		
@@ -62,9 +62,9 @@ class StandardController extends Controller
      * @param  int  $id
      * @return Response
      */
-    public function update(Request $request)
+    public function update(Request $request, $id)
     {
-        $standard = Standard::find($request->input('id'));
+        $standard = Standard::find($id);
         $standard->description = $request->input('description');
         $standard->date = $request->input('date');
         $standard->touch();
@@ -77,9 +77,9 @@ class StandardController extends Controller
      * @param  int  $id
      * @return Response
      */
-    public function destroy(Request $request)
+    public function destroy($id)
     {
-        $standard = Standard::find($request->input('id'));
+        $standard = Standard::find($id);
         $standard->delete();
     }
 

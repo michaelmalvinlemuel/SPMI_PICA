@@ -97,7 +97,7 @@ class TaskController extends Controller
         return Response::json($task, $status=200, $headers=[], $options=JSON_PRETTY_PRINT); 
     }
 
-    public function update(Request $request)
+    public function update(Request $request, $id)
     {
         
 

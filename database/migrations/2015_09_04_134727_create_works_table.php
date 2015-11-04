@@ -29,7 +29,7 @@ class CreateWorksTable extends Migration
             $table->integer('schedule_id');
             $table->string('schedule_type');
             $table->string('schedule_name');
-            $table->char('schedule_status',1);
+            $table->boolean('schedule_status');
             $table->unique(['name', 'deleted_at']);
             $table->timestamps();
             $table->softDeletes();

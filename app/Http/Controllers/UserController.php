@@ -28,15 +28,24 @@ class UserController extends Controller
             return Response::json(['header' => 'Error', 'message' => 'session not found'], 401);
         }
     }
-
-    public function login (Request $request) {
-        $username = /*'stevanadjie@gmail.com';    */$request->input('username');
-        $password = /*'12345';                    */$request->input('password');
+    public function fakeLogin($username, $password, $token){
         if (Auth::attempt(['email' => $username, 'password' => $password])) {
-            // Authentication passed...
-            return Auth::user();
+            return response(Auth::user(), 200);
         } else {
-            return Response::json(["header" => "False", "message" => "Kombinasi Username dan password salah. Silahkan coba lagi"], 500);
+            return Response::json(["header" => "False", "message" => "Kombinasi Username dan password salah. Silahkan coba lagi"], 401);
+        }
+    }
+    
+    public function login(Request $request) {
+        
+        //return Session::token();
+        $username = $request->input('email');
+        $password = $request->input('password');
+        
+        if (Auth::attempt(['email' => $username, 'password' => $password])) {
+            return response(Auth::user(), 200);
+        } else {
+            return Response::json(["header" => "False", "message" => "Kombinasi Username dan password salah. Silahkan coba lagi"], 401);
         }
     }
 
@@ -48,7 +57,8 @@ class UserController extends Controller
 
     public function index()
     {
-        return User::get();
+        $user = User::get();
+        return $user;
     }
 
     /**
@@ -68,14 +78,15 @@ class UserController extends Controller
         $user->password = Hash::make($request->input('password'));
         $user->type = $request->input('type');
         $user->status = '3';
+        
         $user->touch();
         $user->save();
 
-        $job = $request->input('userJobs');
+        $job = $request->input('jobs');
         foreach ($job as $k => $v) {
             $userjob = new UserJob;
             $userjob->user_id = $user->id;
-            $userjob->job_id = $v['job']['id'];
+            $userjob->job_id = $v['id'];
             $userjob->touch();
             $userjob->save();
         }
@@ -90,7 +101,8 @@ class UserController extends Controller
      */
     public function show($id)
     {
-        return User::with('userJob')->find($id);
+        $user =  User::with('jobs.department.university')->find($id);
+        return $user;
     }
 
     /**
@@ -100,9 +112,9 @@ class UserController extends Controller
      * @param  int  $id
      * @return Response
      */
-    public function update(Request $request)
+    public function update(Request $request, $id)
     {
-        $user = User::find($request->input('id'));
+        $user = User::find($id);
         $user->nik = $request->input('nik');
         $user->name = $request->input('name');
         $user->born = $request->input('born');
@@ -119,10 +131,11 @@ class UserController extends Controller
      * @param  int  $id
      * @return Response
      */
-    public function destroy(Request $request)
+    public function destroy($id)
     {
-        $user = User::find($request->input('id'));
-        $user->delete();
+        $user = User::find($id);
+        $user->userJobs()->delete();
+        //$user->delete();
     }
 
     public function validatingNik($nik , $id=false)

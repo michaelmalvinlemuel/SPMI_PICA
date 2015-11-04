@@ -8,18 +8,10 @@ use App\Http\Requests;
 use App\Http\Controllers\Controller;
 
 use App\GroupJobDetail;
-
+use App\Job;
 class GroupJobDetailController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return Response
-     */
-    public function index($id)
-    {
-        return GroupJobDetail::where('group_job_id', '=', $id)->with('job.department.university')->get();
-    }
+
 
     /**
      * Store a newly created resource in storage.
@@ -27,25 +19,29 @@ class GroupJobDetailController extends Controller
      * @param  Request  $request
      * @return Response
      */
-    public function store(Request $request)
+    public function store(Request $request, $groupJobId)
     {
-        $groupjobdetail = new GroupJobDetail;
-        $groupjobdetail->group_job_id = $request->input('group_job_id');
-        $groupjobdetail->job_id = $request->input('job_id');
-        $groupjobdetail->touch();
-        $groupjobdetail->save();
+        $groupJobDetail = GroupJobDetail::where('group_job_id', $groupJobId)->where('job_id', $request->input('id'))->get();
+        if(count($groupJobDetail) > 0)
+        return response()->json(
+            [
+                'title' => 'Unique User Job Exception',
+                'body' => 'Setiap job yang dimiliki oleh group harus unik'
+            ], 500);
+        
+        
+        
+        $groupJobDetail = new GroupJobDetail;
+        $groupJobDetail->group_job_id = $groupJobId;
+        $groupJobDetail->job_id = $request->input('id');
+        $groupJobDetail->touch();
+        $groupJobDetail->save();
+        
+        $job = Job::with('department.university')->find($groupJobDetail->job_id);
+        return response()->json($job);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return Response
-     */
-    public function show($id)
-    {
-        return GroupJobDetail::find($id);
-    }
+
 
     /**
      * Update the specified resource in storage.
@@ -54,13 +50,24 @@ class GroupJobDetailController extends Controller
      * @param  int  $id
      * @return Response
      */
-    public function update(Request $request)
+    public function update(Request $request, $groupJobId, $jobId)
     {
-        $groupJobDetail = GroupJobDetail::find($request->input('id'));
-        $groupJobDetail->group_job_id = $request->input('group_job_id');
-        $groupJobDetail->job_id = $request->input('job_id');
+
+        $id = GroupJobDetail::where('group_job_id', $groupJobId)->where('job_id', $request->input('id'))->get(['id']);
+        if(count($id) > 0) 
+        return response()->json(
+            [
+                'title' => 'Unique User Job Exception',
+                'body' => 'Setiap job yang dimiliki oleh user harus unik'
+            ], 500);
+            
+        $groupJobDetail = GroupJobDetail::where('group_job_id', '=', $groupJobId)->where('job_id', '=', $jobId)->first();
+        $groupJobDetail->job_id = $request->input('id');
         $groupJobDetail->touch();
         $groupJobDetail->save();
+        
+        $job = Job::with('department.university')->find($request->input('id'));
+        return response()->json($job);
     }
 
     /**
@@ -69,23 +76,9 @@ class GroupJobDetailController extends Controller
      * @param  int  $id
      * @return Response
      */
-    public function destroy(Request $request)
+    public function destroy($groupJobId, $jobId)
     {
-        $groupjobdetail = GroupJobDetail::find($request->input('id'));
-        $groupjobdetail->delete();
-    }
-
-    public function university ($group_job_id, $university_id) 
-    {
-        return GroupJobDetail::with('job.department')->where('group_job_id', '=', $group_job_id)
-            ->whereHas('job.department', function ($query) use ($university_id) {
-                $query->where('university_id', '=', $university_id);
-            })->get();
-
-        /*
-        ->whereHas('job.department', function($query) use ($id) {
-            $query->where('university_id', '=', $id);
-        })->with('job')->get();
-        */
+        $groupJobDetail = GroupJobDetail::where('group_job_id', $groupJobId)->where('job_id', $jobId);
+        $groupJobDetail->delete();
     }
 }

@@ -20,17 +20,17 @@
                 <div class="panel-body">
                     <div class="col-xs-12">
                         <form name="LoginForm" class="form-horizontal" method="post" ng-submit="submit()" novalidate>
-                            
+
                             <div class="form-group has-feedback"
-                                ng-class="{ 'has-error': LoginForm.username.$invalid && LoginForm.username.$dirty || errorLogin }">
-                                <label class="control-label">Username</label>
-                                <input type="email" name="username" class="form-control" ng-model="input.username" ng-required="true">
+                                ng-class="{ 'has-error': LoginForm.email.$invalid && LoginForm.email.$dirty || errorLogin }">
+                                <label class="control-label">Email Address</label>
+                                <input type="email" name="email" class="form-control" ng-model="input.email" ng-required="true">
                                 <span class="form-control-feedback" 
-                                    ng-show="LoginForm.username.$dirty" aria-hidden="true">
+                                    ng-show="LoginForm.email.$dirty" aria-hidden="true">
                                     <i class="fa" ng-class="{ 
-                                        'fa-close fa-lg': LoginForm.username.$invalid && LoginForm.username.$dirty || errorLogin }"></i>
+                                        'fa-close fa-lg': LoginForm.email.$invalid && LoginForm.email.$dirty || errorLogin }"></i>
                                 </span>
-                                <div style="color: #a94442;" ng-messages="LoginForm.username.$error" ng-if="LoginForm.username.$dirty">
+                                <div style="color: #a94442;" ng-messages="LoginForm.email.$error" ng-if="LoginForm.email.$dirty">
                                     <small ng-message="required">* Username diisi dengan email address.</small>
                                     <small ng-message="email">* Format email address salah.</small>
                                 </div>

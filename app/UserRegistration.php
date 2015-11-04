@@ -8,6 +8,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class UserRegistration extends Model
 {
 	use SoftDeletes;
-
+	
     protected $dates = ['deleted_at'];
 }

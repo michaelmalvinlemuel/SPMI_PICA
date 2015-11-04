@@ -304,7 +304,7 @@ class ProjectController extends Controller
     
     }
 
-    public function update(Request $request)
+    public function update(Request $request, $id)
     {
         $users = $request->input('users');
 
@@ -316,7 +316,7 @@ class ProjectController extends Controller
             }
         }
 
-        $project = Project::with('projects')->find($request->input('id'));
+        $project = Project::with('projects')->find($id);
 
         $this->recursiveNodeDelete($project);
         $project->projectUsers()->delete();
@@ -357,9 +357,9 @@ class ProjectController extends Controller
 
     }
 
-    public function destroy(Request $request) 
+    public function destroy($id) 
     {
-        $project = Project::with('projects')->find($request->input('id'));
+        $project = Project::with('projects')->find($id);
         //return $project;
         $this->recursiveNodeDelete($project);
 

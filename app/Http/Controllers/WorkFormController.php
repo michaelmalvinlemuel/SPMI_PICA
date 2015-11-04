@@ -8,18 +8,11 @@ use App\Http\Requests;
 use App\Http\Controllers\Controller;
 
 use App\WorkForm;
+use App\Form;
 
 class WorkFormController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return Response
-     */
-    public function index($id)
-    {
-        return WorkForm::where('work_id', '=', $id)->with('form.instruction.guide.standardDocument.standard')->get();
-    }
+   
 
     /**
      * Store a newly created resource in storage.
@@ -27,24 +20,24 @@ class WorkFormController extends Controller
      * @param  Request  $request
      * @return Response
      */
-    public function store(Request $request)
+    public function store(Request $request, $workId)
     {
-        $workdetail = new WorkForm;
-        $workdetail->work_id = $request->input('work_id');
-        $workdetail->form_id = $request->input('form_id');
-        $workdetail->touch();
-        $workdetail->save();
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return Response
-     */
-    public function show($id)
-    {
-        return WorkForm::find($id);    
+        $id = WorkForm::where('work_id', '=', $workId)->where('form_id', '=', $request->input('id'))->get(['id']);
+        if(count($id) > 0) 
+        return response()->json(
+            [
+                'title' => 'Unik Work Form Exception',
+                'body' => 'Pekerjaan harus memiliki formulir yang unik'
+            ], 500);
+            
+        $workForm = new WorkForm;
+        $workForm->work_id = $workId;
+        $workForm->form_id = $request->input('id');
+        $workForm->touch();
+        $workForm->save();
+        
+        $form = Form::with('instruction.guide.standardDocument.standard')->find($request->input('id'));
+        return response()->json($form);
     }
 
     /**
@@ -54,13 +47,23 @@ class WorkFormController extends Controller
      * @param  int  $id
      * @return Response
      */
-    public function update(Request $request)
+    public function update(Request $request, $workId, $formId)
     {
-        $workdetail = WorkForm::find($request->input('id'));
-        $workdetail->work_id = $request->input('work_id');
-        $workdetail->form_id = $request->input('form_id');
-        $workdetail->touch();
-        $workdetail->save();
+        $id = WorkForm::where('work_id', '=', $workId)->where('form_id', '=', $request->input('id'))->get(['id']);
+        if(count($id) > 0) 
+        return Response::json(
+            [
+                'title' => 'Unique Work Form Exception',
+                'body' => 'Pekerjaan harus memiliki formulir yang unik'
+            ], 500);
+            
+        $workForm = WorkForm::where('work_id', '=', $workId)->where('form_id', '=', $formId)->first();
+        $workForm->form_id = $request->input('id');
+        $workForm->touch();
+        $workForm->save();
+        
+        $form = Form::with('instruction.guide.standardDocument.standard')->find($request->input('id'));
+        return response()->json($form);
     }
 
     /**
@@ -69,9 +72,9 @@ class WorkFormController extends Controller
      * @param  int  $id
      * @return Response
      */
-    public function destroy(Request $request)
+    public function destroy($workId, $formId)
     {
-        $workdetail = WorkForm::find($request->input('id'));
-        $workdetail->delete();
+        $workForm = WorkForm::where('work_id', '=', $workId)->where('form_id', '=', $formId);
+        $workForm->delete();
     }
 }

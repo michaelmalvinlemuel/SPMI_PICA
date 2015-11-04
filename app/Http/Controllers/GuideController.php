@@ -42,11 +42,11 @@ class GuideController extends Controller
     public function store(Request $request)
     {
         
-        $filename = $request->file('document')->getClientOriginalName();
+        $filename = $request->file('file')->getClientOriginalName();
         $ext = pathinfo($filename, PATHINFO_EXTENSION);
         $filename = basename($request->input('description'), "." . $ext);
         $filename = strtoupper(preg_replace('/\s+/', '', $filename . "_" . date("YmdHis")))  . "." . $ext;
-        $upload = $request->file('document')->move(env('APP_UPLOAD') . '\guide', $filename);
+        $upload = $request->file('file')->move(env('APP_UPLOAD') . '\guide', $filename);
 
         $guide = new Guide;
         $guide->standard_document_id = $request->input('standard_document_id');
@@ -88,20 +88,20 @@ class GuideController extends Controller
      * @param  int  $id
      * @return Response
      */
-    public function update(Request $request)
+    public function update(Request $request, $id)
     {
-        $guide = Guide::find($request->input('id'));
+        $guide = Guide::find($id);
         $guide->standard_document_id = $request->input('standard_document_id');
         $guide->no = $request->input('no');
         $guide->date = $request->input('date');
         $guide->description = $request->input('description');
 
-        if ($request->file('document')) {
-            $filename = $request->file('document')->getClientOriginalName();
+        if ($request->file('file')) {
+            $filename = $request->file('file')->getClientOriginalName();
             $ext = pathinfo($filename, PATHINFO_EXTENSION);
             $filename = basename($request->input('description'), "." . $ext);
             $filename = strtoupper(preg_replace('/\s+/', '', $filename . "_" . date("YmdHis")))  . "." . $ext;
-            $upload = $request->file('document')->move(env('APP_UPLOAD') . '\guide', $filename);
+            $upload = $request->file('file')->move(env('APP_UPLOAD') . '\guide', $filename);
             $guide->document = $filename;
         }
 
@@ -115,14 +115,14 @@ class GuideController extends Controller
      * @param  int  $id
      * @return Response
      */
-    public function destroy(Request $request)
+    public function destroy($id)
     {
-        $guide = Guide::find($request->input('id'));
+        $guide = Guide::find($id);
         $guide->delete();
     }
 
     public function standarddocument ($id) {
-        return Guide::with('StandardDocument')->where('standard_document_id', '=', $id)->get();
+        return Guide::with('StandardDocument.standard')->where('standard_document_id', '=', $id)->get();
     }
 
     public function validatingNo($no, $id=false)

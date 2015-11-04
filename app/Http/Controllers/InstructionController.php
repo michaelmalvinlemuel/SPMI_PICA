@@ -39,11 +39,11 @@ class InstructionController extends Controller
      */
     public function store(Request $request)
     {
-        $filename = $request->file('document')->getClientOriginalName();
+        $filename = $request->file('file')->getClientOriginalName();
         $ext = pathinfo($filename, PATHINFO_EXTENSION);
         $filename = basename($request->input('description'), "." . $ext);
         $filename = strtoupper(preg_replace('/\s+/', '', $filename . "_" . date("YmdHis")))  . "." . $ext;
-        $upload = $request->file('document')->move(env('APP_UPLOAD') . '\instruction', $filename);
+        $upload = $request->file('file')->move(env('APP_UPLOAD') . '\instruction', $filename);
 
         $instruction = new Instruction;
         $instruction->guide_id = $request->input('guide_id');
@@ -87,20 +87,20 @@ class InstructionController extends Controller
      * @param  int  $id
      * @return Response
      */
-    public function update(Request $request)
+    public function update(Request $request, $id)
     {
-        $instruction = Instruction::find($request->input('id'));
+        $instruction = Instruction::find($id);
         $instruction->guide_id = $request->input('guide_id');
         $instruction->no = $request->input('no');
         $instruction->date = $request->input('date');
         $instruction->description = $request->input('description');
 
-        if ($request->file('document')) {
-            $filename = $request->file('document')->getClientOriginalName();
+        if ($request->file('file')) {
+            $filename = $request->file('file')->getClientOriginalName();
             $ext = pathinfo($filename, PATHINFO_EXTENSION);
             $filename = basename($request->input('description'), "." . $ext);
             $filename = strtoupper(preg_replace('/\s+/', '', $filename . "_" . date("YmdHis")))  . "." . $ext;
-            $upload = $request->file('document')->move(env('APP_UPLOAD') . '\instruction', $filename);
+            $upload = $request->file('file')->move(env('APP_UPLOAD') . '\instruction', $filename);
             $instruction->document = $filename;
         }
 
@@ -114,14 +114,14 @@ class InstructionController extends Controller
      * @param  int  $id
      * @return Response
      */
-    public function destroy(Request $request)
+    public function destroy($id)
     {
-        $instruction = Instruction::find($request->input('id'));
+        $instruction = Instruction::find($id);
         $instruction->delete();
     }
 
     public function guide ($id) {
-        return Instruction::with('guide')->where('guide_id', '=', $id)->get();
+        return Instruction::with('guide.standardDocument.standard')->where('guide_id', '=', $id)->get();
     }
 
     public function validatingNo($no, $id=false)

@@ -310,11 +310,16 @@ class WorkController extends Controller
 
     public function index()
     {
-        $work = Work::with('groupJob')->get();
+        $work = Work::with('groupJob')->with('forms')->get();
         foreach ($work as $key => $value) {
             $event = DB::select("
             SELECT name, status FROM mysql.event WHERE name = '" . $value->schedule_name . "'");
-            $work[$key]['schedule_status'] = $event[0]->status;
+            if(count($event) > 0){
+                $work[$key]['schedule_status'] = $event[0]->status;
+            } else {
+                $work[$key]['schedule_status'] = 'DISABLED';
+            }
+            
         }
         
         return $work;
@@ -339,10 +344,10 @@ class WorkController extends Controller
         
         $schedule = $this->storeSchedule($request, $work);
 
-        foreach($request->input('workForms') as $key => $value) {
+        foreach($request->input('forms') as $key => $value) {
             $workForm = new WorkForm;
             $workForm->work_id = $work->id;
-            $workForm->form_id = $value['form']['id'];
+            $workForm->form_id = $value['id'];
             $workForm->touch();
             $workForm->save();
         }
@@ -353,7 +358,7 @@ class WorkController extends Controller
     public function show($id)
     {
 
-        $work =  Work::with('schedule')->find($id);
+        $work =  Work::with('schedule')->with('forms.instruction.guide.standardDocument.standard')->find($id);
 
         if ($work->type == "1") {
             $temp = $work->schedule()->with('days')->get();
@@ -371,9 +376,9 @@ class WorkController extends Controller
         return $work;
     }
 
-    public function update(Request $request)
+    public function update(Request $request, $id)
     {
-        $work = Work::find($request->input('id'));
+        $work = Work::find($id);
         $work->name = $request->input('name');
         $work->description = $request->input('description');
         $work->start = $request->input('start');
@@ -446,9 +451,9 @@ class WorkController extends Controller
         }
     }
 
-    public function destroy(Request $request)
+    public function destroy($id)
     {
-        $work = Work::find($request->input('id'));
+        $work = Work::find($id);
         
         $this->destroySchedule($work);
         
@@ -457,35 +462,40 @@ class WorkController extends Controller
 
     public function execute($id) 
     {
-        $work = Work::find($id);    
+        $work = Work::with('groupJob')->find($id);    
 
         switch($work->type) {
-            case '1':
-                DB::unprepared("" . $this->eventInsertStatement($id, "1") . "");
-            break;
-            case '2': 
-                DB::unprepared("" . $this->eventInsertStatement($id, "2") . "");
-            break;
-            case '3':
-                DB::unprepared("" . $this->eventInsertStatement($id, "3") . "");
-            break;
-            case '4':
-                DB::unprepared("" . $this->eventInsertStatement($id, "4") . "");
-            break;
-            case '5':
-                DB::unprepared("" . $this->eventInsertStatement($id, "5") . "");
-            break;
+            case '1': DB::unprepared("" . $this->eventInsertStatement($id, "1") . ""); break;
+            case '2': DB::unprepared("" . $this->eventInsertStatement($id, "2") . ""); break;
+            case '3': DB::unprepared("" . $this->eventInsertStatement($id, "3") . ""); break;
+            case '4': DB::unprepared("" . $this->eventInsertStatement($id, "4") . ""); break;
+            case '5': DB::unprepared("" . $this->eventInsertStatement($id, "5") . ""); break;
         }
+        
+        
+        
+            $event = DB::select("
+            SELECT name, status FROM mysql.event WHERE name = '" . $work->schedule_name . "'");
+            if(count($event) > 0){
+                $work->schedule_status = $event[0]->status;
+            } else {
+                $work->schedule_status = 'DISABLED';
+            }
+            
+        
+        
+        return response()->json($work);
         //return $this->eventInsertStatement($id, "CURRENT_TIMESTAMP() + INTERVAL 1 DAY", $work->type);
     }
 
-    public function eventToggle(Request $request) {
-        if ($request->input('status') == 'DISABLED') {
+    public function eventToggle($id) {
+        $work = Work::find($id);
+        if ($work->schedule_status == 0) {
             $status = 'ENABLE';
         } else {
             $status = 'DISABLE';
         }
-        DB::unprepared("ALTER EVENT " . $request->input('name') . " " . $status); 
+        DB::unprepared("ALTER EVENT " . $work->schedule_name . " " . $status); 
     }
 
     public function validatingName($name, $id=false)
@@ -505,6 +515,7 @@ class WorkController extends Controller
         foreach ($work as $key => $value) {
             DB::unprepared("ALTER EVENT " . $value->schedule_name . " " . 'ENABLE'); 
         }
+        $work = Work::where('schedule_status', '=', '0')->update(['schedule_status' => '1']);
         
     }
 
@@ -513,6 +524,8 @@ class WorkController extends Controller
         foreach ($work as $key => $value) {
             DB::unprepared("ALTER EVENT " . $value->schedule_name . " " . 'DISABLE'); 
         }
+        $work = Work::where('schedule_status', '=', '1')->update(['schedule_status' => '0']);
+        //$work->update(['schedule_status' => '0']);
     }
 
     public function executeAllWork() {

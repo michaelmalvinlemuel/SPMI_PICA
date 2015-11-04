@@ -20,15 +20,7 @@ class UniversityController extends Controller
     public function index()
     {   
         $university = University::get();
-        if (Auth::check()) {
-            return response()->json($university, 200);
-        } else {
-            $response = [];
-            $response['header'] = "Timeout";
-            $response['message'] = "Your session expired";
-            return response()->json(['header' => 'Error', 'message' => 'session not found'], 500);
-        }
-        
+        return response()->json($university, 200);
     }
 
     /**
@@ -66,9 +58,9 @@ class UniversityController extends Controller
      * @param  int  $id
      * @return Response
      */
-    public function update(Request $request)
+    public function update(Request $request, $id)
     {
-        $university = University::find($request->input('id'));
+        $university = University::find($id);
         $university->name = $request->input('name');
         $university->address = $request->input('address');
         $university->phone = $request->input('phone');
@@ -83,9 +75,9 @@ class UniversityController extends Controller
      * @param  int  $id
      * @return Response
      */
-    public function destroy(Request $request)
+    public function destroy($id)
     {
-        $university = University::find($request->input('id'));
+        $university = University::find($id);
         $university->delete();
     }
 

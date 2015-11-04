@@ -2,7 +2,7 @@
 	'use strict'
 
 	angular
-		.module('app', ['ui.router', 'ui.bootstrap', 'ngFileUpload', 'chart.js', 'ngMessages', 'jsonFormatter', 'angularBootstrapNavTree', 'pdf'])
+		.module('app', ['ngCookies', 'ui.router', 'ui.bootstrap', 'ngFileUpload', 'chart.js', 'ngMessages', 'jsonFormatter', 'angularBootstrapNavTree', 'pdf'])
 		.run(['$rootScope', '$state', '$stateParams', '$timeout', 'Authorization', 'UserService', AppRun])
 		.config(['$stateProvider', '$urlRouterProvider', '$httpProvider', AppConfiguration])
 		.filter('debug', function() {
@@ -159,8 +159,17 @@ function AppConfiguration ($stateProvider, $urlRouterProvider, $httpProvider) {
 	}
 
 	$urlRouterProvider.otherwise('/');
+	
+	
 	$httpProvider.defaults.cache = true;
-
+	$httpProvider.defaults.useXDomain = true;
+	//$httpProvider.defaults.withCredentials = true;
+	
+	
+	
+	
+	
+					
 	$stateProvider
 		.state('main', {
 			resolve: resolve,
@@ -950,7 +959,7 @@ function Authorization ($rootScope, $state, $q, UserService) {
             	deferred.resolve();
             	if ($rootScope.toState.data.type && $rootScope.toState.data.type.length > 0 &&
             		!UserService.isInAnyRole($rootScope.toState.data.type)) {
-            		//console.log('denied')
+            		console.log('denied')
             		$state.go('main.denied')
             	}
 
@@ -1010,7 +1019,7 @@ function LoginController ($rootScope, $scope, $state, $stateParams, UserService)
 
 	$scope.submit = function () {
 
-		$scope.LoginForm.username.$setDirty();
+		$scope.LoginForm.email.$setDirty();
 		$scope.LoginForm.password.$setDirty();
 
 		if ($scope.LoginForm.$valid) {

@@ -16,9 +16,13 @@ class User extends Model implements AuthenticatableContract,
                                     CanResetPasswordContract
 {
     
-
+    public static $snakeAttributes = false;
+    
     use Authenticatable, Authorizable, CanResetPassword, SoftDeletes;
-
+    
+    //const updated_at = 'users.updated_at';
+    public $timestamps = true;
+    
     /**
      * The database table used by the model.
      *
@@ -43,7 +47,7 @@ class User extends Model implements AuthenticatableContract,
      */
     protected $hidden = ['password', 'remember_token'];
 
-    public function userJob() {
+    public function userJobs() {
         return $this->hasMany('App\UserJob');
         //return $this->hasManyThrough('App\UserJob', 'App\Job');
     }
@@ -53,7 +57,7 @@ class User extends Model implements AuthenticatableContract,
         return $this->hasMany('App\Task');
     }
 
-    public function jobs () {
-        return $this->belongsToMany('App\Job', 'user_jobs')->whereNull('user_jobs.deleted_at');
+    public function jobs() {
+        return $this->belongsToMany('App\Job', 'user_jobs', 'user_id', 'job_id')->withTimestamps()->whereNull('user_jobs.deleted_at');
     }
 }

@@ -18,7 +18,9 @@ class DepartmentController extends Controller
      */
     public function index()
     {
-        return Department::with('university')->with('department')->get();
+        return Department::with('university')->with('department')
+            ->has('university')
+            ->get();
     }
 
     /**
@@ -55,9 +57,9 @@ class DepartmentController extends Controller
      * @param  int  $id
      * @return Response
      */
-    public function update(Request $request)
+    public function update(Request $request, $id)
     {
-        $department = Department::find($request->input('id'));
+        $department = Department::find($id);
         $department->university_id = $request->input('university_id');
         $department->name = $request->input('name');
         $department->department_id = $request->input('department_id');
@@ -71,9 +73,9 @@ class DepartmentController extends Controller
      * @param  int  $id
      * @return Response
      */
-    public function destroy(Request $request)
+    public function destroy($id)
     {
-        $department = Department::find($request->input('id'));
+        $department = Department::find($id);
         $department->delete();
     }
 

@@ -30,8 +30,9 @@
             <script src="bower_components/angular/angular.min.js"></script>
             <script src="bower_components/angular-ui-router/release/angular-ui-router.min.js"></script>
             <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js"></script>
+            <script src="bower_components/satellizer/satellizer.min.js"></script>
             <script src="js/abn_tree_directive.js"></script>
-            
+            <script src="js/angular-cookies.min.js"></script>
             <script src="js/angular-pdf.min.js"></script>
             
             <!--
@@ -120,6 +121,5 @@
             
         </div>
     
-       
     </body>
 </html>

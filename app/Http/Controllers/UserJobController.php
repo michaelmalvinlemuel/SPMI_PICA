@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
 
+use Response;
+
 use App\UserJob;
 use App\Job;
 use App\Department;
@@ -32,24 +34,24 @@ class UserJobController extends Controller
      * @param  Request  $request
      * @return Response
      */
-    public function store(Request $request)
+    public function store(Request $request, $userId)
     {
-        $userjob = new UserJob;
-        $userjob->user_id = $request->input('user_id');
-        $userjob->job_id = $request->input('job_id');
-        $userjob->touch();
-        $userjob->save();
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return Response
-     */
-    public function show($id)
-    {
-        return UserJob::with('job.department.university')->find($id);
+        $userJob = UserJob::where('user_id', '=', $userId)->where('job_id', '=', $request->input('id'))->get();
+        if(count($userJob) > 0) 
+        return Response::json(
+            [
+                'title' => 'Unique User Job Exception',
+                'body' => 'Setiap job yang dimiliki oleh user harus unik'
+            ], 500);
+        
+        $userJob = new UserJob;
+        $userJob->user_id = $userId;
+        $userJob->job_id = $request->input('id');
+        $userJob->touch();
+        $userJob->save();
+        
+        $job = Job::with('department.university')->find($userJob->job_id);
+        return Response::json($job);
     }
 
     /**
@@ -59,13 +61,23 @@ class UserJobController extends Controller
      * @param  int  $id
      * @return Response
      */
-    public function update(Request $request)
+    public function update(Request $request, $userId, $jobId)
     {
-        $userjob = UserJob::find($request->input('id'));
-        $userjob->user_id = $request->input('user_id');
-        $userjob->job_id = $request->input('job_id');
-        $userjob->touch();
-        $userjob->save();
+        $id = UserJob::where('user_id', '=', $userId)->where('job_id', '=', $request->input('id'))->get(['id']);
+        if(count($id) > 0) 
+        return Response::json(
+            [
+                'title' => 'Unique User Job Exception',
+                'body' => 'Setiap job yang dimiliki oleh user harus unik'
+            ], 500);
+        
+        $userJob = UserJob::where('user_id', '=', $userId)->where('job_id', '=', $jobId)->first();
+        $userJob->job_id = $request->input('id');
+        $userJob->touch();
+        $userJob->save();
+        
+        $job = Job::with('department.university')->find($request->input('id'));
+        return Response::json($job);
     }
 
     /**
@@ -74,23 +86,9 @@ class UserJobController extends Controller
      * @param  int  $id
      * @return Response
      */
-    public function destroy(Request $request)
+    public function destroy($userId, $jobId)
     {
-        $userjob = UserJob::find($request->input('id'));
-        $userjob->delete();
-    }
-
-    public function validatingJob($jobId, $userId, $id=false)
-    {
-        if ($id) {
-            return UserJob::where('job_id', '=', $jobId)
-                ->where('user_id', '=',$userId)
-                ->where('id', '<>', $id)
-                ->get();
-        } else {
-            return UserJob::where('job_id', '=', $jobId)
-                ->where('user_id', '=', $userId)
-                ->get();    
-        }
+        $userJob = UserJob::where('user_id', '=', $userId)->where('job_id', '=', $jobId);
+        $userJob->delete();
     }
 }

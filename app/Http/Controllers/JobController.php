@@ -57,7 +57,7 @@ class JobController extends Controller
      * @param  int  $id
      * @return Response
      */
-    public function update(Request $request)
+    public function update(Request $request, $id)
     {
         $job = Job::find($request->input('id'));
         $job->department_id = $request->input('department_id');
@@ -74,9 +74,9 @@ class JobController extends Controller
      * @param  int  $id
      * @return Response
      */
-    public function destroy(Request $request)
+    public function destroy($id)
     {
-        $job = Job::find($request->input('id'));
+        $job = Job::find($id);
         $job->delete();
     }
 
