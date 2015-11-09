@@ -135,12 +135,14 @@ Route::group(['middleware'=> ['jwt.auth']], function(){
 		['except' => [ 'create', 'edit', 'delete']]);
 	
 
-	Route::get('projectsLast/{id}', 'ProjectController@showLast');
+	Route::get('project/last/{id}', 'ProjectController@showLast');		//shpw project with last uploaded form	
 	Route::get('project/user', 'ProjectController@user');				//show project that involved by user
-	Route::post('project/delegate', 'ProjectController@delegate');		//for delegation user by project leader
 	Route::get('project/form/{id}', 'ProjectController@form');
 	Route::get('project/leader/{id}', 'ProjectController@leader');
-	Route::post('project/upload', 'ProjectController@upload');
+	Route::post('project/delegate', 'ProjectController@delegate');		//for delegation user by project leader
+	Route::post('project/score', 'ProjectController@score');			//scoring project
+	Route::patch('project/mark/{id}', 'ProjectController@mark');				//admin mark project as completed or terminated
+	Route::post('project/upload', 'ProjectController@upload');			//users upload project form
 	Route::get('project/validating/name/{name}/{id?}', 'ProjectController@validatingName');
 	Route::resource('project', 'ProjectController',
 		['except' => ['create', 'edit']]);

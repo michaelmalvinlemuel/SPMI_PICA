@@ -140,6 +140,7 @@ class ProjectController extends Controller
     			$nodes[$key]['children'] = [];
     			$nodes[$key]['forms'] = $form;
     			$nodes[$key]['weight'] = $projectForm[0]->weight;
+                $nodes[$key]['score'] = $projectForm[0]->score;
     		}
     	}
     }
@@ -188,6 +189,7 @@ class ProjectController extends Controller
                 $nodes[$key]['children'] = [];
                 $nodes[$key]['forms'] = $form;
                 $nodes[$key]['weight'] = $projectForm[0]->weight;
+                $nodes[$key]['score'] = $projectForm[0]->score;
             }
         }
     }
@@ -228,16 +230,49 @@ class ProjectController extends Controller
 
     }
     
+    
+    private $score = 0; //private variable for calculation project performance in recursive method of $this->recursivePerformanceScoring
+    
+    private function recursivePerformanceScoring ($project) {
+        
+        $projectNode = ProjectNode::where('project_id', '=', $project->id)->get();
+        
+        if (count($projectNode) > 0) {
+            
+            foreach($projectNode as $key => $value) {
+                $this->recursivePerformanceScoring($projectNode[$key]);
+            } 
+
+        } else {
+            
+            $projectForm = ProjectForm::where('project_node_id', '=', $project->id)->first();
+            $this->score += $projectForm->weight * $projectForm->score; 
+        }    
+    }
+                
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-     
+    
     public function index()
     {
+        
         $project = Project::with('leader')->get();
-        return Response::json($project, 200, [], JSON_PRETTY_PRINT);
+        
+        foreach($project as $key => $value) {
+            
+            if ($value->status !== '1') {
+                
+                $this->score = 0;
+                $this->recursivePerformanceScoring($project[$key]);
+                $value->score = round($this->score/100, 2);
+                $this->score = 0;
+            }    
+        }
+        
+        return response()->json($project);
     }
     
     /**
@@ -293,6 +328,36 @@ class ProjectController extends Controller
 
         return $temp;
 
+    }
+    
+    private function recursiveScore($nodes) {
+        
+        foreach ($nodes as $key => $value) {
+            
+            if (count($value['children']) > 0) {
+                
+                $this->recursiveScore($value['children']);
+                
+            } else {
+
+                $projectForm = ProjectForm::where('project_node_id', '=', $value['id'])->first();
+                if (isset($value['score'])) {
+                    $projectForm->score = $value['score'];
+                } else {
+                    $projectForm->score = 0;
+                }
+               
+                $projectForm->touch();
+                $projectForm->save();
+                
+            }
+        }
+    }
+    
+    public function score(Request $request) {
+        $projectNode = $request->input('projects');
+        
+        $this->recursiveScore($projectNode);
     }
     
     /**
@@ -441,8 +506,20 @@ class ProjectController extends Controller
         $project = Project::whereHas('projectUsers', function($query) use($user) {
             $query->where('user_id', '=', $user->id);
         })->with('leader')->get();
-
-        return Response::json($project, 200, [], JSON_PRETTY_PRINT);
+        
+        foreach($project as $key => $value) {
+            
+            if ($value->status !== '1') {
+                
+                $this->score = 0;
+                $this->recursivePerformanceScoring($project[$key]);
+                $value->score = round($this->score/100, 2);
+                $this->score = 0;
+            }    
+        }
+        
+        return response()->json($project, 200, [], JSON_PRETTY_PRINT);
+        
     }
     
     /**
@@ -513,7 +590,7 @@ class ProjectController extends Controller
     }
     
 	public function upload(Request $request) {
-		$user = User::find($request->input('user_id'));
+		$user = JWTAuth::parseToken()->authenticate();
 		
 		$filename = $request->file('file')->getClientOriginalName();
 		$ext = pathinfo($filename, PATHINFO_EXTENSION);
@@ -521,6 +598,7 @@ class ProjectController extends Controller
 		$filename = strtoupper(preg_replace('/\s+/', '', $user->nik . "_" . $user->name . "_" . $filename . "_" . date("YmdHis")))  . "." . $ext;
 		$upload = $request->file('file')->move(env('APP_UPLOAD') . '\project', $filename); 
 		
+        
 		$uploadForm = new ProjectFormUpload;
 		$uploadForm->project_form_item_id = $request->input('project_form_item_id');
 		$uploadForm->user_id = $user->id;
@@ -528,8 +606,8 @@ class ProjectController extends Controller
 		$uploadForm->touch();
 		$uploadForm->save();
         
-        $projectForm = ProjectFormUpload::with('users')->find($request->input('project_form_item_id'));
-        return response()->json($projectForm);
+        $response = ProjectFormUpload::with('users')->find($uploadForm->id);
+        return response()->json($response);
 	}
 	
 	public function validatingName($name, $id=false) {
@@ -539,10 +617,18 @@ class ProjectController extends Controller
                 ->where('id', '<>', $id)
                 ->get();
         } else {
-            return GProjectroupJob::where('name', '=', $name)
+            return Project::where('name', '=', $name)
                 ->get();    
         }
 	}
+    
+    public function mark(Request $request, $id) 
+    {
+        $project = Project::find($id);
+        $project->status = $request->input('status');
+        $project->touch();
+        $project->save();    
+    }
 
 
 }

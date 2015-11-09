@@ -14,8 +14,8 @@ class CreateProjectFormsTable extends Migration
     {
         Schema::create('project_forms', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('weight');
-            $table->integer('score');
+            $table->decimal('weight', 11, 2);
+            $table->decimal('score', 11, 2);
             $table->integer('project_node_id')->unsigned();
             $table->foreign('project_node_id')->references('id')->on('project_nodes')->onDelete('cascade');
             $table->timestamps();
