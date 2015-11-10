@@ -31,6 +31,7 @@ Route::get('/', ['as' => 'main', function () {
 
 Route::get('authenticate', 'AuthenticateController@index'); 		//for get current user logged in
 Route::post('authenticate', 'AuthenticateController@authenticate'); //for login
+Route::post('authenticate/register', 'AuthenticateController@register'); //for register
 
 Route::get('/user', 'UserController@check');
 Route::post('/user/login', 'UserController@login');
@@ -44,8 +45,6 @@ Route::group(['middleware'=> ['jwt.auth']], function(){
 	
 	Route::get('user/validating/nik/{nik}/{id?}', 'UserController@validatingNik');
 	Route::get('user/validating/email/{email}/{id?}', 'UserController@validatingEmail');
-	
-	Route::post('user/register', 'UserController@register');
 	
 	Route::get('user/jobs', 'UserController@jobs'); //for generate subordinate hierarchy
 	Route::resource('user', 'UserController',
