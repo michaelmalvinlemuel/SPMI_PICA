@@ -43,7 +43,7 @@ class FormController extends Controller
         $ext = pathinfo($filename, PATHINFO_EXTENSION);
         $filename = basename($request->input('description'), "." . $ext);
         $filename = strtoupper(preg_replace('/\s+/', '', $filename . "_" . date("YmdHis")))  . "." . $ext;
-        $upload = $request->file('file')->move(env('APP_UPLOAD') . '\form', $filename);
+        $upload = $request->file('file')->move(env('APP_UPLOAD') . '/form', $filename);
 
         $form = new Form;
         $form->instruction_id = $request->input('instruction_id');
@@ -98,7 +98,7 @@ class FormController extends Controller
             $ext = pathinfo($filename, PATHINFO_EXTENSION);
             $filename = basename($request->input('description'), "." . $ext);
             $filename = strtoupper(preg_replace('/\s+/', '', $filename . "_" . date("YmdHis")))  . "." . $ext;
-            $upload = $request->file('file')->move(env('APP_UPLOAD') . '\form', $filename);
+            $upload = $request->file('file')->move(env('APP_UPLOAD') . '/form', $filename);
             $form->document = $filename;
         }
         $form->touch();

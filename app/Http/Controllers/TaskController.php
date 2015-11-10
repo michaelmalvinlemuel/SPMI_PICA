@@ -140,7 +140,7 @@ class TaskController extends Controller
                 $ext = pathinfo($filename, PATHINFO_EXTENSION);
                 $workName = basename($request->input('name'), "." . $ext);
                 $filename = strtoupper(preg_replace('/\s+/', '', $user->nik . "_" . $workName . '_' . $filename . "_" . date("YmdHis")))  . "." . $ext;
-                $file->move(env('APP_UPLOAD') . '\task', $filename); 
+                $file->move(env('APP_UPLOAD') . '/task', $filename); 
                 
                 $taskForm = Task::find($key);
                 $taskForm->upload = $filename;

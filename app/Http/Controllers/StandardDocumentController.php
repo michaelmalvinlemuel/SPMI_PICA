@@ -47,7 +47,7 @@ class StandardDocumentController extends Controller
         $ext = pathinfo($filename, PATHINFO_EXTENSION);
         $filename = basename($request->input('description'), "." . $ext);
         $filename = strtoupper(preg_replace('/\s+/', '', $filename . "_" . date("YmdHis")))  . "." . $ext;
-        $upload = $file->move(env('APP_UPLOAD') . '\standardDocument', $filename);
+        $upload = $file->move(env('APP_UPLOAD') . '/standardDocument', $filename);
         
         $document = new StandardDocument;
         $document->standard_id = $request->input('standard_id');
@@ -104,7 +104,7 @@ class StandardDocumentController extends Controller
             $ext = pathinfo($filename, PATHINFO_EXTENSION);
             $filename = basename($request->input('description'), "." . $ext);
             $filename = strtoupper(preg_replace('/\s+/', '', $filename . "_" . date("YmdHis")))  . "." . $ext;
-            $upload = $request->file('file')->move(env('APP_UPLOAD') . '\standardDocument', $filename);
+            $upload = $request->file('file')->move(env('APP_UPLOAD') . '/standardDocument', $filename);
             $document->document = $filename;
         }
         

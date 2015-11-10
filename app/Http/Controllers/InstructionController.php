@@ -43,7 +43,7 @@ class InstructionController extends Controller
         $ext = pathinfo($filename, PATHINFO_EXTENSION);
         $filename = basename($request->input('description'), "." . $ext);
         $filename = strtoupper(preg_replace('/\s+/', '', $filename . "_" . date("YmdHis")))  . "." . $ext;
-        $upload = $request->file('file')->move(env('APP_UPLOAD') . '\instruction', $filename);
+        $upload = $request->file('file')->move(env('APP_UPLOAD') . '/instruction', $filename);
 
         $instruction = new Instruction;
         $instruction->guide_id = $request->input('guide_id');
@@ -100,7 +100,7 @@ class InstructionController extends Controller
             $ext = pathinfo($filename, PATHINFO_EXTENSION);
             $filename = basename($request->input('description'), "." . $ext);
             $filename = strtoupper(preg_replace('/\s+/', '', $filename . "_" . date("YmdHis")))  . "." . $ext;
-            $upload = $request->file('file')->move(env('APP_UPLOAD') . '\instruction', $filename);
+            $upload = $request->file('file')->move(env('APP_UPLOAD') . '/instruction', $filename);
             $instruction->document = $filename;
         }
 

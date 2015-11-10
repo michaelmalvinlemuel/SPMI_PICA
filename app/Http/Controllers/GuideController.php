@@ -46,7 +46,7 @@ class GuideController extends Controller
         $ext = pathinfo($filename, PATHINFO_EXTENSION);
         $filename = basename($request->input('description'), "." . $ext);
         $filename = strtoupper(preg_replace('/\s+/', '', $filename . "_" . date("YmdHis")))  . "." . $ext;
-        $upload = $request->file('file')->move(env('APP_UPLOAD') . '\guide', $filename);
+        $upload = $request->file('file')->move(env('APP_UPLOAD') . '/guide', $filename);
 
         $guide = new Guide;
         $guide->standard_document_id = $request->input('standard_document_id');
@@ -101,7 +101,7 @@ class GuideController extends Controller
             $ext = pathinfo($filename, PATHINFO_EXTENSION);
             $filename = basename($request->input('description'), "." . $ext);
             $filename = strtoupper(preg_replace('/\s+/', '', $filename . "_" . date("YmdHis")))  . "." . $ext;
-            $upload = $request->file('file')->move(env('APP_UPLOAD') . '\guide', $filename);
+            $upload = $request->file('file')->move(env('APP_UPLOAD') . '/guide', $filename);
             $guide->document = $filename;
         }
 
