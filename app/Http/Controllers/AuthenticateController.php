@@ -69,39 +69,7 @@ class AuthenticateController extends Controller
         return response()->json(compact('token'));
     }
     
-    public function register (Request $request) {
-		
-    	
-    	
-        $user = new User;
-        $user->nik = $request->input('nik');
-        $user->name = $request->input('name');
-        $user->born = $request->input('born');
-        $user->address = $request->input('address');
-        $user->email = $request->input('email');
-        $user->password = Hash::make($request->input('password'));
-        $user->type = $request->input('type');
-        $user->status = '1';
-        $user->touch();
-       
-
-        $token = new UserRegistration;
-        $token->user_id = $user->id;
-        $token->token = Hash::make('myrandom');
-        $token->touch();
-        
-        if (Mail::send('emails.information', ['user' => $user, 'token' => $token->token], function ($m) use ($user) {
-        	$m->to($user->email, $user->name)->subject('Authentication Required');
-        })) {
-        	$user->save();
-        	$token->save();
-        }
-        
-        
-
-        
-
-    }
+    
 
     /**
      * Show the form for creating a new resource.

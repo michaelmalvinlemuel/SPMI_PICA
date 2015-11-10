@@ -31,11 +31,13 @@ Route::get('/', ['as' => 'main', function () {
 
 Route::get('authenticate', 'AuthenticateController@index'); 		//for get current user logged in
 Route::post('authenticate', 'AuthenticateController@authenticate'); //for login
-Route::post('authenticate/register', 'AuthenticateController@register'); //for register
+Route::post('register', 'RegisterController@register'); //for register
+Route::get('register/confirm/{token}', 'RegisterController@confirm'); //for register
 
-Route::get('/user', 'UserController@check');
+//Route::get('/user', 'UserController@check');
 Route::post('/user/login', 'UserController@login');
-Route::get('/user/fakeLogin/{username}/{password}/{token}', 'UserController@fakeLogin');
+Route::get('user/validating/nik/{nik}/{id?}', 'UserController@validatingNik');
+Route::get('user/validating/email/{email}/{id?}', 'UserController@validatingEmail');
 Route::get('/user/logout', 'UserController@logout');
 
 
@@ -43,8 +45,7 @@ Route::group(['middleware'=> ['jwt.auth']], function(){
 	
 //Route::group(['middleware'=> ['jwt.auth']], function(){
 	
-	Route::get('user/validating/nik/{nik}/{id?}', 'UserController@validatingNik');
-	Route::get('user/validating/email/{email}/{id?}', 'UserController@validatingEmail');
+	
 	
 	Route::get('user/jobs', 'UserController@jobs'); //for generate subordinate hierarchy
 	Route::resource('user', 'UserController',
