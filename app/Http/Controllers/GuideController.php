@@ -42,18 +42,13 @@ class GuideController extends Controller
     public function store(Request $request)
     {
         
-        $filename = $request->file('file')->getClientOriginalName();
-        $ext = pathinfo($filename, PATHINFO_EXTENSION);
-        $filename = basename($request->input('description'), "." . $ext);
-        $filename = strtoupper(preg_replace('/\s+/', '', $filename . "_" . date("YmdHis")))  . "." . $ext;
-        $upload = $request->file('file')->move(env('APP_UPLOAD') . '/guide', $filename);
 
         $guide = new Guide;
         $guide->standard_document_id = $request->input('standard_document_id');
         $guide->no = $request->input('no');
         $guide->date = $request->input('date');
         $guide->description = $request->input('description');
-        $guide->document = $filename;
+        $guide->document = $request->input('filename');
 
         $guide->touch();
         $guide->save();
@@ -96,13 +91,8 @@ class GuideController extends Controller
         $guide->date = $request->input('date');
         $guide->description = $request->input('description');
 
-        if ($request->file('file')) {
-            $filename = $request->file('file')->getClientOriginalName();
-            $ext = pathinfo($filename, PATHINFO_EXTENSION);
-            $filename = basename($request->input('description'), "." . $ext);
-            $filename = strtoupper(preg_replace('/\s+/', '', $filename . "_" . date("YmdHis")))  . "." . $ext;
-            $upload = $request->file('file')->move(env('APP_UPLOAD') . '/guide', $filename);
-            $guide->document = $filename;
+        if ($request->input('filename')) {
+            $guide->document = $request->input('filename');
         }
 
         $guide->touch();

@@ -39,18 +39,13 @@ class InstructionController extends Controller
      */
     public function store(Request $request)
     {
-        $filename = $request->file('file')->getClientOriginalName();
-        $ext = pathinfo($filename, PATHINFO_EXTENSION);
-        $filename = basename($request->input('description'), "." . $ext);
-        $filename = strtoupper(preg_replace('/\s+/', '', $filename . "_" . date("YmdHis")))  . "." . $ext;
-        $upload = $request->file('file')->move(env('APP_UPLOAD') . '/instruction', $filename);
 
         $instruction = new Instruction;
         $instruction->guide_id = $request->input('guide_id');
         $instruction->no = $request->input('no');
         $instruction->date = $request->input('date');
         $instruction->description = $request->input('description');
-        $instruction->document = $filename;
+        $instruction->document = $request->input('filename');
 
         $instruction->touch();
         $instruction->save();
@@ -95,13 +90,8 @@ class InstructionController extends Controller
         $instruction->date = $request->input('date');
         $instruction->description = $request->input('description');
 
-        if ($request->file('file')) {
-            $filename = $request->file('file')->getClientOriginalName();
-            $ext = pathinfo($filename, PATHINFO_EXTENSION);
-            $filename = basename($request->input('description'), "." . $ext);
-            $filename = strtoupper(preg_replace('/\s+/', '', $filename . "_" . date("YmdHis")))  . "." . $ext;
-            $upload = $request->file('file')->move(env('APP_UPLOAD') . '/instruction', $filename);
-            $instruction->document = $filename;
+        if ($request->input('filename')) {
+            $instruction->document = $request->input('filename');
         }
 
         $instruction->touch();

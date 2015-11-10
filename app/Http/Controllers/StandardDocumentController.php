@@ -42,19 +42,12 @@ class StandardDocumentController extends Controller
     public function store(Request $request)
     {
         
-        $file =  $request->file('file');
-        $filename = $file->getClientOriginalName();
-        $ext = pathinfo($filename, PATHINFO_EXTENSION);
-        $filename = basename($request->input('description'), "." . $ext);
-        $filename = strtoupper(preg_replace('/\s+/', '', $filename . "_" . date("YmdHis")))  . "." . $ext;
-        $upload = $file->move(env('APP_UPLOAD') . '/standardDocument', $filename);
-        
         $document = new StandardDocument;
         $document->standard_id = $request->input('standard_id');
         $document->no = $request->input('no');
         $document->date = $request->input('date');
         $document->description = $request->input('description');
-        $document->document = $filename;
+        $document->document = $request->input('filename');
         $document->touch();
         $document->save();
 
@@ -98,14 +91,9 @@ class StandardDocumentController extends Controller
         $document->no = $request->input('no');
         $document->date = $request->input('date');
         $document->description = $request->input('description');
-
-        if ($request->file('file')) {
-            $filename = $request->file('file')->getClientOriginalName();
-            $ext = pathinfo($filename, PATHINFO_EXTENSION);
-            $filename = basename($request->input('description'), "." . $ext);
-            $filename = strtoupper(preg_replace('/\s+/', '', $filename . "_" . date("YmdHis")))  . "." . $ext;
-            $upload = $request->file('file')->move(env('APP_UPLOAD') . '/standardDocument', $filename);
-            $document->document = $filename;
+        
+        if ($request->input('filename')) {
+            $document->document = $request->input('filename');
         }
         
         $document->touch();

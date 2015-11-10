@@ -592,17 +592,18 @@ class ProjectController extends Controller
 	public function upload(Request $request) {
 		$user = JWTAuth::parseToken()->authenticate();
 		
+        /*
 		$filename = $request->file('file')->getClientOriginalName();
 		$ext = pathinfo($filename, PATHINFO_EXTENSION);
 		$filename = basename($request->input('description'), "." . $ext);
 		$filename = strtoupper(preg_replace('/\s+/', '', $user->nik . "_" . $user->name . "_" . $filename . "_" . date("YmdHis")))  . "." . $ext;
 		$upload = $request->file('file')->move(env('APP_UPLOAD') . '\project', $filename); 
-		
+		*/
         
 		$uploadForm = new ProjectFormUpload;
 		$uploadForm->project_form_item_id = $request->input('project_form_item_id');
 		$uploadForm->user_id = $user->id;
-		$uploadForm->upload = $filename;
+		$uploadForm->upload = $request->input('filename');
 		$uploadForm->touch();
 		$uploadForm->save();
         

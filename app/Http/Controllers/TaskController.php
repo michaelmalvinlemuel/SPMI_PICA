@@ -129,6 +129,19 @@ class TaskController extends Controller
         
         $user = JWTAuth::parseToken()->authenticate();
         
+        $files = $request->input('files');
+        
+        if (is_array($files) || is_object($files))
+        foreach ($files as $key => $value) {
+            
+            $taskForm = Task::find($task[$key]['id']);
+            $taskForm->upload = $value;
+            $taskForm->status = 2;
+            $taskForm->touch();
+            $taskForm->save();
+        }
+        
+        /*
         
         $files = $request->file('files');
         
@@ -149,6 +162,9 @@ class TaskController extends Controller
                 $taskForm->save();
 
         }
+        */
+        
+        
        
     }
 

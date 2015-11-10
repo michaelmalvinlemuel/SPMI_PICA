@@ -39,18 +39,13 @@ class FormController extends Controller
      */
     public function store(Request $request)
     {
-        $filename = $request->file('file')->getClientOriginalName();
-        $ext = pathinfo($filename, PATHINFO_EXTENSION);
-        $filename = basename($request->input('description'), "." . $ext);
-        $filename = strtoupper(preg_replace('/\s+/', '', $filename . "_" . date("YmdHis")))  . "." . $ext;
-        $upload = $request->file('file')->move(env('APP_UPLOAD') . '/form', $filename);
-
+      
         $form = new Form;
         $form->instruction_id = $request->input('instruction_id');
         $form->no = $request->input('no');
         $form->date = $request->input('date');
         $form->description = $request->input('description');
-        $form->document = $filename;
+        $form->document = $request->input('filename');
         $form->touch();
         $form->save();
         
@@ -93,13 +88,8 @@ class FormController extends Controller
         $form->no = $request->input('no');
         $form->date = $request->input('date');
         $form->description = $request->input('description');
-        if ($request->file('file')) {
-            $filename = $request->file('file')->getClientOriginalName();
-            $ext = pathinfo($filename, PATHINFO_EXTENSION);
-            $filename = basename($request->input('description'), "." . $ext);
-            $filename = strtoupper(preg_replace('/\s+/', '', $filename . "_" . date("YmdHis")))  . "." . $ext;
-            $upload = $request->file('file')->move(env('APP_UPLOAD') . '/form', $filename);
-            $form->document = $filename;
+        if ($request->input('filename')) {
+            $form->document = $request->input('filename');
         }
         $form->touch();
         $form->save();
