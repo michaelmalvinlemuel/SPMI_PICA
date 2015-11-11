@@ -60,7 +60,7 @@ class RegisterController extends Controller
             $user->status = '2';
             $user->touch();
             $user->save();
-            return redirect()->route('main');
+            return redirect()->to('http://spmi.umn.ac.id');
         }
     }
 

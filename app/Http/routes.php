@@ -18,12 +18,7 @@ use Illuminate\Http\Response;
 //header('Access-Control-Allow-Credentials: true');
 
 
-Route::get('dl', function(){
-	$file = public_path() . '/upload/standardDocument/STANDARDKOMPETENSIKELULUSAN_20151103163702.pdf';
-	//header('Content-Type: application/pdf');
-	return response()->download($file);
-	
-});
+
 
 Route::get('/', ['as' => 'main', function () {
 	return view('main');
