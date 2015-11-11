@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 
 use Response;
 use App\User;
+use App\Job;
 use App\UserJob;
 use App\UserRegistration;
 use Auth;
@@ -161,10 +162,46 @@ class UserController extends Controller
                 ->get();    
         }
     }
+    
+    private function subHierarchyGenerator($users, $jobId) {
+        foreach($users as $key3 => $value3) {
+            $subs = Job::with('users')->where('job_id', '=', $jobId)->get();
+            
+            foreach($subs as $key4 => $value4) {
+                
+                $subs[$key4]['node'] = 'job';
+                $this->subHierarchyGenerator($value4->users, $value4->id);
+                
+            }
+            $users[$key3]['node'] = 'user';
+            $value3['subs'] = $subs;
+        }
+    }
+    
+    private function hierarchyGenerator($jobs) {
+        foreach($jobs as $key => $value) {
+           
+            $subordinate  = Job::with('users')->where('job_id', '=', $value->id)->get();
+            
+            foreach($subordinate as $key2 => $value2) {
+                $subordinate[$key2]['node'] = 'job';
+                $this->subHierarchyGenerator($value2->users, $value2->id);
+                
+            }
+            
+            $jobs[$key]['jobs'] = $subordinate;
+        }
+    }
 
-    public function jobs ($id) {
-        $jobs = User::with('jobs')->find($id);
-        return Response::json($jobs, $status = 200, $header=[], JSON_PRETTY_PRINT);
+    public function jobs ($userId) {
+       //get jobs that current user held
+       $user = User::with('jobs')->find($userId);
+       $jobs = $user->jobs;
+       
+       $this->hierarchyGenerator($jobs);
+       
+        
+       return Response::json($jobs, $status = 200, $header=[], JSON_PRETTY_PRINT);
     }
 
     public function subs ($id) {

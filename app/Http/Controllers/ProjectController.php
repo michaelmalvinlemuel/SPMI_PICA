@@ -409,17 +409,17 @@ class ProjectController extends Controller
     
     public function leader($id) {
     	$delegation = Project::with('leader')->find($id);
-    	return Response::json($delegation, 200, [], JSON_PRETTY_PRINT);
+    	return $delegation;//Response::json($delegation, 200, [], JSON_PRETTY_PRINT);
     }
     
 	public function upload(Request $request) {
 		$user = User::find($request->input('user_id'));
 		
-		$filename = $request->file('document')->getClientOriginalName();
+		$filename = $request->file('file')->getClientOriginalName();
 		$ext = pathinfo($filename, PATHINFO_EXTENSION);
 		$filename = basename($request->input('description'), "." . $ext);
 		$filename = strtoupper(preg_replace('/\s+/', '', $user->nik . "_" . $user->name . "_" . $filename . "_" . date("YmdHis")))  . "." . $ext;
-		$upload = $request->file('document')->move(env('APP_UPLOAD') . '\project', $filename); 
+		$upload = $request->file('file')->move(env('APP_UPLOAD') . '\project', $filename); 
 		
 		$uploadForm = new ProjectFormUpload;
 		$uploadForm->project_form_item_id = $request->input('project_form_item_id');
@@ -427,6 +427,9 @@ class ProjectController extends Controller
 		$uploadForm->upload = $filename;
 		$uploadForm->touch();
 		$uploadForm->save();
+        
+        $projectForm = ProjectFormUpload::with('users')->find($request->input('project_form_item_id'));
+        return response()->json($projectForm);
 	}
 	
 	public function validatingName($name, $id=false) {

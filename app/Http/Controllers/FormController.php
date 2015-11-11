@@ -53,6 +53,8 @@ class FormController extends Controller
         $form->document = $filename;
         $form->touch();
         $form->save();
+        
+        //return response()->json($request, 200, [], JSON_PRETTY_PRINT);
     }
 
     /**

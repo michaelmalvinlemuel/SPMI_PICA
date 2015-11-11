@@ -23,7 +23,7 @@ return [
 
     'supportsCredentials' => false,
     'allowedOrigins' => ['*'],
-    'allowedHeaders' => ['Range', 'Origin', 'Content-Type', 'Accept', 'Authorization', 'X-Request-With', 'X-CSRF-Token', 'X-XSRF-Token', 'XSRF-Token'],
+    'allowedHeaders' => ['Range', 'Origin', 'Content-Type', 'Accept', 'Authorization', 'X-Request-With', 'X-CSRF-Token', 'X-XSRF-Token'],
     'allowedMethods' => ['PATCH', 'POST', 'PUT', 'DELETE', 'GET', 'OPTIONS'],
     'exposedHeaders' => [],
     'maxAge' => 0,

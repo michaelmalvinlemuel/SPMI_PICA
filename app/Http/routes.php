@@ -13,7 +13,7 @@
 use Illuminate\Http\Response;
 
 
-//header('Access-Control-Allow-Origin: http://localhost:3000, http://localhost:8000');
+//header('Access-Control-Allow-Origin: *');
 
 //header('Access-Control-Allow-Credentials: true');
 
@@ -135,11 +135,13 @@ Route::group(['middleware'=> ['jwt.auth']], function(){
 	Route::resource('work.form', 'WorkFormController', 
 		['only' => ['store', 'update', 'destroy']]);
 	
-	Route::get('task/user/{id}', 'TaskController@index');
-	Route::get('task/retrive/{userId}/{jobId}', 'TaskController@retrive');
-	Route::get('task/{userId}/{batchId}', 'TaskController@show');
+	
+	
+	Route::get('task/retrive/{userId}/{jobId}/{display}/{progress}/{complete}/{overdue}', 'TaskController@retrive');
 	Route::get('task/users/{id}', 'TaskController@users');
-	Route::post('task/update', 'TaskController@update');
+	Route::get('task/{userId}/batch/{batchId}', 'TaskController@showBatch');
+	Route::resource('task', 'TaskController',
+		['only' => ['show', 'update']]);
 	
 	Route::get('projects', 'ProjectController@index');
 	
