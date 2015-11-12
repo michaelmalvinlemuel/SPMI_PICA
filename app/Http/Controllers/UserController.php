@@ -18,6 +18,9 @@ use DB;
 use App\Task;
 use Mail;
 
+use JWTAuth;
+use Tymon\JWTAuth\Exceptions\JWTException;
+
 class UserController extends Controller
 {
 
@@ -193,19 +196,18 @@ class UserController extends Controller
         }
     }
 
-    public function jobs ($userId) {
-       //get jobs that current user held
-       $user = User::with('jobs')->find($userId);
-       $jobs = $user->jobs;
+    public function jobs() {
        
-       $this->hierarchyGenerator($jobs);
+        $userId = JWTAuth::parseToken()->authenticate();
+        $userId = $userId->id;
+        
+        $user = User::with('jobs')->find($userId);
+        $jobs = $user->jobs;
+       
+        $this->hierarchyGenerator($jobs);
        
         
-       return Response::json($jobs, $status = 200, $header=[], JSON_PRETTY_PRINT);
-    }
-
-    public function subs ($id) {
-        
+        return response()->json($jobs, $status = 200, $header=[], JSON_PRETTY_PRINT);
     }
 
     public function register (Request $request) {
@@ -240,19 +242,6 @@ class UserController extends Controller
 
         
 
-    }
-
-    public function checkToken($token) {
-        $userToken = UserRegistration::where('token', '=', $token)->get();
-
-        if (count($userToken) > 0) {
-            $user = User::find($userToken[0]->user_id);
-            $user->status = '2';
-            $user->touch();
-            $user->save();
-            return redirect()->route('main');
-            //$userToken->delete();
-        }
     }
 
 }

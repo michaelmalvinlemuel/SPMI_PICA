@@ -29,21 +29,14 @@ Route::get('/', ['as' => 'main', function () {
 	return view('main');
 }]);
 
-Route::get('authenticate', 'AuthenticateController@index');
-Route::post('authenticate', 'AuthenticateController@authenticate');
+Route::get('authenticate', 'AuthenticateController@index'); 		//for get current user logged in
+Route::post('authenticate', 'AuthenticateController@authenticate'); //for login
 
 Route::get('/user', 'UserController@check');
 Route::post('/user/login', 'UserController@login');
 Route::get('/user/fakeLogin/{username}/{password}/{token}', 'UserController@fakeLogin');
 Route::get('/user/logout', 'UserController@logout');
 
-Route::get('auth/token', function() {
-	$encrypter = app('Illuminate\Encryption\Encrypter');
-	$encrypted_token = $encrypter->encrypt(csrf_token());
-	return response()->json($encrypted_token);
-});
-
-Route::get('user/token/{token}', 'UserController@checkToken');
 
 Route::group(['middleware'=> ['jwt.auth']], function(){
 	
@@ -51,10 +44,10 @@ Route::group(['middleware'=> ['jwt.auth']], function(){
 	
 	Route::get('user/validating/nik/{nik}/{id?}', 'UserController@validatingNik');
 	Route::get('user/validating/email/{email}/{id?}', 'UserController@validatingEmail');
-	Route::get('user/jobs/{id}', 'UserController@jobs');
+	
 	Route::post('user/register', 'UserController@register');
 	
-	
+	Route::get('user/jobs', 'UserController@jobs'); //for generate subordinate hierarchy
 	Route::resource('user', 'UserController',
 		['except' => ['create', 'edit']]);
 		
@@ -137,18 +130,14 @@ Route::group(['middleware'=> ['jwt.auth']], function(){
 	
 	
 	
-	Route::get('task/retrive/{userId}/{jobId}/{display}/{progress}/{complete}/{overdue}', 'TaskController@retrive');
-	Route::get('task/users/{id}', 'TaskController@users');
-	Route::get('task/{userId}/batch/{batchId}', 'TaskController@showBatch');
+	Route::get('task/retrive/{userId}/{jobId}/{display}/{progress}/{complete}/{overdue}', 'TaskController@retrive');	//for retrive task completness by their subordinate
 	Route::resource('task', 'TaskController',
-		['only' => ['show', 'update']]);
+		['except' => [ 'create', 'edit', 'delete']]);
 	
-	Route::get('projects', 'ProjectController@index');
-	
+
 	Route::get('projectsLast/{id}', 'ProjectController@showLast');
-	
-	Route::get('project/user/{id}', 'ProjectController@user');
-	Route::post('project/delegate', 'ProjectController@delegate');
+	Route::get('project/user', 'ProjectController@user');				//show project that involved by user
+	Route::post('project/delegate', 'ProjectController@delegate');		//for delegation user by project leader
 	Route::get('project/form/{id}', 'ProjectController@form');
 	Route::get('project/leader/{id}', 'ProjectController@leader');
 	Route::post('project/upload', 'ProjectController@upload');

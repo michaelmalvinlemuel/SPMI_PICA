@@ -15,11 +15,7 @@ use App\TaskUser;
 use App\TaskJob;
 use App\TaskWork;
 use App\TaskForm;
-use DB;
 use Response;
-
-use Illuminate\Database\Eloquent\Model;
-
 
 use JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
@@ -34,10 +30,6 @@ class TaskController extends Controller
      */
     public function index()
     {
-        
-    }
-    
-    public function show($id){
         $temp = 0;
         $currentDate = date("Y-m-d H:i:s");
 
@@ -77,25 +69,32 @@ class TaskController extends Controller
         //$temp = TaskUser::where('user_id', '=', $id)->with('jobs.works.tasks')->get();
         return Response::json($taskUser, $status=200, $headers=[], $options=JSON_PRETTY_PRINT); 
     }
+    
+    public function show($batchId) {
+        
+        $user = JWTAuth::parseToken()->authenticate();
+        $userId = $user->id;
+        
+        $workTask = Task::where('user_id', '=', $userId)->where('batch_id', '=', $batchId)->first();
+        $workId = $workTask->work_id;
+        $jobId = $workTask->job_id;
+        $work = Work::find($workId);
+        $job = Job::find($jobId);
+
+        $task = TaskWork::where('user_id', '=', $userId)
+            ->where('batch_id', '=', $batchId)->with(['tasks' => function ($query) use ($userId, $batchId) {
+                $query->where('user_id', '=', $userId)->where('batch_id', '=', $batchId);
+        }])->first();
+
+        $task['work'] = $work;
+        $task['job'] = $job;
+
+        return Response::json($task, $status=200, $headers=[], $options=JSON_PRETTY_PRINT); 
+    }
 
     public function retrive($userId, $jobId, $display, $progress, $complete, $overdue) 
     {
-        /*
-        $tasks = TaskUser::where('user_id', '=', $userId)->with(['jobs' => function($query1) use ($userId, $jobId) {
-            $query1->where('job_id', '=', $jobId)->with(['works' => function($query2) use ($userId) {
-                $query2->where('user_id', '=', $userId)->with(['tasks' => function($query3) use ($userId) {
-                    $query3->where('user_id', '=', $userId);
-                }]);
-            }]);
-        }])->paginate(1);
-        
-        
-        $temp = $tasks->toArray();
-        $temp['data'] = $temp['data'][0]['jobs'][0]['works'];
-        return Response::json($temp, $status=200); 
-        */
-        
-        
+
         
         $currentDate = date("Y-m-d H:i:s");
         
@@ -122,34 +121,13 @@ class TaskController extends Controller
         return response()->json($tasks); 
     }
 
-    public function showBatch($userId, $batchId)
-    {   
-        
-        $workTask = Task::where('user_id', '=', $userId)->where('batch_id', '=', $batchId)->first();
-        $workId = $workTask->work_id;
-        $jobId = $workTask->job_id;
-        $work = Work::find($workId);
-        $job = Job::find($jobId);
-
-        $task = TaskWork::where('user_id', '=', $userId)
-            ->where('batch_id', '=', $batchId)->with(['tasks' => function ($query) use ($userId, $batchId) {
-                $query->where('user_id', '=', $userId)->where('batch_id', '=', $batchId);
-        }])->first();
-
-        $task['work'] = $work;
-        $task['job'] = $job;
-
-        return Response::json($task, $status=200, $headers=[], $options=JSON_PRETTY_PRINT); 
-    }
-
     public function update(Request $request, $id)
     {
-        
-
+       
         $task = $request->input('tasks');
         
         
-        $user = User::find($request->input('user_id'));
+        $user = JWTAuth::parseToken()->authenticate();
         
         
         $files = $request->file('files');
@@ -171,33 +149,6 @@ class TaskController extends Controller
                 $taskForm->save();
 
         }
-        
-    
-
-        
-
-        /*
-        foreach($workTask as $key => $value) {
-            
-            $doc = 'document_' . $value->id;
-
-            if ($request->file($doc)) {
-
-                $filename = $request->file($doc)->getClientOriginalName();
-                $ext = pathinfo($filename, PATHINFO_EXTENSION);
-                $filename = basename($request->input('description'), "." . $ext);
-                $filename = strtoupper(preg_replace('/\s+/', '', $filename . "_" . date("YmdHis")))  . "." . $ext;
-                $upload = $request->file($doc)->move(env('APP_UPLOAD') . '\task', $filename);
-
-                $document->document = $filename;
-            }
-
-            $document->touch();
-            $document->save();
-
-        }*/
-
-        
        
     }
 
@@ -206,9 +157,4 @@ class TaskController extends Controller
         //
     }
 
-    public function users($id)
-    {
-        $taskUser = TaskUser::where('user_id', '=', $id)->with('jobs.works.tasks')->get();
-        return Response::json($taskUser, $status=200, $headers=[], $options=JSON_PRETTY_PRINT); 
-    }
 }

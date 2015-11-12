@@ -17,16 +17,22 @@ use App\ProjectFormUpload;
 use Response;
 use App\Form;
 
+use JWTAuth;
+use Tymon\JWTAuth\Exceptions\JWTException;
+
 class ProjectController extends Controller
 {
 
     private $leader = [];
     
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+         
     public function recursiveNode($nodes, $parent) 
     {
-        //$nodes = json_decode(json_encode($nodes), true);
-        //return $nodes;
-       
 
         foreach ($nodes as $key => $value) {
 
@@ -92,6 +98,12 @@ class ProjectController extends Controller
         
     }
 	
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+     
     public function selectNodeAll($nodes, $parent) {
     
     	foreach($nodes as $key => $value) {
@@ -132,6 +144,12 @@ class ProjectController extends Controller
     	}
     }
     
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+     
     public function selectNode($nodes, $parent) {
         
         foreach($nodes as $key => $value) {
@@ -173,7 +191,13 @@ class ProjectController extends Controller
             }
         }
     }
-
+    
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+     
     public function recursiveNodeDelete($nodes) {
 
         foreach ($nodes->projects as $key => $value) {
@@ -203,13 +227,25 @@ class ProjectController extends Controller
         
 
     }
-
+    
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+     
     public function index()
     {
         $project = Project::with('leader')->get();
         return Response::json($project, 200, [], JSON_PRETTY_PRINT);
     }
-
+    
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+     
     public function store(Request $request)
     {
         //$users = {};
@@ -258,7 +294,13 @@ class ProjectController extends Controller
         return $temp;
 
     }
-
+    
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+     
     public function show($id)
     {
         $project = Project::with('users')->with('projects.delegations')->find($id);
@@ -281,6 +323,12 @@ class ProjectController extends Controller
         return $project;
     }
     
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+     
     public function showLast($id)
     {
     	$project = Project::with('users')->with('projects.delegations')->find($id);
@@ -303,6 +351,13 @@ class ProjectController extends Controller
     	return $project;
     
     }
+    
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+     
 
     public function update(Request $request, $id)
     {
@@ -356,7 +411,12 @@ class ProjectController extends Controller
         //return $temp;
 
     }
-
+    
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function destroy($id) 
     {
         $project = Project::with('projects')->find($id);
@@ -368,36 +428,76 @@ class ProjectController extends Controller
 
         $this->leader = [];
     }
-
-    public function user($id) {
-        $project = Project::whereHas('projectUsers', function($query) use($id) {
-            $query->where('user_id', '=', $id);
+    
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function user() {
+        
+        $user = JWTAuth::parseToken()->authenticate();
+        
+        $project = Project::whereHas('projectUsers', function($query) use($user) {
+            $query->where('user_id', '=', $user->id);
         })->with('leader')->get();
 
         return Response::json($project, 200, [], JSON_PRETTY_PRINT);
     }
-
+    
+    /**
+     * Display a listing of the resource.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\Response
+     */
+     
+     private function inheritDelegation($nodes, $delegations) {
+         
+         foreach($nodes as $key => $value) {
+             $nodeDelegation = ProjectNodeDelegation::where('project_node_id', '=', $value->id);
+             $nodeDelegation->delete();
+             
+             foreach($delegations as $key2 => $value2) {
+                 $newNodeDelegation = new ProjectNodeDelegation;
+                 $newNodeDelegation->project_node_id = $value->id;
+                 $newNodeDelegation->user_id = $value2['id'];
+                 $newNodeDelegation->touch();
+                 $newNodeDelegation->save();
+             }
+             $nodes = ProjectNode::where('project_id', '=', $value->id)->where('project_type', '<>', 'App\Project')->get();
+             $this->inheritDelegation($nodes, $delegations);
+         }
+     }
+    
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
     Public function delegate(Request $request) {
 
         $projectId = $request->input('project_id');
         
-
         $projectDelegation = ProjectNodeDelegation::where('project_node_id', '=', $projectId);
         $projectDelegation->delete();    
         
-        
-        $project = $request->input('delegations');
-        //return Response::json($project, 200, [], JSON_PRETTY_PRINT);
+        $delegations = $request->input('delegations');
 
-        foreach ($project as $key => $value) {
-
+        foreach ($delegations as $key => $value) {
             $newProjectDelegation = new ProjectNodeDelegation;
             $newProjectDelegation->project_node_id = $projectId;
             $newProjectDelegation->user_id = $value['id'];
             $newProjectDelegation->touch();
             $newProjectDelegation->save();
-
         }
+                
+        if ($request->input('inherit') == true) {
+            //get child node for project by project_id
+            $nodes = ProjectNode::where('project_id', '=', $request->input('project_id'))->where('project_type', '<>', 'App\Project')->get();
+            $this->inheritDelegation($nodes, $delegations);
+        }
+            
 
     }
     
