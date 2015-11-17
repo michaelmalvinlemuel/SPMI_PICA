@@ -18,7 +18,7 @@ class CreateProjectNodesTable extends Migration
             $table->string('description');
             $table->integer('project_id');
             $table->string('project_type');
-            $table->unique(['name', 'project_id', 'deleted_at'], 'unique_nodes');
+            //$table->unique(['name', 'project_id', 'deleted_at'], 'unique_nodes');
             $table->timestamps();
             $table->softDeletes();
         });

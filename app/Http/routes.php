@@ -116,7 +116,6 @@ Route::group(['middleware'=> ['jwt.auth']], function(){
 	Route::get('work/event/pause', 'WorkController@pauseAllEvent');
 	Route::get('work/event/{id}', 'WorkController@eventToggle');
 	Route::get('work/validating/name/{name}/{id?}', 'WorkController@validatingName');
-	Route::get('work/tasks/{id}', 'WorkController@tasks');
 	Route::get('work/users/{id}', 'WorkController@users');
 	Route::resource('work', 'WorkController',
 		['except' => ['create', 'edit']]);
@@ -130,17 +129,19 @@ Route::group(['middleware'=> ['jwt.auth']], function(){
 		['except' => [ 'create', 'edit', 'delete']]);
 	
 
-	Route::get('project/last/{id}', 'ProjectController@showLast');		//shpw project with last uploaded form	
-	Route::get('project/user', 'ProjectController@user');				//show project that involved by user
-	Route::get('project/form/{id}', 'ProjectController@form');
-	Route::get('project/leader/{id}', 'ProjectController@leader');
-	Route::post('project/delegate', 'ProjectController@delegate');		//for delegation user by project leader
-	Route::post('project/score', 'ProjectController@score');			//scoring project
-	Route::patch('project/mark/{id}', 'ProjectController@mark');				//admin mark project as completed or terminated
-	Route::post('project/upload', 'ProjectController@upload');			//users upload project form
-	Route::get('project/validating/name/{name}/{id?}', 'ProjectController@validatingName');
+	Route::get('project/last/{id}', 'ProjectController@showLast');												//shpw project with last uploaded form	
+	
+	Route::get('project/form/{id}', 'ProjectController@form');													//
+	Route::get('project/leader/{id}', 'ProjectController@leader');												//retrive the leader of the project
+	Route::post('project/delegate', 'ProjectController@delegate');												//for delegation user by project leader
+	Route::post('project/score', 'ProjectController@score');													//scoring project
+	Route::patch('project/mark/{id}', 'ProjectController@mark');												//admin mark project as completed or terminated
+	Route::post('project/upload', 'ProjectController@upload');													//users upload project form
+	Route::get('project/validating/name/{name}/{id?}', 'ProjectController@validatingName');						//validate project name for prevent duplication
+	Route::get('project/user/{dislplay}/{initiation}/{preparation}/{progress}/{grading}/{conplete}/{terminated}', 'ProjectController@user'); 	//show project that involved by user
+	Route::get('project/{dislplay}/{initiation}/{preparation}/{progress}/{grading}/{conplete}/{terminated}', 'ProjectController@index');		//retrive project by filter
 	Route::resource('project', 'ProjectController',
-		['except' => ['create', 'edit']]);
+		['except' => ['index', 'create', 'edit']]);
 	
 	
 });

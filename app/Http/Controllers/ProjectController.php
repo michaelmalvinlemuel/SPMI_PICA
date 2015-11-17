@@ -20,6 +20,7 @@ use App\Form;
 use JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 
+
 class ProjectController extends Controller
 {
 
@@ -36,63 +37,71 @@ class ProjectController extends Controller
 
         foreach ($nodes as $key => $value) {
 
-                $projectNode = new ProjectNode;
-                $projectNode->name = $value['header'];
-                $projectNode->description = $value['description'];
-                $projectNode->touch();
-                $parent->projects()->save($projectNode);
+            $projectNode = new ProjectNode;
+            $projectNode->name = $value['header'];
+            $projectNode->description = $value['description'];
+            $projectNode->touch();
+            $parent->projects()->save($projectNode);
+            //$parent->save();
+            
+            
+            $delegations = $value['delegations'];
+            //return $delegations;
+            //this is the funck that we should get ridd off
+            foreach($delegations as $key1 => $value1) {
+                $projectDelegation = new ProjectNodeDelegation;
+                $projectDelegation->project_node_id = $projectNode->id;
+                $projectDelegation->user_id = $value1['id'];
+                $projectDelegation->touch();
+                $projectDelegation->save();
+            } 
 
-                $delegations = $nodes[$key]['delegations'];
-
-                foreach($delegations as $key1 => $value1) {
-                    $projectDelegation = new ProjectNodeDelegation;
-                    $projectDelegation->project_node_id = $projectNode->id;
-                    $projectDelegation->user_id = $value1['id'];
-                    $projectDelegation->touch();
-                    $projectDelegation->save();
-                }
-                    
-
-            if (count($value['children']) > 0) {
-
-                
+            if (count($value['children']) > 0) {                
                 $this->recursiveNode($value['children'], $projectNode);
                 //return $projectNode;
 
             } else {
-
-                $projectForm = new ProjectForm;
-                $projectForm->project_node_id = $projectNode['id'];
-                $projectForm->weight = $value['weight'];
-                $projectForm->touch();
-                $projectForm->save();
-
-                $forms = $value['forms'];
-                foreach($forms as $key1 => $value1) {
-                    $projectFormItem = new ProjectFormItem;
-                    $projectFormItem->project_form_id = $projectForm['id'];
-                    $projectFormItem->form_id = $value1['id'];
-                    $projectFormItem->document = $value1['document'];
-                    $projectFormItem->touch();
-                    $projectFormItem->save();
+                
+                //check if node has form.
+                if (isset($value['forms'])) {
+                    $projectForm = new ProjectForm;
+                    $projectForm->project_node_id = $projectNode->id;
                     
-                   	if (isset($value1['uploads'])) {
-	                    $projectUpload = $value1['uploads'];
-	                    $projectUpload = json_decode(json_encode($projectUpload), true);
-	                    
-	                    foreach($projectUpload as $key2 => $value2) {
-	                    	$upload = new ProjectFormUpload;
-	                    	$upload->project_form_item_id = $projectFormItem->id;
-	                    	$upload->upload = $value2['upload'];
-	                    	$upload->user_id = $value2['user_id'];
-	                    	$upload->touch();
-	                    	$upload->save();
-	                    	//echo $upload->id;
-	                    }
-                   	}
+                    if (isset($value['weight'])) {
+                        $projectForm->weight = $value['weight'];
+                    } else {
+                        $projectForm->weight = 0;
+                    }
+                    $projectForm->touch();
+                    $projectForm->save();
+                    
+                    //re-inserting project form item
+                    $forms = $value['forms'];
+                    foreach($forms as $key1 => $value1) {
+                        $projectFormItem = new ProjectFormItem;
+                        $projectFormItem->project_form_id = $projectForm['id'];
+                        $projectFormItem->form_id = $value1['id'];
+                        $projectFormItem->document = $value1['document'];
+                        $projectFormItem->touch();
+                        $projectFormItem->save();
+                        
+                        //check if each item already had upload file
+                        if (isset($value1['uploads'])) {
+                            $projectUpload = $value1['uploads'];
+                            $projectUpload = json_decode(json_encode($projectUpload), true);
+                            
+                            //re-inserting uploaded form for each project form item;
+                            foreach($projectUpload as $key2 => $value2) {
+                                $upload = new ProjectFormUpload;
+                                $upload->project_form_item_id = $projectFormItem->id;
+                                $upload->upload = $value2['upload'];
+                                $upload->user_id = $value2['user_id'];
+                                $upload->touch();
+                                $upload->save();
+                            }
+                        }
+                    }
                 }
-
-                //return 0;
             }
         }
         
@@ -120,27 +129,43 @@ class ProjectController extends Controller
     			$this->selectNodeAll($projectNode, $nodes[$key]);
     
     		} else {
-    
-    			$projectForm = ProjectForm::where('project_node_id', '=', $value->id)->get();
-    			$projectFormItem = ProjectFormItem::where('project_form_id', '=', $projectForm[0]->id)->get();
-    			$form = [];
-    
-    			foreach ($projectFormItem as $key1 => $value1) {
-    				$form[$key1] = Form::with('instruction.guide.standardDocument.standard')->find($value1->form_id);
-    				$form[$key1]['project_form_item_id'] = $value1->id;
-    
-    				$projectUpload = ProjectFormUpload::where('project_form_item_id', '=', $value1->id)->get();
-    				$form[$key1]['uploads'] = $projectUpload;
-    			}
-    
-    			foreach ($nodes as $key2 => $value2) {
-    				$nodes[$key2]['header'] = $value2->name;
-    			}
-    
-    			$nodes[$key]['children'] = [];
-    			$nodes[$key]['forms'] = $form;
-    			$nodes[$key]['weight'] = $projectForm[0]->weight;
-                $nodes[$key]['score'] = $projectForm[0]->score;
+                
+                //checkpoint handler if node doesnt had froms yet
+               
+                $projectForm = ProjectForm::where('project_node_id', '=', $value->id)->get();
+                
+                if (count($projectForm) > 0) {
+                    
+                    $projectFormItem = ProjectFormItem::where('project_form_id', '=', $projectForm[0]->id)->get();
+                    $form = [];
+        
+                    foreach ($projectFormItem as $key1 => $value1) {
+                        $form[$key1] = Form::with('instruction.guide.standardDocument.standard')->find($value1->form_id);
+                        $form[$key1]['project_form_item_id'] = $value1->id;
+        
+                        $projectUpload = ProjectFormUpload::where('project_form_item_id', '=', $value1->id)->get();
+                        $form[$key1]['uploads'] = $projectUpload;
+                    }
+        
+                    foreach ($nodes as $key2 => $value2) {
+                        $nodes[$key2]['header'] = $value2->name;
+                    }
+                    
+                    $nodes[$key]['children'] = [];
+                    $nodes[$key]['forms'] = $form;
+                    $nodes[$key]['weight'] = $projectForm[0]->weight;
+                    $nodes[$key]['score'] = $projectForm[0]->score;
+                    
+                } else {
+                    
+                    foreach ($nodes as $key2 => $value2) {
+                        $nodes[$key2]['header'] = $value2->name;
+                    }
+                    
+                    $nodes[$key]['children'] = [];
+                    $nodes[$key]['weight'] = 0;
+                    $nodes[$key]['score'] = 0;
+                }
     		}
     	}
     }
@@ -156,12 +181,12 @@ class ProjectController extends Controller
         foreach($nodes as $key => $value) {
 
             $projectNode = ProjectNode::with('delegations')->where('project_id', '=', $value->id)->where('project_type', '<>', 'App\Project')->get();
+            
+            $nodes[$key]['header'] = $value->name;
 
             if (count($projectNode) > 0) {
 
-                foreach ($nodes as $key2 => $value2) {
-                   $nodes[$key2]['header'] = $value2->name;
-                }
+                
 
                 $nodes[$key]['children'] = $projectNode;
                 $this->selectNode($projectNode, $nodes[$key]);
@@ -169,27 +194,27 @@ class ProjectController extends Controller
             } else {
 
                 $projectForm = ProjectForm::where('project_node_id', '=', $value->id)->get();
-                $projectFormItem = ProjectFormItem::where('project_form_id', '=', $projectForm[0]->id)->get();
-                $form = [];
-
-                foreach ($projectFormItem as $key1 => $value1) {
-                    $form[$key1] = Form::find($value1->form_id);
-           			$form[$key1]['project_form_item_id'] = $value1->id; 
-           			
-           			$lastUpload = ProjectFormUpload::where('project_form_item_id', '=', $value1->id)->max('created_at');
-           			$projectUpload = ProjectFormUpload::where('project_form_item_id', '=', $value1->id)
-           				->where('created_at', '=', $lastUpload)->with('users')->first();
-                	$form[$key1]['uploads'] = $projectUpload;
+                
+                foreach($projectForm as $key0 => $value0) {
+                    
+                    $projectFormItem = ProjectFormItem::where('project_form_id', '=', $value0->id)->get();
+                    $form = [];
+    
+                    foreach ($projectFormItem as $key1 => $value1) {
+                        $form[$key1] = Form::find($value1->form_id);
+                        $form[$key1]['project_form_item_id'] = $value1->id; 
+                        
+                        $lastUpload = ProjectFormUpload::where('project_form_item_id', '=', $value1->id)->max('created_at');
+                        $projectUpload = ProjectFormUpload::where('project_form_item_id', '=', $value1->id)
+                            ->where('created_at', '=', $lastUpload)->with('users')->first();
+                        $form[$key1]['uploads'] = $projectUpload;
+                    }
+    
+                    $nodes[$key]['children'] = [];
+                    $nodes[$key]['forms'] = $form;
+                    $nodes[$key]['weight'] = $value0->weight;
+                    $nodes[$key]['score'] = $value0->score;
                 }
-
-                foreach ($nodes as $key2 => $value2) {
-                   $nodes[$key2]['header'] = $value2->name;
-                }
-
-                $nodes[$key]['children'] = [];
-                $nodes[$key]['forms'] = $form;
-                $nodes[$key]['weight'] = $projectForm[0]->weight;
-                $nodes[$key]['score'] = $projectForm[0]->score;
             }
         }
     }
@@ -246,7 +271,10 @@ class ProjectController extends Controller
         } else {
             
             $projectForm = ProjectForm::where('project_node_id', '=', $project->id)->first();
-            $this->score += $projectForm->weight * $projectForm->score; 
+            if (isset($projectForm->weight) && isset($projectForm->score)) {
+                $this->score += $projectForm->weight * $projectForm->score; 
+            }
+            
         }    
     }
                 
@@ -256,15 +284,39 @@ class ProjectController extends Controller
      * @return \Illuminate\Http\Response
      */
     
-    public function index()
+    public function index($display, $initiation, $preparation, $progress, $grading, $complete, $terminated)
     {
         
-        $project = Project::with('leader')->get();
+        $project = Project::with('leader')->where('deleted_at', 'IS', 'NULL');
+        
+        if ($initiation == 'true') {
+            $project = $project->initiation();
+        }
+        
+        if ($preparation == 'true') {
+            $project = $project->preparation();
+        }
+        
+        if ($progress == 'true') {
+            $project = $project->progress();
+        }
+        
+        if ($grading == 'true') {
+            $project = $project->grading();
+        }
+        
+        if ($complete == 'true') {
+            $project = $project->complete();
+        }
+        
+        if ($terminated == 'true') {
+            $project = $project->terminated();
+        }
+        
+        $project = $project->paginate($display);
         
         foreach($project as $key => $value) {
-            
-            if ($value->status !== '1') {
-                
+            if ($value->status !== '0') {
                 $this->score = 0;
                 $this->recursivePerformanceScoring($project[$key]);
                 $value->score = round($this->score/100, 2);
@@ -283,31 +335,28 @@ class ProjectController extends Controller
      
     public function store(Request $request)
     {
-        //$users = {};
-        //return Response::json($request->all(), 500, [], JSON_PRETTY_PRINT);
-
+        //capture users list
         $users = $request->input('users');
         $leader = null;
-
+        
+        //determine leader from list
         foreach ($users as $key => $value) {
             //return $value['leader'];
             if ($value['leader'] == true) {
                 $leader = $value['id'];
-                //$this->leader[0] = $leader;
                 break;
             }
         }
-
+        
+        //create new project model
         $project = new Project;
         $project->name = $request->input('name');
         $project->description = $request->input('description');
         $project->date_start = $request->input('start');
         $project->date_ended = $request->input('ended');
         $project->user_id = $leader;
-        $project->status = '1';
-
+        $project->status = $request->input('status');
         $project->touch();
-        //$project->save();
 
         foreach($users as $key => $value) {
             $projectUser = new ProjectUser;
@@ -319,12 +368,9 @@ class ProjectController extends Controller
 
         $projectNode = [];
         $projectNode = $request->input('projects');
-        //return Response::json($projectNode, 200, [], JSON_PRETTY_PRINT);
 
-        //return $projectNode[0]['children'];
         $temp = $this->recursiveNode($projectNode, $project);
 
-        $this->leader = [];
 
         return $temp;
 
@@ -427,31 +473,35 @@ class ProjectController extends Controller
     public function update(Request $request, $id)
     {
         $users = $request->input('users');
-
+        $leader = null;
+        
         foreach ($users as $key => $value) {
             if ($value['leader'] == true) {
                 $leader = $value['id'];
-                $this->leader[0] = $leader;
                 break;
             }
         }
 
         $project = Project::with('projects')->find($id);
-
-        $this->recursiveNodeDelete($project);
+        
+        foreach($project->projects as $key => $value) {
+            $this->recursiveNodeDelete($value);
+        }
+        //destroy this current project
+        
         $project->projectUsers()->delete();
 
-        //$project->deleted_at = null;
-        $project = new Project;
+        //declare new project
+        //$project = new Project;
         $project->name = $request->input('name');
         $project->description = $request->input('description');
         $project->date_start = $request->input('start');
         $project->date_ended = $request->input('ended');
         $project->user_id = $leader;
         $project->status = $request->input('status');
-
         $project->touch();
-
+        
+        //add new project members
         foreach($users as $key => $value) {
             $projectUser = new ProjectUser;
             $projectUser->project_id = $project->id;
@@ -462,18 +512,12 @@ class ProjectController extends Controller
 
         $projectNode = [];
         $projectNode = $request->input('projects');
-        //return Response::json($projectNode, 200, [], JSON_PRETTY_PRINT);
-
-        //return $projectNode[0]['children'];
-        $temp = $this->recursiveNode($projectNode, $project);
         
-        $this->leader = [];
-        //$project->touch();
-        
+        //return $projectNode;
+        return $this->recursiveNode($projectNode, $project);
 
-        //$project->save();
+     
 
-        //return $temp;
 
     }
     
@@ -495,21 +539,46 @@ class ProjectController extends Controller
     }
     
     /**
-     * Display a listing of the resource.
+     * Display project with current user presented and user is member of that project;
      *
      * @return \Illuminate\Http\Response
      */
-    public function user() {
+    public function user($display, $initiation, $preparation, $progress, $grading, $complete, $terminated) {
         
         $user = JWTAuth::parseToken()->authenticate();
         
-        $project = Project::whereHas('projectUsers', function($query) use($user) {
-            $query->where('user_id', '=', $user->id);
-        })->with('leader')->get();
+        $project = Project::with('leader')->where('deleted_at', 'IS', 'NULL');
+        
+        if ($initiation == 'true') {
+            $project = $project->userInitiation($user);
+        }
+        
+        if ($preparation == 'true') {
+            $project = $project->userPreparation($user);
+        }
+        
+        if ($progress == 'true') {
+            $project = $project->userProgress($user);
+        }
+        
+        if ($grading == 'true') {
+            $project = $project->userGrading($user);
+        }
+        
+        if ($complete == 'true') {
+            $project = $project->userComplete($user);
+        }
+        
+        if ($terminated == 'true') {
+            $project = $project->userTerminated($user);
+        }
+        
+        $project = $project->paginate($display);
+        
         
         foreach($project as $key => $value) {
             
-            if ($value->status !== '1') {
+            if ($value->status !== '0') {
                 
                 $this->score = 0;
                 $this->recursivePerformanceScoring($project[$key]);

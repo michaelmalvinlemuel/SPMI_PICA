@@ -554,11 +554,6 @@ class WorkController extends Controller
         //return $this->eventInsertStatement($id, "CURRENT_TIMESTAMP() + INTERVAL 1 DAY", $work->type);
     }
 
-    public function tasks ($id) 
-    {
-        
-    }
-
     public function users ($id) 
     {
         $temp = User::with(['jobs' => function ($query1) use ($id) {
