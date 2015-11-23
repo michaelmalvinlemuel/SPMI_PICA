@@ -20,11 +20,23 @@ class Project extends Model
     }
 
     public function users() {
-    	return $this->belongsToMany('App\User', 'project_users')->whereNull('project_users.deleted_at');
+    	return $this->belongsToMany('App\User', 'project_users')
+            ->whereNull('project_users.deleted_at');
     }
-
+    
+    public function assessors() {
+        return $this->belongsToMany('App\User', 'project_assessors')
+            ->whereNull('project_assessors.deleted_at');
+    }
+    
+    //used for deleting project member via table
     public function projectUsers() {
         return $this->hasMany('App\ProjectUser');
+    }
+    
+    //used for deleting project assessor via table
+    public function projectAssessors() {
+        return $this->hasMany('App\ProjectAssessor');
     }
 
     public function leader() {
@@ -84,6 +96,11 @@ class Project extends Model
            $query->whereHas('projectUsers', function($query) use($user) {
                 $query->where('user_id', '=', $user->id);
             })->where('status', '=', '0')->whereNull('deleted_at'); 
+        })->orWhere(function($query) use ($user) {
+            $currentDate = date("Y-m-d");
+            $query->whereHas('projectAssessors', function($query) use($user) {
+                $query->where('user_id', '=', $user->id);
+            });
         });
     }
     
@@ -93,7 +110,13 @@ class Project extends Model
             $query->whereHas('projectUsers', function($query) use($user) {
                 $query->where('user_id', '=', $user->id);
             })->where('status', '=', '1')->where('date_start', '>', $currentDate)
-            ->whereNull('deleted_at');
+                ->whereNull('deleted_at');
+        })->orWhere(function($query) use($user) {
+            $currentDate = date("Y-m-d");
+            $query->whereHas('projectAssessors', function($query) use($user) {
+                $query->where('user_id', '=', $user->id);
+            })->where('status', '=', '1')->where('date_start', '>', $currentDate)
+                ->whereNull('deleted_at');
         });
     }
     
@@ -101,6 +124,12 @@ class Project extends Model
         return $query->orWhere(function($query) use($user) {
             $currentDate = date("Y-m-d");
             $query->whereHas('projectUsers', function($query) use($user) {
+                $query->where('user_id', '=', $user->id);
+            })->where('status', '=', '1')->where('date_start', '<=', $currentDate)
+            ->where('date_ended', '>=', $currentDate)->whereNull('deleted_at');
+        })->orWhere(function($query) use($user) {
+            $currentDate = date("Y-m-d");
+            $query->whereHas('projectAssessors', function($query) use($user) {
                 $query->where('user_id', '=', $user->id);
             })->where('status', '=', '1')->where('date_start', '<=', $currentDate)
             ->where('date_ended', '>=', $currentDate)->whereNull('deleted_at');
@@ -114,6 +143,12 @@ class Project extends Model
                 $query->where('user_id', '=', $user->id);
             })->where('status', '=', '1')->where('date_ended', '<', $currentDate)
             ->whereNull('deleted_at');
+        })->orWhere(function($query) use($user) {
+            $currentDate = date("Y-m-d");
+            $query->whereHas('projectAssessors', function($query) use($user) {
+                $query->where('user_id', '=', $user->id);
+            })->where('status', '=', '1')->where('date_ended', '<', $currentDate)
+            ->whereNull('deleted_at');
         });
     }
     
@@ -123,6 +158,11 @@ class Project extends Model
             $query->whereHas('projectUsers', function($query) use($user) {
                 $query->where('user_id', '=', $user->id);
             })->where('status', '=', '2')->whereNull('deleted_at');
+        })->orWhere(function($query) use($user) {
+            $currentDate = date("Y-m-d");
+            $query->whereHas('projectAssessors', function($query) use($user) {
+                $query->where('user_id', '=', $user->id);
+            })->where('status', '=', '2')->whereNull('deleted_at');
         });
     }
     
@@ -130,6 +170,11 @@ class Project extends Model
         return $query->orWhere(function($query) use($user) {
            $currentDate = date("Y-m-d");
            $query->whereHas('projectUsers', function($query) use($user) {
+                $query->where('user_id', '=', $user->id);
+            })->where('status', '=', '3')->whereNull('deleted_at'); 
+        })->orWhere(function($query) use($user) {
+           $currentDate = date("Y-m-d");
+           $query->whereHas('projectAssessors', function($query) use($user) {
                 $query->where('user_id', '=', $user->id);
             })->where('status', '=', '3')->whereNull('deleted_at'); 
         });

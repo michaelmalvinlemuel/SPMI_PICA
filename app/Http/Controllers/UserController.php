@@ -210,4 +210,11 @@ class UserController extends Controller
         return response()->json($jobs, $status = 200, $header=[], JSON_PRETTY_PRINT);
     }
 
+    /**
+     * Dummy route for checking if users are administrator
+     */
+    public function administrator() {
+        $user = JWTAuth::parseToken()->authenticate();
+    }
+
 }

@@ -23,7 +23,8 @@ class ProjectNode extends Model
     }
 
     public function delegations() {
-    	return $this->belongsToMany('App\User', 'project_node_delegations')->whereNull('project_node_delegations.deleted_at');
+    	return $this->belongsToMany('App\User', 'project_node_delegations')
+            ->whereNull('project_node_delegations.deleted_at');
     }
 
     public function forms() {

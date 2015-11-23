@@ -18,6 +18,10 @@ class ProjectFormItem extends Model
     public function uploads() {
     	return $this->hasMany('App\ProjectFormUpload');
     }
+
+    public function upload() {
+        return $this->hasOne('App\ProjectFormUpload')->latest();
+    }
     
     public function form() {
     	return $this->belongsTo('App\Form');

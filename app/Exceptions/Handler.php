@@ -51,8 +51,7 @@ class Handler extends ExceptionHandler
         } else if ($e instanceof Tymon\JWTAuth\Exceptions\TokenInvalidException) {
             return response()->json(['token_invalid'], $e->getStatusCode());
         }
-    
 
-        return parent::render($request, $e);
+        return parent::render($request, $e)->header('Access-Control-Allow-Origin', '*');
     }
 }

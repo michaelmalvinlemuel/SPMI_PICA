@@ -11,8 +11,10 @@ use App\Project;
 use App\ProjectNode;
 use App\ProjectNodeDelegation;
 use App\ProjectUser;
+use App\ProjectAssessor;
 use App\ProjectForm;
 use App\ProjectFormItem;
+use App\ProjectFormScore;
 use App\ProjectFormUpload;
 use Response;
 use App\Form;
@@ -132,7 +134,7 @@ class ProjectController extends Controller
                 
                 //checkpoint handler if node doesnt had froms yet
                
-                $projectForm = ProjectForm::where('project_node_id', '=', $value->id)->get();
+                $projectForm = ProjectForm::where('project_node_id', '=', $value->id)->with('scores')->get();
                 
                 if (count($projectForm) > 0) {
                     
@@ -154,7 +156,7 @@ class ProjectController extends Controller
                     $nodes[$key]['children'] = [];
                     $nodes[$key]['forms'] = $form;
                     $nodes[$key]['weight'] = $projectForm[0]->weight;
-                    $nodes[$key]['score'] = $projectForm[0]->score;
+                    //$nodes[$key]['score'] = $projectForm[0]->score;
                     
                 } else {
                     
@@ -164,7 +166,7 @@ class ProjectController extends Controller
                     
                     $nodes[$key]['children'] = [];
                     $nodes[$key]['weight'] = 0;
-                    $nodes[$key]['score'] = 0;
+                    ///$nodes[$key]['score'] = 0;
                 }
     		}
     	}
@@ -193,7 +195,7 @@ class ProjectController extends Controller
 
             } else {
 
-                $projectForm = ProjectForm::where('project_node_id', '=', $value->id)->get();
+                $projectForm = ProjectForm::where('project_node_id', '=', $value->id)->with('score.users')->get();
                 
                 foreach($projectForm as $key0 => $value0) {
                     
@@ -209,11 +211,19 @@ class ProjectController extends Controller
                             ->where('created_at', '=', $lastUpload)->with('users')->first();
                         $form[$key1]['uploads'] = $projectUpload;
                     }
-    
+
+
+                    //$projectFormScore = ProjectFormScore::where('project_form_id', '=', $value0->id)->last();
+                    //$nodes[$key]['score'] = $projectFormScore['score'];
+                
                     $nodes[$key]['children'] = [];
                     $nodes[$key]['forms'] = $form;
                     $nodes[$key]['weight'] = $value0->weight;
                     $nodes[$key]['score'] = $value0->score;
+
+
+
+                    
                 }
             }
         }
@@ -315,14 +325,6 @@ class ProjectController extends Controller
         
         $project = $project->paginate($display);
         
-        foreach($project as $key => $value) {
-            if ($value->status !== '0') {
-                $this->score = 0;
-                $this->recursivePerformanceScoring($project[$key]);
-                $value->score = round($this->score/100, 2);
-                $this->score = 0;
-            }    
-        }
         
         return response()->json($project);
     }
@@ -337,6 +339,8 @@ class ProjectController extends Controller
     {
         //capture users list
         $users = $request->input('users');
+        $assessors = $request->input('assessors');
+        
         $leader = null;
         
         //determine leader from list
@@ -354,6 +358,7 @@ class ProjectController extends Controller
         $project->description = $request->input('description');
         $project->date_start = $request->input('start');
         $project->date_ended = $request->input('ended');
+        $project->type = $request->input('type');
         $project->user_id = $leader;
         $project->status = $request->input('status');
         $project->touch();
@@ -364,6 +369,14 @@ class ProjectController extends Controller
             $projectUser->user_id = $value['id'];
             $projectUser->touch();
             $projectUser->save();
+        }
+        
+        foreach($assessors as $key => $value) {
+            $projectAssessor = new ProjectAssessor;
+            $projectAssessor->project_id = $project->id;
+            $projectAssessor->user_id = $value['id'];
+            $projectAssessor->touch();
+            $projectAssessor->save();
         }
 
         $projectNode = [];
@@ -376,35 +389,7 @@ class ProjectController extends Controller
 
     }
     
-    private function recursiveScore($nodes) {
-        
-        foreach ($nodes as $key => $value) {
-            
-            if (count($value['children']) > 0) {
-                
-                $this->recursiveScore($value['children']);
-                
-            } else {
-
-                $projectForm = ProjectForm::where('project_node_id', '=', $value['id'])->first();
-                if (isset($value['score'])) {
-                    $projectForm->score = $value['score'];
-                } else {
-                    $projectForm->score = 0;
-                }
-               
-                $projectForm->touch();
-                $projectForm->save();
-                
-            }
-        }
-    }
     
-    public function score(Request $request) {
-        $projectNode = $request->input('projects');
-        
-        $this->recursiveScore($projectNode);
-    }
     
     /**
      * Display a listing of the resource.
@@ -414,11 +399,13 @@ class ProjectController extends Controller
      
     public function show($id)
     {
-        $project = Project::with('users')->with('projects.delegations')->find($id);
-
+        $project = Project::with('users')->with('assessors')->with('projects.delegations')->find($id);
+        
+        //add header attribute for frontend;
         foreach ($project->projects as $key => $value) {
             $project->projects[$key]['header'] = $value->name;
         }
+        
         
         foreach ($project->users as $key => $value) {
             if ($project->user_id == $value->id) {
@@ -430,8 +417,8 @@ class ProjectController extends Controller
 
         $this->selectNodeAll($project['projects'], $project);
         
-        return Response::json($project, 200, [], JSON_PRETTY_PRINT);
-        return $project;
+        return response()->json($project, 200, [], JSON_PRETTY_PRINT);
+        //return $project;
     }
     
     /**
@@ -442,7 +429,7 @@ class ProjectController extends Controller
      
     public function showLast($id)
     {
-    	$project = Project::with('users')->with('projects.delegations')->find($id);
+    	$project = Project::with('users')->with('assessors')->with('projects.delegations')->find($id);
     
     	foreach ($project->projects as $key => $value) {
     		$project->projects[$key]['header'] = $value->name;
@@ -473,6 +460,8 @@ class ProjectController extends Controller
     public function update(Request $request, $id)
     {
         $users = $request->input('users');
+        $assessors = $request->input('assessors');
+        
         $leader = null;
         
         foreach ($users as $key => $value) {
@@ -489,7 +478,9 @@ class ProjectController extends Controller
         }
         //destroy this current project
         
+        //delete project user via table;
         $project->projectUsers()->delete();
+        $project->projectAssessors()->delete();
 
         //declare new project
         //$project = new Project;
@@ -497,6 +488,7 @@ class ProjectController extends Controller
         $project->description = $request->input('description');
         $project->date_start = $request->input('start');
         $project->date_ended = $request->input('ended');
+        $project->type = $request->input('type');
         $project->user_id = $leader;
         $project->status = $request->input('status');
         $project->touch();
@@ -509,7 +501,16 @@ class ProjectController extends Controller
             $projectUser->touch();
             $projectUser->save();
         }
-
+        
+        //add project assessors
+        foreach($assessors as $key => $value) {
+            $projectAssessor = new ProjectAssessor;
+            $projectAssessor->project_id = $project->id;
+            $projectAssessor->user_id = $value['id'];
+            $projectAssessor->touch();
+            $projectAssessor->save();
+        }
+        
         $projectNode = [];
         $projectNode = $request->input('projects');
         
@@ -575,19 +576,7 @@ class ProjectController extends Controller
         
         $project = $project->paginate($display);
         
-        
-        foreach($project as $key => $value) {
-            
-            if ($value->status !== '0') {
-                
-                $this->score = 0;
-                $this->recursivePerformanceScoring($project[$key]);
-                $value->score = round($this->score/100, 2);
-                $this->score = 0;
-            }    
-        }
-        
-        return response()->json($project, 200, [], JSON_PRETTY_PRINT);
+        return response()->json($project, 200, []);
         
     }
     
@@ -661,13 +650,7 @@ class ProjectController extends Controller
 	public function upload(Request $request) {
 		$user = JWTAuth::parseToken()->authenticate();
 		
-        /*
-		$filename = $request->file('file')->getClientOriginalName();
-		$ext = pathinfo($filename, PATHINFO_EXTENSION);
-		$filename = basename($request->input('description'), "." . $ext);
-		$filename = strtoupper(preg_replace('/\s+/', '', $user->nik . "_" . $user->name . "_" . $filename . "_" . date("YmdHis")))  . "." . $ext;
-		$upload = $request->file('file')->move(env('APP_UPLOAD') . '\project', $filename); 
-		*/
+    
         
 		$uploadForm = new ProjectFormUpload;
 		$uploadForm->project_form_item_id = $request->input('project_form_item_id');
@@ -691,6 +674,108 @@ class ProjectController extends Controller
                 ->get();    
         }
 	}
+    
+    public function lock($id) {
+        
+        //recursive to lock or unlock child element
+        $recursiveLocking = function($nodes, $lockingStatus) {
+            foreach($nodes as $key => $value) {
+                $value->status = $lockingStatus;
+                $value->touch();
+                $value->save();
+                
+                if (count($value->projects) > 0) {
+                    $recursiveLocking($value->projects, $lockingStatus);    
+                }
+            }
+        };
+
+        $bubblingUnlock = function($node) {
+
+            //looking for parent
+            $projectNode = ProjectNode::find($node->project_id);
+
+            if ($projectNode['status'] == '1') {
+                $projectNode['status'] = '0';
+                $projectNode->touch();
+                $projectNode->save();
+                if (isset($bubblingUnlock)) {
+                   $bubblingUnlock($projectNode); 
+                }
+                
+            }
+
+            
+        };
+
+
+        
+        $lockingStatus = 0;
+        $projectNode = ProjectNode::find($id);
+        if ($projectNode->status == '0') {
+            $projectNode->status = '1';
+            $lockingStatus = 1;
+        } else {
+            $projectNode->status = '0';
+            $lockingStatus = 0;
+            $bubblingUnlock($projectNode);
+        }
+        $projectNode->touch();
+        $projectNode->save();
+        
+        //inherit locking system,
+        $recursiveLocking($projectNode->projects, $lockingStatus);
+        
+    }
+
+    /**
+     * Custom selection for showing for scoring and grading
+     *
+     */
+
+    public function assess($nodeId) {
+
+        $findRoot = function($node) {
+            $projectNode = ProjectNode::find($node->project_id);
+            if ($projectNode->project_type == 'App\Project') {
+                return Project::with('assessors')->with('leader')->find($projectNode->project_id);
+            } else {
+                if (isset($findRoot)) {
+                    $findRoot($projectNode);
+                }
+            }
+        };
+
+        $projectNode = ProjectNode::with('delegations')
+            ->with(['forms' => function($query) {
+                $query->with(['forms' => function($query2) {
+                    $query2->with('form')->with('upload.users');
+                }])->with('scores.users');
+            }])->find($nodeId);
+        $projectNode->root = $findRoot($projectNode);
+
+        //unset($projectNode->root->assessors);
+        return response()->json($projectNode);
+
+    }
+    
+    public function score(Request $request) {
+        
+        
+        $user = JWTAuth::parseToken()->authenticate();
+
+        $projectScore = new ProjectFormScore;
+        $projectScore->project_form_id = $request->input('project_form_id');
+        $projectScore->user_id = $user->id;
+        $projectScore->score = $request->input('score');
+        $projectScore->description = $request->input('description');
+        $projectScore->touch();
+        $projectScore->save();
+        
+        $projectScore->users = $user;
+        return response()->json( $projectScore);
+    }
+
     
     public function mark(Request $request, $id) 
     {

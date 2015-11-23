@@ -24,4 +24,12 @@ class ProjectForm extends Model
     public function projectNode() {
     	return $this->belongsTo('App\ProjectNode', 'project_node_id');
     }
+
+    public function scores() {
+        return $this->hasMany('App\ProjectFormScore');
+    }
+
+    public function score() {
+        return $this->hasOne('App\ProjectFormScore')->latest();
+    }
 }
