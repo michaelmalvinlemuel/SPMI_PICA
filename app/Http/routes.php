@@ -21,7 +21,7 @@ use Illuminate\Http\Response;
 
 
 Route::get('/', ['as' => 'main', function () {
-	return view('main');
+	return Redirect::to('http://spmi.umn.ac.id');
 }]);
 
 Route::get('authenticate', 'AuthenticateController@index'); 		//for get current user logged in
