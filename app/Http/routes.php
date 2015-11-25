@@ -57,18 +57,25 @@ Route::group(['middleware'=> ['jwt.auth']], function(){
 	Route::resource('task', 'TaskController',
 			['except' => [ 'create', 'show', 'edit', 'delete']]); //task is open for users
 
+
+
+	Route::post('project/node/delegate', 'ProjectNodeController@delegate'); //for delegation user by project leader
+	Route::get('project/node/lock/{id}', 'ProjectNodeController@lock'); //lock node by project manager to ready for grading if partial assessment method
+	Route::get('project/node/assess/{nodeId}', 'ProjectNodeController@assess'); //retrive assessment history for some node
+	Route::post('project/node/score', 'ProjectNodeController@score'); //scoring project by admin or assessor
+
+
 	Route::get('project/last/{id}', 'ProjectController@showLast');  //shpw project with last uploaded form	
 	Route::get('project/form/{id}', 'ProjectController@form'); //custom selection for uploaded project document
 	Route::get('project/leader/{id}', 'ProjectController@leader'); //retrive the leader of the project
-	Route::post('project/delegate', 'ProjectController@delegate'); //for delegation user by project leader
+	
+	Route::get('project/lock/{projectId}', 'ProjectController@lock');//for full project and all of its children;
 	Route::patch('project/mark/{id}', 'ProjectController@mark'); //admin mark project as completed or terminated
 	Route::post('project/upload', 'ProjectController@upload'); //users upload project form
 	Route::get('project/validating/name/{name}/{id?}', 'ProjectController@validatingName'); //validate project name for prevent duplication
-	Route::get('project/user/{dislplay}/{initiation}/{preparation}/{progress}/{grading}/{conplete}/{terminated}', 'ProjectController@user'); 	//show project that involved by user
-	Route::get('project/{dislplay}/{initiation}/{preparation}/{progress}/{grading}/{conplete}/{terminated}', 'ProjectController@index');		//retrive project by filter
-	Route::get('project/lock/{id}', 'ProjectController@lock');
-	Route::get('project/assess/{nodeId}', 'ProjectController@assess');
-	Route::post('project/score', 'ProjectController@score'); //scoring project by admin or assessor
+	Route::get('project/user/{dislplay}/{initiation}/{preparation}/{progress}/{grading}/{conplete}/{terminated}', 'ProjectController@user'); 	//show project that involved by user	
+	
+	Route::get('project/{dislplay}/{initiation}/{preparation}/{progress}/{grading}/{conplete}/{terminated}', 'ProjectController@index');//retrive project by filter
 	Route::resource('project', 'ProjectController',
 		['except' => ['index', 'create', 'edit']]); //PROJECT IS DOUBTFULL CAN BE USERS OR ADMIN
 	
