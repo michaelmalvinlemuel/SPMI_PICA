@@ -23,14 +23,14 @@ class ProjectNodeController extends ProjectController
 
     private function findRoot($node) {
         $projectNode = ProjectNode::find($node->project_id);
-
-        if($projectNode) {
+        
+        if ($projectNode) {
             if ($projectNode->project_type == 'App\Project') {
                 return Project::with('assessors')->with('leader')->find($projectNode->project_id);
             } else {
-                if (isset($this->findRoot)) {
-                    $this->findRoot($projectNode);
-                }
+                //if (isset($this->findRoot)) {
+                    return $this->findRoot($projectNode);
+                //}
             }
         } else {
             return Project::with('assessors')->with('leader')->find($node->project_id);
@@ -90,6 +90,24 @@ class ProjectNodeController extends ProjectController
             $nodes = ProjectNode::where('project_id', '=', $request->input('project_id'))->where('project_type', '<>', 'App\Project')->get();
             $this->inheritDelegation($nodes, $delegations);
         }
+    }
+
+
+    public function lockChildren($node, $lockStatus) {
+
+        foreach($node as $key => $value) {
+            $projectForm = ProjectForm::where('project_node_id', '=', $value->id)->first();
+            
+            if ($projectForm) {
+                $projectForm->lock = $lockStatus;
+                $projectForm->touch();
+                 $projectForm->save();
+
+            } else {
+                $projectNode = ProjectNode::with('projects')->where('project_id', '=', $value->id)->where('project_type', '=', 'App\ProjectNode')->get();
+                $this->lockChildren($projectNode, $lockStatus);
+            }
+        }
 
     }
 
@@ -98,25 +116,21 @@ class ProjectNodeController extends ProjectController
      *
      * @return \Illuminate\Http\Response
      */
-    public function lock($id) {
+    public function lock($id, $lockStatus) {
         
 
-        $lockingStatus = 0;
-        $projectNode = ProjectNode::find($id);
-        if ($projectNode->status == '0') {
-            $projectNode->status = '1';
-            $lockingStatus = 1;
+        $projectForm = ProjectForm::where('project_node_id', '=', $id)->first();
+
+        if (isset($projectForm->lock)) {
+            $projectForm->lock = $lockStatus;
+            $projectForm->touch();
+            $projectForm->save();
         } else {
-            $projectNode->status = '0';
-            $lockingStatus = 0;
-            $this->bubblingUnlock($projectNode);
+            $projectNode = ProjectNode::with('projects')->find($id);
+            $this->lockChildren($projectNode->projects, $lockStatus);
         }
-        $projectNode->touch();
-        $projectNode->save();
         
-        //inherit locking system,
-        $this->recursiveLocking($projectNode->projects, $lockingStatus);
-        
+
     }
 
     /**

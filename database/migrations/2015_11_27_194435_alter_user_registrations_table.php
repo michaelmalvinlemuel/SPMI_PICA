@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class AlterProjectsTable extends Migration
+class AlterUserRegistrationsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -12,8 +12,9 @@ class AlterProjectsTable extends Migration
      */
     public function up()
     {
-        Schema::table('projects', function($table) {
-           $table->char('type_status', 1)->after('type')->default('0'); 
+        Schema::table('user_registrations', function($table) {
+            $table->char('status', 1)->after('token');
+            $table->datetime('expired_at')->after('status');
         });
     }
 

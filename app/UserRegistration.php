@@ -9,5 +9,5 @@ class UserRegistration extends Model
 {
 	use SoftDeletes;
 	
-    protected $dates = ['deleted_at'];
+    protected $dates = ['expired_at', 'created_at', 'updated_at', 'deleted_at'];
 }

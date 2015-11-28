@@ -21,13 +21,20 @@ use Illuminate\Http\Response;
 
 
 Route::get('/', ['as' => 'main', function () {
-	return Redirect::to('http://spmi.umn.ac.id');
+	if (App::environment('local')) {
+		return redirect()->to('http://localhost:3000');
+	} else if (App::environment('production')) {
+		return redirect()->to('http://spmi.umn.ac.id');
+	}
+	
 }]);
 
 Route::get('authenticate', 'AuthenticateController@index'); 		//for get current user logged in
 Route::post('authenticate', 'AuthenticateController@authenticate'); //for login
 Route::post('register', 'RegisterController@register'); //for register
-Route::get('register/confirm/{token}', 'RegisterController@confirm'); //for register
+Route::get('register/confirm/{token}', 'RegisterController@confirm')
+	->where('token', '(.*)'); //for register
+Route::get('register/resend', 'RegisterController@resend');
 
 //Route::get('/user', 'UserController@check');
 Route::post('/user/login', 'UserController@login');
@@ -60,18 +67,17 @@ Route::group(['middleware'=> ['jwt.auth']], function(){
 
 
 	Route::post('project/node/delegate', 'ProjectNodeController@delegate'); //for delegation user by project leader
-	Route::get('project/node/lock/{id}', 'ProjectNodeController@lock'); //lock node by project manager to ready for grading if partial assessment method
+	Route::get('project/node/lock/{id}/{lockStatus}', 'ProjectNodeController@lock'); //lock node by project manager to ready for grading if partial assessment method
 	Route::get('project/node/assess/{nodeId}', 'ProjectNodeController@assess'); //retrive assessment history for some node
 	Route::post('project/node/score', 'ProjectNodeController@score'); //scoring project by admin or assessor
-
-
+	
 	Route::get('project/last/{id}', 'ProjectController@showLast');  //shpw project with last uploaded form	
 	Route::get('project/form/{id}', 'ProjectController@form'); //custom selection for uploaded project document
 	Route::get('project/leader/{id}', 'ProjectController@leader'); //retrive the leader of the project
 	
-	Route::get('project/lock/{projectId}', 'ProjectController@lock');//for full project and all of its children;
 	Route::patch('project/mark/{id}', 'ProjectController@mark'); //admin mark project as completed or terminated
 	Route::post('project/upload', 'ProjectController@upload'); //users upload project form
+	Route::get('project/lock/{id}/{lockStatus}', 'ProjectController@lock'); //lock all project form
 	Route::get('project/validating/name/{name}/{id?}', 'ProjectController@validatingName'); //validate project name for prevent duplication
 	Route::get('project/user/{dislplay}/{initiation}/{preparation}/{progress}/{grading}/{conplete}/{terminated}', 'ProjectController@user'); 	//show project that involved by user	
 	

@@ -14,6 +14,7 @@ class AlterProjectFormsTable extends Migration
     {
         Schema::table('project_forms', function ($table) {
             $table->dropColumn('score');
+            $table->boolean('lock')->nullable()->after('weight');
         });
     }
 

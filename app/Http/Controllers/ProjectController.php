@@ -69,7 +69,8 @@ class ProjectController extends Controller
                 if (isset($value['forms'])) {
                     $projectForm = new ProjectForm;
                     $projectForm->project_node_id = $projectNode->id;
-                    
+                    $projectForm->lock = false;
+
                     if (isset($value['weight'])) {
                         $projectForm->weight = $value['weight'];
                     } else {
@@ -154,10 +155,12 @@ class ProjectController extends Controller
                         $nodes[$key2]['header'] = $value2->name;
                     }
                     
-                    $nodes[$key]['children'] = [];
-                    $nodes[$key]['forms'] = $form;
+                    
+                   
                     $nodes[$key]['weight'] = $projectForm[0]->weight;
                     //$nodes[$key]['score'] = $projectForm[0]->score;
+                    $nodes[$key]['forms'] = $form;
+                    $nodes[$key]['lock'] = $projectForm[0]->lock;
                     
                 } else {
                     
@@ -169,6 +172,9 @@ class ProjectController extends Controller
                     $nodes[$key]['weight'] = 0;
                     ///$nodes[$key]['score'] = 0;
                 }
+
+                $nodes[$key]['children'] = [];
+
     		}
     	}
     }
@@ -220,6 +226,7 @@ class ProjectController extends Controller
                     $nodes[$key]['forms'] = $form;
                     $nodes[$key]['weight'] = $value0->weight;
                     $nodes[$key]['score'] = $value0->score;
+                    $nodes[$key]['lock'] = $value0->lock;
                 }
             }
         }
@@ -278,25 +285,28 @@ class ProjectController extends Controller
         } else {
             
             $projectForm = ProjectForm::where('project_node_id', '=', $project->id)->first();
-            $weight = $projectForm->weight;
-            
+            if ($projectForm) {
+                $weight = $projectForm->weight;
+                
 
-            $nodeScore = 0;
-            $projectFormScore = ProjectFormScore::where('project_form_id', '=', $projectForm->id)->orderBy('created_at', 'desc')->first();
-            if ($projectFormScore) {
-                $nodeScore = $projectFormScore->score;
-            } else {
                 $nodeScore = 0;
+                $projectFormScore = ProjectFormScore::where('project_form_id', '=', $projectForm->id)->orderBy('created_at', 'desc')->first();
+                if ($projectFormScore) {
+                    $nodeScore = $projectFormScore->score;
+                } else {
+                    $nodeScore = 0;
+                }
+               
+
+
+                if (isset($weight) && isset($nodeScore)) {
+
+                    $this->totalWeight += $weight;
+                    $this->totalScore += $weight * $nodeScore; 
+
+                }
             }
-           
-
-
-            if (isset($weight) && isset($nodeScore)) {
-
-                $this->totalWeight += $weight;
-                $this->totalScore += $weight * $nodeScore; 
-
-            }
+                
             
         }    
     }
@@ -688,8 +698,6 @@ class ProjectController extends Controller
         $response = ProjectFormUpload::with('users')->find($uploadForm->id);
         return response()->json($response);
 	}
-
-
 	
 	public function validatingName($name, $id = false) {
 		
@@ -702,73 +710,6 @@ class ProjectController extends Controller
                 ->get();    
         }
 	}
-
-
-    //recursive to lock or unlock child element
-    protected function recursiveLocking($nodes, $lockingStatus) {
-
-        foreach($nodes as $key => $value) {
-            $value->status = $lockingStatus;
-            $value->touch();
-            $value->save();
-            
-            if (count($value->projects) > 0) {
-                $this->recursiveLocking($value->projects, $lockingStatus);    
-            }
-        }
-    }
-
-    protected function bubblingUnlock($node) {
-
-        //looking for parent
-        $projectNode = ProjectNode::where('project_type', '=', 'App\ProjectNode')->find($node->project_id);
-
-        if ($projectNode['status'] == '1') {
-            $projectNode['status'] = '0';
-            $projectNode->touch();
-            $projectNode->save();
-
-            $this->bubblingUnlock($projectNode); 
-            
-        }
-
-        
-        if ($node->project_type == 'App\Project') {
-            $project = Project::find($node->project_id);
-            $project->type_status = '0';
-            $project->touch();
-            $project->save();
-        }
-    }
-
-
-
-    public function lock($projectId) 
-    {
-       
-        $lockingStatus = 0;
-        $project = Project::with('projects')->find($projectId);
-        if ($project->type_status == '0') {
-            $project->type_status = '1';
-            $lockingStatus = 1;
-        } else {
-            $lockingStatus = 0;
-            $project->type_status = '0';
-        }
-
-        $project->touch();
-        $project->save();
-
-        $this->recursiveLocking($project->projects, $lockingStatus);
-        
-    }
-    
-    
-
-    
-    
-    
-
     
     public function mark(Request $request, $id) 
     {
@@ -776,6 +717,35 @@ class ProjectController extends Controller
         $project->status = $request->input('status');
         $project->touch();
         $project->save();    
+    }
+    
+    public function lock($id, $lockStatus)
+    {
+        $project = Project::with('projects')->find($id);
+        
+        function lockingSystem($nodes, $lockStatus) {
+            
+            foreach($nodes as $key => $value) {
+                
+                $projectNode = ProjectNode::where('project_id', '=', $value->id)->where('project_type', '<>', 'App\Project')->get();
+                
+                if (count($projectNode) > 0) {
+                    
+                    lockingSystem($projectNode, $lockStatus);
+                    
+                } else {
+                    
+                    $projectForm = ProjectForm::where('project_node_id', '=', $value->id)->first();
+                    $projectForm->lock = $lockStatus;
+                    $projectForm->touch();
+                    $projectForm->save();
+                               
+                }
+            }
+            
+        };
+        
+        lockingSystem($project->projects, $lockStatus);
     }
 
 
