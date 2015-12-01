@@ -29,6 +29,9 @@ use App\TaskUserJobWork;
 use App\TaskUserJobWorkForm;
 
 use DateTime;
+use DateTimeZone;
+
+use Config;
 
 class WorkController extends Controller
 {
@@ -172,7 +175,7 @@ class WorkController extends Controller
 
     private function createEvent($request, $work, $eventName, $schedule) {
         if ($request->input('ended')) {
-            $ended = "ENDS '" . $work->ended . "'";
+            $ended = "ENDS '" . $this->fromUtcToLocal($request->input('ended'))->toString() . "'";
         } else {
             $ended = "";
         }
@@ -189,7 +192,7 @@ class WorkController extends Controller
                     CREATE EVENT " . $eventName . "  
                         ON SCHEDULE 
                             EVERY 1 DAY
-                            STARTS '" . $work->start . "'
+                            STARTS '" . $this->fromUtcToLocal($request->input('start'))->toString() . "'
                             " . $ended . "
                         ON COMPLETION PRESERVE
                         DISABLE
@@ -204,7 +207,7 @@ class WorkController extends Controller
 
             case '2': 
 
-                $start = DB::select(DB::raw("SELECT next_weekday('" . $work->start . "', " . $schedule->day_start . ") AS 'start';"));
+                $start = DB::select(DB::raw("SELECT next_weekday('" . $this->fromUtcToLocal($request->input('start'))->toString() . "', " . $schedule->day_start . ") AS 'start';"));
 
                 DB::unprepared("
                     CREATE EVENT " . $eventName . "  
@@ -221,7 +224,7 @@ class WorkController extends Controller
             break;
 
             case '3':      
-                $start = DB::select(DB::raw("SELECT next_month('" . $work->start . "', " . $schedule->date_start . ") AS 'start';"));
+                $start = DB::select(DB::raw("SELECT next_month('" . $this->fromUtcToLocal($request->input('start'))->toString() . "', " . $schedule->date_start . ") AS 'start';"));
 
                 DB::unprepared("
                     CREATE EVENT " . $eventName . "  
@@ -242,7 +245,7 @@ class WorkController extends Controller
                     CREATE EVENT " . $eventName . "  
                         ON SCHEDULE 
                             EVERY 1 DAY
-                            STARTS '" . $request->input('start') . "'
+                            STARTS '" . $this->fromUtcToLocal($request->input('start'))->toString() . "'
                             " . $ended . "
                         ON COMPLETION PRESERVE
                         ENABLE
@@ -257,7 +260,7 @@ class WorkController extends Controller
                     CREATE EVENT " . $eventName . "  
                         ON SCHEDULE 
                             EVERY 1 YEAR
-                            STARTS '" . $request->input('start') . "'
+                            STARTS '" . $this->fromUtcToLocal($request->input('start'))->toString() . "'
                             " . $ended . "
                         ON COMPLETION PRESERVE
                         ENABLE
@@ -267,8 +270,114 @@ class WorkController extends Controller
                 ");              
             break;
         }
-    
     }
+    
+    private function alterEvent($request, $work, $eventName, $schedule) {
+        
+        if ($request->input('ended')) {
+            $ended = "ENDS '" . $this->fromUtcToLocal($request->input('ended'))->toString() . "'";
+        } else {
+            $ended = "";
+        }
+        
+        switch($request->input('type')) {
+            case '1':
+                $scheduleDay = "";
+                foreach($request->input('days') as $key => $value) {
+                    if ($scheduleDay) $scheduleDay .= ' OR ';
+                    $scheduleDay .= "WEEKDAY(CURRENT_DATE) = " . $this->numericDay($value) . " ";
+                }
+
+                DB::unprepared("
+                    DROP EVENT " . $eventName . ";
+                    CREATE EVENT " . $eventName . "  
+                        ON SCHEDULE 
+                            EVERY 1 DAY
+                            STARTS '" . $this->fromUtcToLocal($request->input('start'))->toString() . "'
+                            " . $ended . "
+                        ON COMPLETION PRESERVE
+                        ENABLE
+                        DO BEGIN
+                            IF (" . $scheduleDay . ") THEN
+                                " . $this->eventInsertStatement($work->id, "1") . "
+                            END IF;
+                        END
+                ");
+                
+            break;
+
+            case '2': 
+
+                $start = DB::select(DB::raw("SELECT next_weekday('" . $this->fromUtcToLocal($request->input('start'))->toString() . "', " . $schedule->day_start . ") AS 'start';"));
+
+                DB::unprepared("
+                    DROP EVENT " . $eventName . ";
+                    CREATE EVENT " . $eventName . "  
+                        ON SCHEDULE 
+                            EVERY 1 WEEK
+                            STARTS '" . $start[0]->start . "'
+                            " . $ended . "
+                        ON COMPLETION PRESERVE
+                        ENABLE
+                        DO BEGIN
+                            " . $this->eventInsertStatement($work->id, "2") . "
+                        END
+                ");
+            break;
+
+            case '3':      
+                $start = DB::select(DB::raw("SELECT next_month('" . $this->fromUtcToLocal($request->input('start'))->toString() . "', " . $schedule->date_start . ") AS 'start';"));
+
+                DB::unprepared("
+                    DROP EVENT " . $eventName . ";
+                    CREATE EVENT " . $eventName . "  
+                        ON SCHEDULE 
+                            EVERY 1 MONTH
+                            STARTS '" . $start[0]->start . "'
+                            " . $ended . "
+                        ON COMPLETION PRESERVE
+                        ENABLE
+                        DO BEGIN
+                            " . $this->eventInsertStatement($work->id, "3") . "
+                        END
+                ");
+            break;
+
+            case '4':   
+                DB::unprepared("
+                    DROP EVENT " . $eventName . ";
+                    CREATE EVENT " . $eventName . "  
+                        ON SCHEDULE 
+                            EVERY 1 DAY
+                            STARTS '" . $this->fromUtcToLocal($request->input('start'))->toString() . "'
+                            " . $ended . "
+                        ON COMPLETION PRESERVE
+                        ENABLE
+                        DO BEGIN
+                            " . $this->eventInsertStatement($work->id, "4") . "
+                        END
+                ");  
+            break;
+
+            case '5':  
+                DB::unprepared("
+                    DROP EVENT " . $eventName . ";
+                    CREATE EVENT " . $eventName . "  
+                        ON SCHEDULE 
+                            EVERY 1 YEAR
+                            STARTS '" . $this->fromUtcToLocal($request->input('start'))->toString() . "'
+                            " . $ended . "
+                        ON COMPLETION PRESERVE
+                        ENABLE
+                        DO BEGIN
+                            " . $this->eventInsertStatement($work->id, "5") . "
+                        END
+                ");              
+            break;
+        }
+    }
+    
+    
 
     private function eventInsertStatement($id, $type) {
         $insertStatement = "";
@@ -332,9 +441,15 @@ class WorkController extends Controller
         $work = new Work;
         $work->name = $request->input('name');
         $work->description = $request->input('description');
-        $work->start = $request->input('start');
+        
+        //$zentot = new Controller;
+        $work->start = $this->fromUtcToLocal($request->input('start'))->toDate();
+        
+        //$work->start = $request->input('start');
+        
+        
         if ($request->input('ended')) {
-            $work->ended = $request->input('ended');
+            $work->ended = $this->fromUtcToLocal($request->input('ended'))->toDate();
         }
         $work->group_job_id = $request->input('group_job_id');
         $work->type = $request->input('type');
@@ -373,7 +488,7 @@ class WorkController extends Controller
             $work['schedule'] = $temp;
         }
         
-        return $work;
+        return response()->json($work);
     }
 
     public function update(Request $request, $id)
@@ -381,9 +496,11 @@ class WorkController extends Controller
         $work = Work::find($id);
         $work->name = $request->input('name');
         $work->description = $request->input('description');
-        $work->start = $request->input('start');
+        
+        $work->start = $this->fromUtcToLocal($request->input('start'))->toDate();
+        
         if ($request->input('ended')) {
-            $work->ended = $request->input('ended');
+            $work->ended =$this->fromUtcToLocal($request->input('ended'))->toDate();
         } else {
             $work->ended = null;
         }
@@ -391,15 +508,18 @@ class WorkController extends Controller
         $work->schedule_status = "1";
         $work->touch();
         
+        //if user change schedule method
         if ($work->type !== $request->input('type')) {
             
             $this->destroySchedule($work);
 
             $work->type = $request->input('type');
             
-            $this->storeSchedule($request, $work);
-
+            $schedule = $this->storeSchedule($request, $work);
+            
         } else {
+            $schedule = null;
+            //if schedule type still same
             switch($request->input('type')) {
                 case '1':
                     $daily = ScheduleDaily::find($work->schedule_id);
@@ -422,6 +542,8 @@ class WorkController extends Controller
                     $weekly->touch();
                     $work->type = $request->input('type');
                     $weekly->works()->save($work);
+                    
+                    $schedule = $weekly;
                 break;
 
                 case '3':
@@ -430,6 +552,8 @@ class WorkController extends Controller
                     $monthly->touch();
                     $work->type = $request->input('type');
                     $monthly->works()->save($work);
+                    
+                    $schedule = $monthly;
                 break;
 
                 case '4':
@@ -449,6 +573,8 @@ class WorkController extends Controller
                 break;
             } 
         }
+        
+        $this->alterEvent($request, $work, $work->schedule_name, $schedule);
     }
 
     public function destroy($id)
@@ -492,10 +618,18 @@ class WorkController extends Controller
         $work = Work::find($id);
         if ($work->schedule_status == 0) {
             $status = 'ENABLE';
+            $work->schedule_status = 1;
         } else {
             $status = 'DISABLE';
+            $work->schedule_status = 0;
         }
+        
+        $work->touch();
+        
         DB::unprepared("ALTER EVENT " . $work->schedule_name . " " . $status); 
+        
+        $work->save();
+        
     }
 
     public function validatingName($name, $id=false)

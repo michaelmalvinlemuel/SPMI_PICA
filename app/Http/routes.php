@@ -62,7 +62,7 @@ Route::group(['middleware'=> ['jwt.auth']], function(){
 	
 	Route::get('task/retrive/{userId}/{jobId}/{display}/{progress}/{complete}/{overdue}', 'TaskController@retrive');	//for retrive task completness by their subordinate
 	Route::resource('task', 'TaskController',
-			['except' => [ 'create', 'show', 'edit', 'delete']]); //task is open for users
+			['except' => [ 'create', 'edit', 'delete']]); //task is open for users
 
 
 
