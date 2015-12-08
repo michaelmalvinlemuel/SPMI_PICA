@@ -91,49 +91,58 @@ class Project extends Model
     
     
     public function scopeUserInitiation($query, $user) {
-        return $query->orWhere(function($query) use($user) {
-           $currentDate = date("Y-m-d");
-           $query->whereHas('projectUsers', function($query) use($user) {
-                $query->where('user_id', '=', $user->id);
-            })->where('status', '=', '0')->whereNull('deleted_at'); 
-        })->orWhere(function($query) use ($user) {
-            $currentDate = date("Y-m-d");
-            $query->whereHas('projectAssessors', function($query) use($user) {
-                $query->where('user_id', '=', $user->id);
+        return 
+            $query
+            ->orWhere(function($query) use($user) {
+                $currentDate = date("Y-m-d");
+                $query->whereHas('projectUsers', function($query) use($user) {
+                    $query->where('user_id', '=', $user->id);
+                })->where('status', '=', '0')->whereNull('deleted_at'); 
+            })
+            ->orWhere(function($query) use ($user) {
+                $currentDate = date("Y-m-d");
+                $query->whereHas('projectAssessors', function($query) use($user) {
+                    $query->where('user_id', '=', $user->id);
+                })->where('status', '=', '0')->whereNull('deleted_at');
             });
-        });
     }
     
     public function scopeUserPreparation($query, $user) {
-        return $query->orWhere(function($query) use($user) {
-            $currentDate = date("Y-m-d");
-            $query->whereHas('projectUsers', function($query) use($user) {
-                $query->where('user_id', '=', $user->id);
-            })->where('status', '=', '1')->where('date_start', '>', $currentDate)
-                ->whereNull('deleted_at');
-        })->orWhere(function($query) use($user) {
-            $currentDate = date("Y-m-d");
-            $query->whereHas('projectAssessors', function($query) use($user) {
-                $query->where('user_id', '=', $user->id);
-            })->where('status', '=', '1')->where('date_start', '>', $currentDate)
-                ->whereNull('deleted_at');
-        });
+        return 
+            $query
+                ->orWhere(function($query) use($user) {
+                    $currentDate = date("Y-m-d");
+                    $query->whereHas('projectUsers', function($query) use($user) {
+                        $query->where('user_id', '=', $user->id);
+                    })->where('status', '=', '1')->where('date_start', '>', $currentDate)
+                        ->whereNull('deleted_at');
+                })
+                ->orWhere(function($query) use($user) {
+                    $currentDate = date("Y-m-d");
+                    $query->whereHas('projectAssessors', function($query) use($user) {
+                        $query->where('user_id', '=', $user->id);
+                    })->where('status', '=', '1')->where('date_start', '>', $currentDate)
+                        ->whereNull('deleted_at');
+                });
     }
     
     public function scopeUserProgress($query, $user) {
-        return $query->orWhere(function($query) use($user) {
-            $currentDate = date("Y-m-d");
-            $query->whereHas('projectUsers', function($query) use($user) {
-                $query->where('user_id', '=', $user->id);
-            })->where('status', '=', '1')->where('date_start', '<=', $currentDate)
-            ->where('date_ended', '>=', $currentDate)->whereNull('deleted_at');
-        })->orWhere(function($query) use($user) {
-            $currentDate = date("Y-m-d");
-            $query->whereHas('projectAssessors', function($query) use($user) {
-                $query->where('user_id', '=', $user->id);
-            })->where('status', '=', '1')->where('date_start', '<=', $currentDate)
-            ->where('date_ended', '>=', $currentDate)->whereNull('deleted_at');
-        });
+        return 
+            $query
+                ->orWhere(function($query) use($user) {
+                    $currentDate = date("Y-m-d");
+                    $query->whereHas('projectUsers', function($query) use($user) {
+                        $query->where('user_id', '=', $user->id);
+                    })->where('status', '=', '1')->where('date_start', '<=', $currentDate)
+                        ->where('date_ended', '>=', $currentDate)->whereNull('deleted_at');
+                })
+                ->orWhere(function($query) use($user) {
+                    $currentDate = date("Y-m-d");
+                    $query->whereHas('projectAssessors', function($query) use($user) {
+                        $query->where('user_id', '=', $user->id);
+                    })->where('status', '=', '1')->where('date_start', '<=', $currentDate)
+                        ->where('date_ended', '>=', $currentDate)->whereNull('deleted_at');
+                });
     }
     
     public function scopeUserGrading($query, $user) {

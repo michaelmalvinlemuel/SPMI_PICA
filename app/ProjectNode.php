@@ -26,6 +26,11 @@ class ProjectNode extends Model
     	return $this->belongsToMany('App\User', 'project_node_delegations')
             ->whereNull('project_node_delegations.deleted_at');
     }
+    
+    public function assessors() {
+        return $this->belongsToMany('App\User', 'project_node_assessors')
+            ->whereNull('project_node_assessors.deleted_at');
+    }
 
     public function forms() {
         return $this->hasOne('App\ProjectForm');

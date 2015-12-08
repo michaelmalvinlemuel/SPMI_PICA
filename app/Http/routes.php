@@ -45,6 +45,7 @@ Route::get('/user/logout', 'UserController@logout');
 
 Route::group(['middleware'=> ['jwt.auth']], function(){
 	
+	Route::get('user', 'UserController@index');
 	Route::get('user/jobs', 'UserController@jobs'); //for generate subordinate hierarchy
 	Route::get('user/lite/{id}', 'UserController@show');
 
@@ -62,10 +63,13 @@ Route::group(['middleware'=> ['jwt.auth']], function(){
 	
 	Route::get('task/retrive/{userId}/{jobId}/{display}/{progress}/{complete}/{overdue}', 'TaskController@retrive');	//for retrive task completness by their subordinate
 	Route::resource('task', 'TaskController',
-			['except' => [ 'create', 'edit', 'delete']]); //task is open for users
-
-
-
+		['except' => [ 'create', 'edit', 'delete']]); //task is open for users
+	
+	Route::get('template/project/paginate/{display}', 'ProjectTemplateController@paginate');
+	Route::resource('template/project', 'ProjectTemplateController', 
+		['except' => ['create', 'edit']]);
+	
+	
 	Route::post('project/node/delegate', 'ProjectNodeController@delegate'); //for delegation user by project leader
 	Route::get('project/node/lock/{id}/{lockStatus}', 'ProjectNodeController@lock'); //lock node by project manager to ready for grading if partial assessment method
 	Route::get('project/node/assess/{nodeId}', 'ProjectNodeController@assess'); //retrive assessment history for some node
@@ -165,7 +169,7 @@ Route::group(['middleware'=> ['jwt.auth']], function(){
 		 */
 		Route::get('user/administrator', 'UserController@administrator');//dummy service for checking if users is administrator
 		Route::resource('user', 'UserController',
-			['except' => ['create', 'edit']]);
+			['except' => ['index', 'create', 'edit']]);
 		
 		Route::resource('user.job', 'UserJobController',
 			['only' => ['store', 'update', 'destroy']]);

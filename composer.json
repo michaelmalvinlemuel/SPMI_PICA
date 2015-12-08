@@ -9,8 +9,9 @@
         "laravel/framework": "5.1.*",
         "tymon/jwt-auth": "0.5.*",
         "bican/roles": "2.1.*",
-	"guzzlehttp/guzzle": "~5.3|~6.0",
-        "barryvdh/laravel-cors": "0.7.x"
+        "guzzlehttp/guzzle": "~5.3|~6.0",
+        "barryvdh/laravel-cors": "0.7.x",
+        "doctrine/dbal": "v2.5.2"
     },
     "require-dev": {
         "fzaninotto/faker": "~1.4",

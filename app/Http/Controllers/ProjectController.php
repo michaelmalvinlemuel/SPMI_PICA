@@ -10,6 +10,7 @@ use App\Http\Controllers\Controller;
 use App\Project;
 use App\ProjectNode;
 use App\ProjectNodeDelegation;
+use App\ProjectNodeAssessor;
 use App\ProjectUser;
 use App\ProjectAssessor;
 use App\ProjectForm;
@@ -48,16 +49,29 @@ class ProjectController extends Controller
             //$parent->save();
             
             
-            $delegations = $value['delegations'];
-            //return $delegations;
-            //this is the funck that we should get ridd off
-            foreach($delegations as $key1 => $value1) {
-                $projectDelegation = new ProjectNodeDelegation;
-                $projectDelegation->project_node_id = $projectNode->id;
-                $projectDelegation->user_id = $value1['id'];
-                $projectDelegation->touch();
-                $projectDelegation->save();
-            } 
+            if (isset($value['delegations'])) {
+                $delegations = $value['delegations'];
+                foreach($delegations as $key1 => $value1) {
+                    $projectDelegation = new ProjectNodeDelegation;
+                    $projectDelegation->project_node_id = $projectNode->id;
+                    $projectDelegation->user_id = $value1['id'];
+                    $projectDelegation->touch();
+                    $projectDelegation->save();
+                } 
+            }
+            
+            if (isset($value['assessors'])) {
+                $assessors = $value['assessors'];
+                foreach($assessors as $key1 => $value1) {
+                    $projectAssessor = new ProjectNodeAssessor;
+                    $projectAssessor->project_node_id = $projectNode->id;
+                    $projectAssessor->user_id = $value1['id'];
+                    $projectAssessor->touch();
+                    $projectAssessor->save();
+                } 
+            }
+            
+            
 
             if (count($value['children']) > 0) {                
                 $this->recursiveNode($value['children'], $projectNode);
@@ -112,7 +126,7 @@ class ProjectController extends Controller
     }
 	
     /**
-     * Display a listing of the resource.
+     * Select with all uploaded form
      *
      * @return \Illuminate\Http\Response
      */
@@ -121,12 +135,13 @@ class ProjectController extends Controller
     
     	foreach($nodes as $key => $value) {
     
-    		$projectNode = ProjectNode::with('delegations')->where('project_id', '=', $value->id)->where('project_type', '<>', 'App\Project')->get();
+    		$projectNode = ProjectNode::with('delegations')->with('assessors')->where('project_id', '=', $value->id)->where('project_type', '<>', 'App\Project')->get();
     
     		if (count($projectNode) > 0) {
     
     			foreach ($nodes as $key2 => $value2) {
     				$nodes[$key2]['header'] = $value2->name;
+                    $nodes[$key2]['label'] = $value2->name;
     			}
     
     			$nodes[$key]['children'] = $projectNode;
@@ -153,6 +168,7 @@ class ProjectController extends Controller
         
                     foreach ($nodes as $key2 => $value2) {
                         $nodes[$key2]['header'] = $value2->name;
+                        $nodes[$key2]['label'] = $value2->name;
                     }
                     
                     
@@ -166,6 +182,7 @@ class ProjectController extends Controller
                     
                     foreach ($nodes as $key2 => $value2) {
                         $nodes[$key2]['header'] = $value2->name;
+                        $nodes[$key2]['label'] = $value2->name;
                     }
                     
                     $nodes[$key]['children'] = [];
@@ -180,7 +197,7 @@ class ProjectController extends Controller
     }
     
     /**
-     * Display a listing of the resource.
+     * Select only last uploaded form
      *
      * @return \Illuminate\Http\Response
      */
@@ -189,10 +206,11 @@ class ProjectController extends Controller
         
         foreach($nodes as $key => $value) {
 
-            $projectNode = ProjectNode::with('delegations')->where('project_id', '=', $value->id)->where('project_type', '<>', 'App\Project')->get();
+            $projectNode = ProjectNode::with('delegations')->with('assessors')->where('project_id', '=', $value->id)->where('project_type', '<>', 'App\Project')->get();
             
             $nodes[$key]['header'] = $value->name;
-
+            $nodes[$key]['label'] = $value->name;
+            
             if (count($projectNode) > 0) {
 
                 
@@ -244,6 +262,9 @@ class ProjectController extends Controller
             $projectNode = ProjectNode::find($value->id);
 
             $projectNodeDelegation = ProjectNodeDelegation::where('project_node_id', '=', $value->id);
+            $projectNodeDelegation->delete();
+            
+            $projectNodeAssessor = ProjectNodeAssessor::where('project_node_id', '=', $value->id);
             $projectNodeDelegation->delete();
 
             $this->recursiveNodeDelete($projectNode);
@@ -358,7 +379,12 @@ class ProjectController extends Controller
             
             if ($value->status !== "0") {
                 $this->calculateOveralScore($value);
-                $value->score = $this->totalScore / $this->totalWeight;
+                if($this->totalWeight > 0) {
+                    $value->score = $this->totalScore / $this->totalWeight;
+                } else {
+                    $value->score = 0;
+                }
+                
             } else {
                 $value->score = null;
             }
@@ -441,7 +467,9 @@ class ProjectController extends Controller
     public function show($id)
     {
 
-        $project = Project::with('users')->with('assessors')->with('projects.delegations')->find($id);
+        $project = Project::with('users')->with('assessors')->with(['projects' => function($query) {
+            $query->with('delegations')->with('assessors');
+        }])->find($id);
 
         //add header attribute for frontend;
         foreach ($project->projects as $key => $value) {
@@ -485,7 +513,9 @@ class ProjectController extends Controller
      
     public function showLast($id)
     {
-    	$project = Project::with('users')->with('assessors')->with('projects.delegations')->find($id);
+    	$project = Project::with('users')->with('assessors')->with(['projects' => function($query) {
+            $query->with('delegations')->with('assessors');
+        }])->find($id);
 
     	foreach ($project->projects as $key => $value) {
     		$project->projects[$key]['header'] = $value->name;
@@ -509,7 +539,12 @@ class ProjectController extends Controller
         
         if ($project->status !== "0") {
             $this->calculateOveralScore($project);
-            $project->score = $this->totalScore / $this->totalWeight;
+            if ($this->totalWeight > 0) {
+                $project->score = $this->totalScore / $this->totalWeight;
+            } else {
+                $project->score = 0;
+            }
+            
         } else {
             $project->score = null;
         }
@@ -532,31 +567,51 @@ class ProjectController extends Controller
 
     public function update(Request $request, $id)
     {
-        $users = $request->input('users');
-        $assessors = $request->input('assessors');
+        $project = Project::with('projects')->find($id);
         
-        $leader = null;
-        
-        foreach ($users as $key => $value) {
-            if ($value['leader'] == true) {
-                $leader = $value['id'];
-                break;
+        if ($request->input('users')) {
+            $leader = null;
+            $users = $request->input('users');
+            foreach ($users as $key => $value) {
+                if ($value['leader'] == true) {
+                    $leader = $value['id'];
+                    break;
+                }
+            }
+            //delete old project members
+            $project->projectUsers()->delete();
+            
+            //add new project members
+            foreach($users as $key => $value) {
+                $projectUser = new ProjectUser;
+                $projectUser->project_id = $project->id;
+                $projectUser->user_id = $value['id'];
+                $projectUser->touch();
+                $projectUser->save();
             }
         }
-
-        $project = Project::with('projects')->find($id);
+        
+        if ($request->input('assessors')) {
+            $assessors = $request->input('assessors');
+            
+            //delete project user via table;
+            $project->projectAssessors()->delete();
+            
+            //add project assessors
+            foreach($assessors as $key => $value) {
+                $projectAssessor = new ProjectAssessor;
+                $projectAssessor->project_id = $project->id;
+                $projectAssessor->user_id = $value['id'];
+                $projectAssessor->touch();
+                $projectAssessor->save();
+            }
+        }
         
         foreach($project->projects as $key => $value) {
             $this->recursiveNodeDelete($value);
         }
-        //destroy this current project
-        
-        //delete project user via table;
-        $project->projectUsers()->delete();
-        $project->projectAssessors()->delete();
 
         //declare new project
-        //$project = new Project;
         $project->name = $request->input('name');
         $project->description = $request->input('description');
         $project->date_start = $request->input('start');
@@ -566,32 +621,11 @@ class ProjectController extends Controller
         $project->status = $request->input('status');
         $project->touch();
         
-        //add new project members
-        foreach($users as $key => $value) {
-            $projectUser = new ProjectUser;
-            $projectUser->project_id = $project->id;
-            $projectUser->user_id = $value['id'];
-            $projectUser->touch();
-            $projectUser->save();
-        }
-        
-        //add project assessors
-        foreach($assessors as $key => $value) {
-            $projectAssessor = new ProjectAssessor;
-            $projectAssessor->project_id = $project->id;
-            $projectAssessor->user_id = $value['id'];
-            $projectAssessor->touch();
-            $projectAssessor->save();
-        }
-        
         $projectNode = [];
         $projectNode = $request->input('projects');
         
         //return $projectNode;
         return $this->recursiveNode($projectNode, $project);
-
-     
-
 
     }
     
@@ -656,7 +690,12 @@ class ProjectController extends Controller
             
             if ($value->status !== "0") {
                 $this->calculateOveralScore($value);
-                $value->score = $this->totalScore / $this->totalWeight;
+                if ($this->totalWeight > 0) {
+                    $value->score = $this->totalScore / $this->totalWeight;
+                } else {
+                    $value->score = 0;
+                }
+                
             } else {
                 $value->score = null;
             }
