@@ -113,40 +113,50 @@ Route::group(['middleware'=> ['jwt.auth']], function(){
 		/**
 		 * SPMI DOCUMENT REST API ROUTE
 		 */
-		Route::get('standard/validating/{description}/{id?}', 'StandardController@validating')
-			->where('description', '(.*)');
+		//Route::get('standard/validating/{description}/{id?}', 'StandardController@validating')
+			//->where('description', '(.*)');
+		Route::post('standard/validating', 'StandardController@validating');
 		Route::resource('standard', 'StandardController', 
 			['except' => ['create', 'edit']]);
 
 		Route::get('standardDocument/standard/{id}', 'StandardDocumentController@standard');
-		Route::get('standardDocument/validating/no/{no}/{id?}', 'StandardDocumentController@validatingNo')
-			->where('no', '(.*)');
-		Route::get('standardDocument/validating/description/{description}/{id?}', 'StandardDocumentController@validatingDescription')
-			->where('description', '(.*)');
+		//Route::get('standardDocument/validating/no/{no}/{id?}', 'StandardDocumentController@validatingNo')
+			//->where('no', '(.*)');
+		//Route::get('standardDocument/validating/description/{description}/{id?}', 'StandardDocumentController@validatingDescription')
+			//->where('description', '(.*)');
+		Route::post('standardDocument/validating/no', 'StandardDocumentController@validatingNo');
+		Route::post('standardDocument/validating/description', 'StandardDocumentController@validatingDescription');
 		Route::resource('standardDocument', 'StandardDocumentController',
 			['except'=> ['create', 'edit']]);
 
 		Route::get('guide/standardDocument/{id}', 'GuideController@standardDocument');
-		Route::get('guide/validating/no/{no}/{id?}', 'GuideController@validatingNo')
-			->where('no', '(.*)');
-		Route::get('guide/validating/description/{description}/{id?}', 'GuideController@validatingDescription')
-			->where('description', '(.*)');
+		//Route::get('guide/validating/no/{no}/{id?}', 'GuideController@validatingNo')
+			//->where('no', '(.*)');
+		//Route::get('guide/validating/description/{description}/{id?}', 'GuideController@validatingDescription')
+			//->where('description', '(.*)');
+		Route::post('guide/validating/no', 'GuideController@validatingNo');
+		Route::post('guide/validating/description', 'GuideController@validatingDescription');
 		Route::resource('guide', 'GuideController', 
 			['except'=> ['create', 'edit']]);
 
 		Route::get('instruction/guide/{id}', 'InstructionController@guide');
-		Route::get('instruction/validating/no/{no}/{id?}', 'InstructionController@validatingNo')
-			->where('no', '(.*)');
-		Route::get('instruction/validating/description/{description}/{id?}', 'InstructionController@validatingDescription')
-			->where('description', '(.*)');
+		//Route::get('instruction/validating/no/{no}/{id?}', 'InstructionController@validatingNo')
+			//->where('no', '(.*)');
+		//Route::get('instruction/validating/description/{description}/{id?}', 'InstructionController@validatingDescription')
+			//->where('description', '(.*)');
+		Route::post('instruction/validating/no', 'InstructionController@validatingNo');
+		Route::post('instruction/validating/description', 'InstructionController@validatingDescription');
 		Route::resource('instruction', 'InstructionController',
 			['except' => ['create', 'edit']]);
 
 		Route::get('form/instruction/{id}', 'FormController@instruction');
-		Route::get('form/validating/no/{no}/{id?}', 'FormController@validatingNo')
-			->where('no', '(.*)');
-		Route::get('form/validating/description/{description}/{id?}', 'FormController@validatingDescription')
-			->where('description', '(.*)');
+		
+		//Route::get('form/validating/no/{no}/{id?}', 'FormController@validatingNo')
+			//->where('no', '(.*)');
+		//Route::get('form/validating/description/{description}/{id?}', 'FormController@validatingDescription')
+			//->where('description', '(.*)');
+		Route::post('form/validating/no', 'FormController@validatingNo');
+		Route::post('form/validating/description', 'FormController@validatingDescription');
 		Route::resource('form', 'FormController',
 			['except' => ['create', 'edit']]);
 

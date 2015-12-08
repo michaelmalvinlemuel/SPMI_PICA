@@ -115,26 +115,26 @@ class GuideController extends Controller
         return Guide::with('StandardDocument.standard')->where('standard_document_id', '=', $id)->get();
     }
 
-    public function validatingNo($no, $id=false)
+    public function validatingNo(Request $request)
     {
-        if ($id) {
-            return Guide::where('no', '=', $no)
-                ->where('id', '<>', $id)
+        if ($request->input('id')) {
+            return Guide::where('no', '=', $request->input('no'))
+                ->where('id', '<>', $request->input('id'))
                 ->get();
         } else {
-            return Guide::where('no', '=', $no)
+            return Guide::where('no', '=', $request->input('no'))
                 ->get();    
         }
     } 
 
-    public function validatingDescription($description, $id=false)
+    public function validatingDescription(Request $request)
     {
-        if ($id) {
-            return Guide::where('description', '=', $description)
-                ->where('id', '<>', $id)
+        if ($request->input('id')) {
+            return Guide::where('description', '=', $request->input('description'))
+                ->where('id', '<>', $request->input('id'))
                 ->get();
         } else {
-            return Guide::where('description', '=', $description)
+            return Guide::where('description', '=', $request->input('description'))
                 ->get();    
         }
     }

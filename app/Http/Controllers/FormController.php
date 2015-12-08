@@ -111,26 +111,27 @@ class FormController extends Controller
         return Form::where('instruction_id', '=', $id)->with('instruction.guide.standardDocument.standard')->get();
     }
 
-    public function validatingNo($no, $id = false)
+    public function validatingNo(Request $request)
     {
-        if ($id) {
-            return Form::where('no', '=', $no)
-                ->where('id', '<>', $id)
+        //return $no;
+        if ($request->input('id')) {
+            return Form::where('no', '=', $request->input('no'))
+                ->where('id', '<>', $request->input('id'))
                 ->get();
         } else {
-            return Form::where('no', '=', $no)
+            return Form::where('no', '=', $request->input('no'))
                 ->get();    
         }
     } 
 
-    public function validatingDescription($description, $id = false)
+    public function validatingDescription(Request $request)
     {
         if ($id) {
-            return Form::where('description', '=', $description)
-                ->where('id', '<>', $id)
+            return Form::where('description', '=', $request->input('description'))
+                ->where('id', '<>', $request->input('id'))
                 ->get();
         } else {
-            return Form::where('description', '=', $description)
+            return Form::where('description', '=', $request->input('description'))
                 ->get();    
         }
     }

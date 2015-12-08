@@ -83,14 +83,14 @@ class StandardController extends Controller
         $standard->delete();
     }
 
-    public function validating($description, $id=false)
+    public function validating(Request $request)
     {
-        if ($id) {
-            return Standard::where('description', '=', $description)
-                ->where('id', '<>', $id)
+        if ($request->input('id')) {
+            return Standard::where('description', '=', $request->input('description'))
+                ->where('id', '<>', $request->input('id'))
                 ->get();
         } else {
-            return Standard::where('description', '=', $description)
+            return Standard::where('description', '=', $request->input('description'))
                 ->get();    
         }
     }
