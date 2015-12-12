@@ -632,14 +632,14 @@ class WorkController extends Controller
         
     }
 
-    public function validatingName($name, $id=false)
+    public function validatingName(Request $request)
     {
-        if ($id) {
-            return Work::where('name', '=', $name)
-                ->where('id', '<>', $id)
+        if ($request->input('id')) {
+            return Work::where('name', '=', $request->input('name'))
+                ->where('id', '<>', $request->input('id'))
                 ->get();
         } else {
-            return Work::where('name', '=', $name)
+            return Work::where('name', '=', $request->input('name'))
                 ->get();    
         }
     }

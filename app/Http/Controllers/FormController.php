@@ -126,7 +126,7 @@ class FormController extends Controller
 
     public function validatingDescription(Request $request)
     {
-        if ($id) {
+        if ($request->input('id')) {
             return Form::where('description', '=', $request->input('description'))
                 ->where('id', '<>', $request->input('id'))
                 ->get();

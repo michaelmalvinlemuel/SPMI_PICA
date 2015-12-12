@@ -142,26 +142,26 @@ class UserController extends Controller
         $user->delete();
     }
 
-    public function validatingNik($nik , $id=false)
+    public function validatingNik(Request $request)
     {
-        if ($id) {
-            return User::where('nik', '=', $nik)
-                ->where('id', '<>', $id)
+        if ($request->input('id')) {
+            return User::where('nik', '=', $request->input('nik'))
+                ->where('id', '<>', $request->input('id'))
                 ->get();
         } else {
-            return User::where('nik', '=', $nik)
+            return User::where('nik', '=', $request->input('nik'))
                 ->get();    
         }
     }
 
-    public function validatingEmail($email, $id=false)
+    public function validatingEmail(Request $request)
     {
-        if ($id) {
-            return User::where('email', '=', $email)
-                ->where('id', '<>', $id)
+        if ($request->input('id')) {
+            return User::where('email', '=', $request->input('email'))
+                ->where('id', '<>', $request->input('id'))
                 ->get();
         } else {
-            return User::where('email', '=', $email)
+            return User::where('email', '=', $request->input('email'))
                 ->get();    
         }
     }

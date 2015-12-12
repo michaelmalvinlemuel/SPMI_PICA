@@ -24,8 +24,8 @@ class ProjectTableSeeder extends Seeder
         DB::table('projects')->delete();
         Project::insert([
             [
-                'name'          => 'Gambaran Besar Standard BAN-PT Program Studi',
-                'description'   => 'Gambaran Besar Standard BAN-PT Program Studi',
+                'name'          => 'Akreditasi Akademik Program Studi',
+                'description'   => 'Akreditasi Akademik Program Studi',
                 'date_start'    => new DateTime,
                 'date_ended'    => $nextMonth,
                 'user_id'       => '1',

@@ -18,7 +18,7 @@ class DocumentDatabaseSeeder extends Seeder
      */
     public function run()
     {
-        include('spmi.php');
+        include('spmi.document.php');
 
         DB::table('standards')->delete();
         Standard::insert($standards);
@@ -29,12 +29,12 @@ class DocumentDatabaseSeeder extends Seeder
         DB::table('guides')->delete();
         Guide::insert($guides);
 
-
         DB::table('instructions')->delete();
         Instruction::insert($instructions);
 
-
         DB::table('forms')->delete();
         Form::insert($forms);
+        
+        
     }
 }

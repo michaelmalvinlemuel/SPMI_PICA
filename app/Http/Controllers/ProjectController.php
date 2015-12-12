@@ -738,14 +738,14 @@ class ProjectController extends Controller
         return response()->json($response);
 	}
 	
-	public function validatingName($name, $id = false) {
+	public function validatingName(Request $request) {
 		
-		if ($id) {
-            return Project::where('name', '=', $name)
-                ->where('id', '<>', $id)
+		if ($request->input('id')) {
+            return Project::where('name', '=', $request->input('name'))
+                ->where('id', '<>', $request->input('id'))
                 ->get();
         } else {
-            return Project::where('name', '=', $name)
+            return Project::where('name', '=', $request->input('name'))
                 ->get();    
         }
 	}

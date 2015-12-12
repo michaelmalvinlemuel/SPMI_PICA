@@ -38,8 +38,8 @@ Route::get('register/resend', 'RegisterController@resend');
 
 //Route::get('/user', 'UserController@check');
 Route::post('/user/login', 'UserController@login');
-Route::get('user/validating/nik/{nik}/{id?}', 'UserController@validatingNik');
-Route::get('user/validating/email/{email}/{id?}', 'UserController@validatingEmail');
+Route::post('user/validating/nik', 'UserController@validatingNik');
+Route::post('user/validating/email', 'UserController@validatingEmail');
 Route::get('/user/logout', 'UserController@logout');
 
 
@@ -82,7 +82,7 @@ Route::group(['middleware'=> ['jwt.auth']], function(){
 	Route::patch('project/mark/{id}', 'ProjectController@mark'); //admin mark project as completed or terminated
 	Route::post('project/upload', 'ProjectController@upload'); //users upload project form
 	Route::get('project/lock/{id}/{lockStatus}', 'ProjectController@lock'); //lock all project form
-	Route::get('project/validating/name/{name}/{id?}', 'ProjectController@validatingName'); //validate project name for prevent duplication
+	Route::post('project/validating/name', 'ProjectController@validatingName'); //validate project name for prevent duplication
 	Route::get('project/user/{dislplay}/{initiation}/{preparation}/{progress}/{grading}/{conplete}/{terminated}', 'ProjectController@user'); 	//show project that involved by user	
 	
 	Route::get('project/{dislplay}/{initiation}/{preparation}/{progress}/{grading}/{conplete}/{terminated}', 'ProjectController@index');//retrive project by filter
@@ -95,18 +95,18 @@ Route::group(['middleware'=> ['jwt.auth']], function(){
 		/**
 		 * ORGANIZATION REST API ROUTE
 		*/
-		Route::get('university/validating/{name}/{id?}', 'UniversityController@validating');
+		Route::post('university/validating', 'UniversityController@validating');
 		Route::resource('university', 'UniversityController',
 			['except' => ['create', 'edit']]);
 
 		Route::get('department/university/{id}', 'DepartmentController@university');
-		Route::get('department/validating/{name}/{id?}/{universityId}', 'DepartmentController@validating');
+		Route::post('department/validating', 'DepartmentController@validating');
 		Route::resource('department', 'DepartmentController',
 			['except' => ['create', 'edit']]);
 
 		Route::get('job/university/{id}', 'JobController@university');
 		Route::get('job/department/{id}', 'JobController@department');
-		Route::get('job/validating/{name}/{departmentId}/{id?}', 'JobController@validating');
+		Route::post('job/validating', 'JobController@validating');
 		Route::resource('job', 'JobController',
 			['except' => ['create', 'edit']]);
 
@@ -168,7 +168,8 @@ Route::group(['middleware'=> ['jwt.auth']], function(){
 		Route::get('work/event/start', 'WorkController@startAllEvent');
 		Route::get('work/event/pause', 'WorkController@pauseAllEvent');
 		Route::get('work/event/{id}', 'WorkController@eventToggle');
-		Route::get('work/validating/name/{name}/{id?}', 'WorkController@validatingName');
+		
+		Route::post('work/validating/name', 'WorkController@validatingName');
 		Route::resource('work', 'WorkController',
 			['except' => ['create', 'edit']]);
 		Route::resource('work.form', 'WorkFormController', 
@@ -189,7 +190,7 @@ Route::group(['middleware'=> ['jwt.auth']], function(){
 		Route::resource('semester', 'SemesterController',
 			['except' => ['create', 'edit']]);
 
-		Route::get('groupJob/validating/name/{name}/{id?}', 'GroupJobController@validatingName');
+		Route::post('groupJob/validating/name', 'GroupJobController@validatingName');
 		Route::resource('groupJob', 'GroupJobController',
 			['except' => ['create', 'edit']]);
 		Route::resource('groupJob.job', 'GroupJobDetailController', 

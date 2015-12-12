@@ -92,14 +92,14 @@ class GroupJobController extends Controller
         }])->get();
     }
 
-    public function validatingName($name, $id = false)
+    public function validatingName(Request $request)
     {
-        if ($id) {
-            return GroupJob::where('name', '=', $name)
-                ->where('id', '<>', $id)
+        if ($request->input('id')) {
+            return GroupJob::where('name', '=', $request->input('name'))
+                ->where('id', '<>', $request->input('id'))
                 ->get();
         } else {
-            return GroupJob::where('name', '=', $name)
+            return GroupJob::where('name', '=', $request->input('name'))
                 ->get();    
         }
     }

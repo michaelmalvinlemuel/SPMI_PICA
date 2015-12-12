@@ -83,16 +83,16 @@ class DepartmentController extends Controller
         return Department::where('university_id', '=', $id)->with('university')->get();
     }
 
-    public function validating ($name, $id = false, $universityId)
+    public function validating (Request $request)
     {
-        if ($id) {
-            return Department::where('name', '=', $name)
-                ->where('id', '<>', $id)
-                ->where('university_id', '=', $universityId)
+        if ($request->input('id')) {
+            return Department::where('name', '=', $request->input('name'))
+                ->where('id', '<>', $request->input('id'))
+                ->where('university_id', '=', $request->input('university_id'))
                 ->get();
         } else {
-            return Department::where('name', '=', $name)
-            ->where('university_id', '=', $universityId)
+            return Department::where('name', '=', $request->input('name'))
+            ->where('university_id', '=', $request->input('university_id'))
             ->get();    
         }
         

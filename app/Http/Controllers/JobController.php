@@ -95,16 +95,16 @@ class JobController extends Controller
         return Job::where('department_id', '=', $id)->with('department.university')->get();
     }
 
-    public function validating($name, $departmentId, $id = false)
+    public function validating(Request $request)
     {
-        if ($id) {
-            return Job::where('name', '=', $name)
-                ->where('id', '<>', $id)
-                ->where('department_id', '=', $departmentId)
+        if ($request->input('id')) {
+            return Job::where('name', '=', $request->input('name'))
+                ->where('id', '<>', $request->input('id'))
+                ->where('department_id', '=', $request->input('department_id'))
                 ->get();
         } else {
-            return Job::where('name', '=', $name)
-                ->where('department_id', '=', $departmentId)
+            return Job::where('name', '=', $request->input('name')
+                ->where('department_id', '=', $request->input('department_id')
                 ->get();    
         }
     }
