@@ -274,7 +274,7 @@ $forms = [
     //3.1.3. 
     [
         'instruction_id'    =>  '7',
-        'no'                =>  'SPT-01/PM-01/SOP-05/FORM-01',
+        'no'                =>  'SPT-01/PM-01/SOP-05/FORM-05',
         'date'              =>  new DateTime,
         'description'       =>  'Form Pencapaian Prestasi Mahasiswa Dalam Tiga Tahun Terakhir di Bidang Akademik dan Non-Akademik',
         'document'          =>  null,
@@ -286,7 +286,7 @@ $forms = [
     //3.1.4.
     [
         'instruction_id'    =>  '7',
-        'no'                =>  'SPT-01/PM-01/SOP-05/FORM-02',
+        'no'                =>  'SPT-01/PM-01/SOP-05/FORM-06',
         'date'              =>  new DateTime,
         'description'       =>  'Form Data Jumlah Mahasiswa Reguler',
         'document'          =>  null,
@@ -298,7 +298,7 @@ $forms = [
     //3.3.2.
     [
         'instruction_id'    =>  '7',
-        'no'                =>  'SPT-01/PM-01/SOP-05/FORM-03',
+        'no'                =>  'SPT-01/PM-01/SOP-05/FORM-07',
         'date'              =>  new DateTime,
         'description'       =>  'Form Profil Masa Tunggu Kerja Pertama',
         'document'          =>  null,
@@ -310,7 +310,7 @@ $forms = [
     //3.3.3.
     [
         'instruction_id'    =>  '7',
-        'no'                =>  'SPT-01/PM-01/SOP-05/FORM-04',
+        'no'                =>  'SPT-01/PM-01/SOP-05/FORM-08',
         'date'              =>  new DateTime,
         'description'       =>  'Form Profil Kesesuaian Bidang Kerja dengan Bidang Studi',
         'document'          =>  null,
@@ -328,7 +328,7 @@ $forms = [
     //5.1.2.1. 
     [
         'instruction_id'    =>  '13',
-        'no'                =>  'SPT-02/PM-01/SOP-05/FORM-01',
+        'no'                =>  'SPT-02/PM-01/SOP-05/FORM-07',
         'date'              =>  new DateTime,
         'description'       =>  'Form Jumlah SKS Program Studi',
         'document'          =>  null,
@@ -340,7 +340,7 @@ $forms = [
     //5.1.2.2. 
     [
         'instruction_id'    =>  '13',
-        'no'                =>  'SPT-02/PM-01/SOP-05/FORM-02',
+        'no'                =>  'SPT-02/PM-01/SOP-05/FORM-08',
         'date'              =>  new DateTime,
         'description'       =>  'Form Struktur Kurikulum Mata Kuliah',
         'document'          =>  null,
@@ -352,7 +352,7 @@ $forms = [
     //5.1.3. 
     [
         'instruction_id'    =>  '13',
-        'no'                =>  'SPT-02/PM-01/SOP-05/FORM-03',
+        'no'                =>  'SPT-02/PM-01/SOP-05/FORM-09',
         'date'              =>  new DateTime,
         'description'       =>  'Form Mata Kuliah Pilihan',
         'document'          =>  null,
@@ -364,7 +364,7 @@ $forms = [
     //5.1.4. 
     [
         'instruction_id'    =>  '13',
-        'no'                =>  'SPT-02/PM-01/SOP-05/FORM-04',
+        'no'                =>  'SPT-02/PM-01/SOP-05/FORM-10',
         'date'              =>  new DateTime,
         'description'       =>  'Form Substansi Praktikum',
         'document'          =>  null,
@@ -376,7 +376,7 @@ $forms = [
     //5.2.1.
     [
         'instruction_id'    =>  '13',
-        'no'                =>  'SPT-02/PM-01/SOP-05/FORM-05',
+        'no'                =>  'SPT-02/PM-01/SOP-05/FORM-11',
         'date'              =>  new DateTime,
         'description'       =>  'Form Mekanisme Peninjauan Kurikulum',
         'document'          =>  null,
@@ -388,7 +388,7 @@ $forms = [
     //5.2.2.
     [
         'instruction_id'    =>  '13',
-        'no'                =>  'SPT-02/PM-01/SOP-05/FORM-06',
+        'no'                =>  'SPT-02/PM-01/SOP-05/FORM-12',
         'date'              =>  new DateTime,
         'description'       =>  'Form Hasil Peninjauan Silabus RPKPS dan Bahan Ajar',
         'document'          =>  null,
@@ -400,7 +400,7 @@ $forms = [
     //5.3.1.1. 
     [
         'instruction_id'    =>  '13',
-        'no'                =>  'SPT-02/PM-01/SOP-05/FORM-07',
+        'no'                =>  'SPT-02/PM-01/SOP-05/FORM-13',
         'date'              =>  new DateTime,
         'description'       =>  'Form Mekanisme Monitoring, Pengkajian dan Perbaikan Materi Perkuliahan',
         'document'          =>  null,
@@ -412,7 +412,7 @@ $forms = [
     //5.3.1.2. 
     [
         'instruction_id'    =>  '13',
-        'no'                =>  'SPT-02/PM-01/SOP-05/FORM-08',
+        'no'                =>  'SPT-02/PM-01/SOP-05/FORM-14',
         'date'              =>  new DateTime,
         'description'       =>  'Form Mekanisme Penyusunan Materi Perkuliahan',
         'document'          =>  null,
@@ -433,7 +433,7 @@ $forms = [
     //5.4.1
     [
         'instruction_id'    =>  '141',
-        'no'                =>  'SPT-03/PM-01/SOP-05/FORM-01',
+        'no'                =>  'SPT-03/PM-01/SOP-05/FORM-03',
         'date'              =>  new DateTime,
         'description'       =>  'Form Nama Dosen Pembimbing Akademik dan Jumlah Mahasiswa',
         'document'          =>  null,
@@ -445,7 +445,7 @@ $forms = [
     //5.4.2
     [
         'instruction_id'    =>  '141',
-        'no'                =>  'SPT-03/PM-01/SOP-05/FORM-02',
+        'no'                =>  'SPT-03/PM-01/SOP-05/FORM-04',
         'date'              =>  new DateTime,
         'description'       =>  'Form Proses Pembimbingan Akademik',
         'document'          =>  null,
@@ -457,7 +457,7 @@ $forms = [
     //5.5
     [
         'instruction_id'    =>  '141',
-        'no'                =>  'SPT-03/PM-01/SOP-05/FORM-03',
+        'no'                =>  'SPT-03/PM-01/SOP-05/FORM-05',
         'date'              =>  new DateTime,
         'description'       =>  'Form Pembimbingan Tugas Akhir',
         'document'          =>  null,
@@ -469,7 +469,7 @@ $forms = [
     //5.5.2
     [
         'instruction_id'    =>  '141',
-        'no'                =>  'SPT-03/PM-01/SOP-05/FORM-04',
+        'no'                =>  'SPT-03/PM-01/SOP-05/FORM-06',
         'date'              =>  new DateTime,
         'description'       =>  'Form Rata-Rata Penyelesaian Tugas Akhir',
         'document'          =>  null,
@@ -481,7 +481,7 @@ $forms = [
     //5.6
     [
         'instruction_id'    =>  '141',
-        'no'                =>  'SPT-03/PM-01/SOP-05/FORM-05',
+        'no'                =>  'SPT-03/PM-01/SOP-05/FORM-07',
         'date'              =>  new DateTime,
         'description'       =>  'Form Upaya Perbaikan Pembelajaran',
         'document'          =>  null,
@@ -496,7 +496,7 @@ $forms = [
     
       
     
-    //5.3.1
+    //5.3.2
     [
         'instruction_id'    =>  '142',
         'no'                =>  'SPT-04/PM-01/SOP-05/FORM-01',
