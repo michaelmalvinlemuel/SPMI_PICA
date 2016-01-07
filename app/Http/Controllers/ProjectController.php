@@ -318,6 +318,7 @@ class ProjectController extends Controller
     private function calculateOveralScore($project) {
         
         $projectNode = ProjectNode::where('project_id', '=', $project->id)->get();
+       
         
         if (count($projectNode) > 0) {
             
@@ -326,6 +327,7 @@ class ProjectController extends Controller
             } 
 
         } else {
+            
             
             $projectForm = ProjectForm::where('project_node_id', '=', $project->id)->first();
             if ($projectForm) {
@@ -339,19 +341,15 @@ class ProjectController extends Controller
                 } else {
                     $nodeScore = 0;
                 }
-               
-
-
+          
                 if (isset($weight) && isset($nodeScore)) {
 
                     $this->totalWeight += $weight;
                     $this->totalScore += $weight * $nodeScore; 
 
                 }
-            }
-                
-            
-        }    
+            } 
+         }
     }
                 
     /**
@@ -363,8 +361,12 @@ class ProjectController extends Controller
     public function index($display, $initiation, $preparation, $progress, $grading, $complete, $terminated)
     {
         
-        $project = Project::with('leader')->where('deleted_at', 'IS', 'NULL');
-
+        //return response()->json('test');
+        
+        $project = Project::with('leader')->whereNull('deleted_at');
+        
+        //return $project->paginate();
+        
         if ($initiation == 'true') {
             $project = $project->initiation();
         }
@@ -398,7 +400,9 @@ class ProjectController extends Controller
             $this->totalWeight = 0;
             
             if ($value->status !== "0") {
+                
                 $this->calculateOveralScore($value);
+                
                 if($this->totalWeight > 0) {
                     $value->score = $this->totalScore / $this->totalWeight;
                 } else {
@@ -412,6 +416,7 @@ class ProjectController extends Controller
             $this->totalScore = 0;
             $this->totalWeight = 0;
         }
+        
         
         return response()->json($project);
     }
@@ -552,7 +557,7 @@ class ProjectController extends Controller
     	$this->selectNode($project['projects'], $project);
         
 
-        $project->score = 'perkontol';
+        $project->score = '0';
 
         $this->totalScore = 0;
         $this->totalWeight = 0;
