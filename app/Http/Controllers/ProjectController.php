@@ -53,22 +53,31 @@ class ProjectController extends Controller
             if (isset($value['delegations'])) {
                 $delegations = $value['delegations'];
                 foreach($delegations as $key1 => $value1) {
-                    $projectDelegation = new ProjectNodeDelegation;
-                    $projectDelegation->project_node_id = $projectNode->id;
-                    $projectDelegation->user_id = $value1['id'];
-                    $projectDelegation->touch();
-                    $projectDelegation->save();
+                    
+                    if (isset($value1['id'])) {
+                        $projectDelegation = new ProjectNodeDelegation;
+                        $projectDelegation->project_node_id = $projectNode->id;
+                        $projectDelegation->user_id = $value1['id'];
+                        $projectDelegation->touch();
+                        $projectDelegation->save();
+                    }
+                    
                 } 
             }
             
             if (isset($value['assessors'])) {
                 $assessors = $value['assessors'];
                 foreach($assessors as $key1 => $value1) {
-                    $projectAssessor = new ProjectNodeAssessor;
-                    $projectAssessor->project_node_id = $projectNode->id;
-                    $projectAssessor->user_id = $value1['id'];
-                    $projectAssessor->touch();
-                    $projectAssessor->save();
+                    
+                    if (isset($value1['id'])) {
+                        $projectAssessor = new ProjectNodeAssessor;
+                        $projectAssessor->project_node_id = $projectNode->id;
+                        $projectAssessor->user_id = $value1['id'];
+                        $projectAssessor->touch();
+                        $projectAssessor->save();
+                    }
+                    
+                    
                 } 
             }
             
@@ -273,37 +282,42 @@ class ProjectController extends Controller
      */
      
     public function recursiveNodeDelete($nodes) {
-
-        foreach ($nodes->projects as $key => $value) {
-            $projectNode = ProjectNode::find($value->id);
-
-            $projectNodeDelegation = ProjectNodeDelegation::where('project_node_id', '=', $value->id);
-            $projectNodeDelegation->delete();
+        
+        if (isset($nodes->projects)) {
             
-            $projectNodeAssessor = ProjectNodeAssessor::where('project_node_id', '=', $value->id);
-            $projectNodeDelegation->delete();
+            foreach ($nodes->projects as $key => $value) {
+                $projectNode = ProjectNode::find($value->id);
 
-            $this->recursiveNodeDelete($projectNode);
+                $projectNodeDelegation = ProjectNodeDelegation::where('project_node_id', '=', $value->id);
+                $projectNodeDelegation->delete();
+                
+                $projectNodeAssessor = ProjectNodeAssessor::where('project_node_id', '=', $value->id);
+                $projectNodeDelegation->delete();
 
-            $projectNodeForm = ProjectForm::where('project_node_id', '=', $value->id)->get();
+                $this->recursiveNodeDelete($projectNode);
 
-            foreach($projectNodeForm as $key1 => $value1) {
-            	$formItem = $projectNodeForm[$key1]->forms()->get();
-            	foreach($formItem as $key2 => $value2) {
-                    
-                    $attachments = $formItem[$key2]->uploads()->get();
-                    foreach($attachments as $key3 => $value3) {
-                        $attachments[$key3]->attachments()->delete();
+                $projectNodeForm = ProjectForm::where('project_node_id', '=', $value->id)->get();
+
+                foreach($projectNodeForm as $key1 => $value1) {
+                    $formItem = $projectNodeForm[$key1]->forms()->get();
+                    foreach($formItem as $key2 => $value2) {
+                        
+                        $attachments = $formItem[$key2]->uploads()->get();
+                        foreach($attachments as $key3 => $value3) {
+                            $attachments[$key3]->attachments()->delete();
+                        }
+                        
+                        $formItem[$key2]->uploads()->delete();
                     }
-                    
-            		$formItem[$key2]->uploads()->delete();
-            	}
-                $projectNodeForm[$key1]->forms()->delete();    
+                    $projectNodeForm[$key1]->forms()->delete();    
+                }
+                
+            
+                $projectNode->forms()->delete();
             }
             
-           
-            $projectNode->forms()->delete();
         }
+        
 
         $nodes->delete();
         //$nodes->delegations()->delete();
