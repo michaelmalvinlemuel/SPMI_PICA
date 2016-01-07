@@ -18,7 +18,7 @@ class ProjectTemplateTableSeeder extends Seeder
     public function run()
     {
         
-        include('spmilaravel (3).php');
+        //include('spmilaravel (3).php');
         
         DB::table('project_templates')->delete();
         ProjectTemplate::insert($project_templates);

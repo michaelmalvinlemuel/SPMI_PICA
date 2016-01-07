@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
     {
         Model::unguard();
 
+        include('spmilaravel (4).php');
         
         $this->call(HierarchyDatabaseSeeder::class);
         $this->call(DocumentDatabaseSeeder::class);

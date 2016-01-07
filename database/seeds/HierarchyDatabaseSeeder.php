@@ -18,7 +18,8 @@ class HierarchyDatabaseSeeder extends Seeder
      */
     public function run()
     {
-        include('spmilaravel (3).php');
+        
+        //include('spmilaravel (3).php');
 
         DB::table('foundations')->delete();
         Foundation::insert($foundations);
