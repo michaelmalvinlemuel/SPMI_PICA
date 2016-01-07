@@ -1,10 +1,12 @@
 <?php
 
 use Illuminate\Database\Seeder;
-use App\Project;
-use App\ProjectNode;
+
 use App\ProjectTemplate;
 use App\ProjectNodeTemplate;
+use App\ProjectNodeFormTemplate;
+use App\ProjectNodeFormItemTemplate;
+
 
 class ProjectTemplateTableSeeder extends Seeder
 {
@@ -15,41 +17,19 @@ class ProjectTemplateTableSeeder extends Seeder
      */
     public function run()
     {
-        DB::table('project_templates')->delete();
         
-        $project = Project::get();
-        foreach($project as $key => $value) {
-            $template = new ProjectTemplate;
-            $template->id = $value->id;
-            $template->code = $value->code;
-            $template->name = $value->name;
-            $template->description = $value->description;
-            $template->status = 0;
-            $template->deleted_at = $value->deleted_at;
-            $template->created_at = $value->created_at;
-            $template->updated_at = $value->updated_at;
-            $template->save();
-        }
+        include('spmilaravel (3).php');
+        
+        DB::table('project_templates')->delete();
+        ProjectTemplate::insert($project_templates);
         
         DB::table('project_node_templates')->delete();
+        ProjectNodeTemplate::insert($project_node_templates);
         
-        $projectNode = ProjectNode::get();
-        foreach($projectNode as $key => $value) {
-            $templateNode = new ProjectNodeTemplate;
-            $templateNode->id = $value->id;
-            $templateNode->name = $value->name;
-            $templateNode->description = $value->description;
-            $templateNode->project_template_id = $value->project_id;
-            if ($value->project_type == 'App\Project') {
-                $templateNode->project_template_type = 'App\ProjectTemplate';
-            } else {
-                $templateNode->project_template_type = 'App\ProjectNodeTemplate';
-            }
-            $templateNode->created_at = $value->created_at;
-            $templateNode->updated_at = $value->updated_at;
-            $templateNode->deleted_at = $value->deleted_at;
-            $templateNode->save(); 
-            
-        }
+        DB::table('project_node_form_templates')->delete();
+        ProjectNodeFormTemplate::insert($project_node_form_templates);
+        
+        DB::table('project_node_form_item_templates')->delete();
+        ProjectNodeFormItemTemplate::insert($project_node_form_item_templates);
     }
 }

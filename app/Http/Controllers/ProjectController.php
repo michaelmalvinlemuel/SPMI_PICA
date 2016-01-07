@@ -17,6 +17,7 @@ use App\ProjectForm;
 use App\ProjectFormItem;
 use App\ProjectFormScore;
 use App\ProjectFormUpload;
+use App\ProjectFormUploadAttachment;
 use Response;
 use App\Form;
 
@@ -90,6 +91,7 @@ class ProjectController extends Controller
                     } else {
                         $projectForm->weight = 0;
                     }
+                    
                     $projectForm->touch();
                     $projectForm->save();
                     
@@ -116,6 +118,21 @@ class ProjectController extends Controller
                                 $upload->user_id = $value2['user_id'];
                                 $upload->touch();
                                 $upload->save();
+                                
+                                if (isset($value2['attachments'])) {
+                                    $attachments = $value2['attachments'];
+                                    $attachments = json_decode(json_encode($attachments), true);
+                                    
+                                    foreach ($attachments as $key3 => $value3) {
+                                        $projectAttachment = new ProjectFormUploadAttachment;
+                                        $projectAttachment->project_form_upload_id = $upload->id;
+                                        $projectAttachment->title = $value3['title'];
+                                        $projectAttachment->description = $value3['description'];
+                                        $projectAttachment->attachment = $value3['attachment'];
+                                        $projectAttachment->touch();
+                                        $projectAttachment->save();
+                                    }
+                                }
                             }
                         }
                     }
@@ -162,7 +179,7 @@ class ProjectController extends Controller
                         $form[$key1] = Form::with('instruction.guide.standardDocument.standard')->find($value1->form_id);
                         $form[$key1]['project_form_item_id'] = $value1->id;
         
-                        $projectUpload = ProjectFormUpload::where('project_form_item_id', '=', $value1->id)->get();
+                        $projectUpload = ProjectFormUpload::with('attachments')->where('project_form_item_id', '=', $value1->id)->get();
                         $form[$key1]['uploads'] = $projectUpload;
                     }
         
@@ -174,7 +191,6 @@ class ProjectController extends Controller
                     
                    
                     $nodes[$key]['weight'] = $projectForm[0]->weight;
-                    //$nodes[$key]['score'] = $projectForm[0]->score;
                     $nodes[$key]['forms'] = $form;
                     $nodes[$key]['lock'] = $projectForm[0]->lock;
                     
@@ -187,7 +203,6 @@ class ProjectController extends Controller
                     
                     $nodes[$key]['children'] = [];
                     $nodes[$key]['weight'] = 0;
-                    ///$nodes[$key]['score'] = 0;
                 }
 
                 $nodes[$key]['children'] = [];
@@ -233,7 +248,8 @@ class ProjectController extends Controller
                         
                         $lastUpload = ProjectFormUpload::where('project_form_item_id', '=', $value1->id)->max('created_at');
                         $projectUpload = ProjectFormUpload::where('project_form_item_id', '=', $value1->id)
-                            ->where('created_at', '=', $lastUpload)->with('users')->first();
+                            ->where('created_at', '=', $lastUpload)
+                            ->with('users')->with('attachments')->first();
                         $form[$key1]['uploads'] = $projectUpload;
                     }
 
@@ -274,6 +290,12 @@ class ProjectController extends Controller
             foreach($projectNodeForm as $key1 => $value1) {
             	$formItem = $projectNodeForm[$key1]->forms()->get();
             	foreach($formItem as $key2 => $value2) {
+                    
+                    $attachments = $formItem[$key2]->uploads()->get();
+                    foreach($attachments as $key3 => $value3) {
+                        $attachments[$key3]->attachments()->delete();
+                    }
+                    
             		$formItem[$key2]->uploads()->delete();
             	}
                 $projectNodeForm[$key1]->forms()->delete();    
@@ -353,8 +375,6 @@ class ProjectController extends Controller
         
         if ($progress == 'true') {
             $project = $project->progress();
-
-
         }
         
         if ($grading == 'true') {
@@ -703,20 +723,20 @@ class ProjectController extends Controller
             $this->totalScore = 0;
             $this->totalWeight = 0;
         }
-
-        
         return response()->json($project, 200, []);
         
     }
     
-    
-    
-    
+    /**
+     * Method for showing upload history with its attachment
+     */
     
     public function form($id) {
-    	$delegation = ProjectFormItem::with('projectForm.projectNode.delegations')->with('form')->with('uploads.users')->find($id);
-    	return Response::json($delegation, 200, [], JSON_PRETTY_PRINT);
-    	
+    	$delegation = ProjectFormItem::with('projectForm.projectNode.delegations')
+            ->with('form')->with(['uploads' => function($query) {
+                $query->with('users')->with('attachments')->orderBy('created_at','desc');
+            }])->find($id);
+    	return response()->json($delegation);
     }
     
     public function leader($id) {
@@ -750,6 +770,10 @@ class ProjectController extends Controller
         }
 	}
     
+    /**
+     *  For mark project as complete or terminate
+     */
+     
     public function mark(Request $request, $id) 
     {
         $project = Project::find($id);
@@ -758,6 +782,10 @@ class ProjectController extends Controller
         $project->save();    
     }
     
+    /**
+     *  For locking project from its root
+     */
+     
     public function lock($id, $lockStatus)
     {
         $project = Project::with('projects')->find($id);

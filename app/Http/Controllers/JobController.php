@@ -103,9 +103,9 @@ class JobController extends Controller
                 ->where('department_id', '=', $request->input('department_id'))
                 ->get();
         } else {
-            return Job::where('name', '=', $request->input('name')
-                ->where('department_id', '=', $request->input('department_id')
-                ->get();    
+            return Job::where('name', '=', $request->input('name'))
+                ->where('department_id', '=', $request->input('department_id'))
+                ->get();
         }
     }
 

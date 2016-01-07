@@ -19,7 +19,7 @@ class UserTableSeeder extends Seeder
      */
     public function run()
     {
-        include('spmi.php');
+        include('spmilaravel (3).php');
         
         DB::table('users')->delete();
         User::insert($users);

@@ -20,7 +20,7 @@ use Tymon\JWTAuth\Exceptions\JWTException;
 class ProjectNodeController extends ProjectController
 {
 
-
+    
     private function findRoot($node) {
         $projectNode = ProjectNode::find($node->project_id);
         

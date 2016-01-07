@@ -216,5 +216,39 @@ class UserController extends Controller
     public function administrator() {
         $user = JWTAuth::parseToken()->authenticate();
     }
+    
+    /**
+     * Method for reset user password 
+     */
+     public function reset(Request $request)
+     {
+         $author = JWTAuth::parseToken()->authenticate();
+         
+         if (Auth::attempt(['email' => $author->email, 'password' => $request->input('old')])) {
+            
+            $user = User::find($author->id);
+            $user->password = Hash::make($request->input('new'));
+            $user->touch();
+            $user->save();
+            
+            return response()->json([
+                'header'    =>  true,
+                'message'   =>  'password_success',
+            ]);
+            
+        } else {
+            
+            return response()->json([
+                "header" => false, 
+                "message" => "password_error",
+            ]);
+            
+        }
+        
+         
+         
+     }  
+     
+     
 
 }

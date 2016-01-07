@@ -43,24 +43,31 @@ Route::post('user/validating/email', 'UserController@validatingEmail');
 Route::get('/user/logout', 'UserController@logout');
 
 
+
 Route::group(['middleware'=> ['jwt.auth']], function(){
 	
+    
+    
+    
 	Route::get('user', 'UserController@index');
 	Route::get('user/jobs', 'UserController@jobs'); //for generate subordinate hierarchy
 	Route::get('user/lite/{id}', 'UserController@show');
-
+    Route::post('user/reset', 'UserController@reset');
+    
 	Route::get('job/users/{id}', 'JobController@users');
 	Route::get('job/subs/{id}', 'JobController@subs');
 	Route::get('job/lite/{id}', 'JobController@show');
-
+    
 	Route::get('standard/all', 'StandardController@all');
-	
+    
 	Route::get('groupJob/users', 'GroupJobController@users');
 	Route::get('groupJob/jobs/{id}', 'GroupJobController@jobs');
 
 	Route::get('work/lite/{id}', 'WorkController@show');
 	Route::get('work/users/{id}', 'WorkController@users');
 	
+    
+    
 	Route::get('task/retrive/{userId}/{jobId}/{display}/{progress}/{complete}/{overdue}', 'TaskController@retrive');	//for retrive task completness by their subordinate
 	Route::resource('task', 'TaskController',
 		['except' => [ 'create', 'edit', 'delete']]); //task is open for users
@@ -69,7 +76,12 @@ Route::group(['middleware'=> ['jwt.auth']], function(){
 	Route::resource('template/project', 'ProjectTemplateController', 
 		['except' => ['create', 'edit']]);
 	
-	
+    //Route::get('project/node/{nodeId}/upload', 'ProjectNodeUploadController@index');
+    Route::post('project/node/upload', 'ProjectNodeUploadController@store');
+    Route::get('project/node/upload/{id}', 'ProjectNodeUploadController@show');
+    Route::patch('project/node/upload/{id}', 'ProjectNodeUploadController@update');
+    Route::delete('project/node/upload/{id}', 'ProjectNodeUploadController@destroy');
+    
 	Route::post('project/node/delegate', 'ProjectNodeController@delegate'); //for delegation user by project leader
 	Route::get('project/node/lock/{id}/{lockStatus}', 'ProjectNodeController@lock'); //lock node by project manager to ready for grading if partial assessment method
 	Route::get('project/node/assess/{nodeId}', 'ProjectNodeController@assess'); //retrive assessment history for some node
@@ -85,16 +97,17 @@ Route::group(['middleware'=> ['jwt.auth']], function(){
 	Route::post('project/validating/name', 'ProjectController@validatingName'); //validate project name for prevent duplication
 	Route::get('project/user/{dislplay}/{initiation}/{preparation}/{progress}/{grading}/{conplete}/{terminated}', 'ProjectController@user'); 	//show project that involved by user	
 	
+    
 	Route::get('project/{dislplay}/{initiation}/{preparation}/{progress}/{grading}/{conplete}/{terminated}', 'ProjectController@index');//retrive project by filter
 	Route::resource('project', 'ProjectController',
 		['except' => ['index', 'create', 'edit']]); //PROJECT IS DOUBTFULL CAN BE USERS OR ADMIN
-	
-	
+
 	Route::group(['middleware' => ['role']], function() {
 
 		/**
 		 * ORGANIZATION REST API ROUTE
 		*/
+
 		Route::post('university/validating', 'UniversityController@validating');
 		Route::resource('university', 'UniversityController',
 			['except' => ['create', 'edit']]);
@@ -103,66 +116,57 @@ Route::group(['middleware'=> ['jwt.auth']], function(){
 		Route::post('department/validating', 'DepartmentController@validating');
 		Route::resource('department', 'DepartmentController',
 			['except' => ['create', 'edit']]);
-
+        
 		Route::get('job/university/{id}', 'JobController@university');
 		Route::get('job/department/{id}', 'JobController@department');
 		Route::post('job/validating', 'JobController@validating');
 		Route::resource('job', 'JobController',
 			['except' => ['create', 'edit']]);
-
+        
+        
 		/**
 		 * SPMI DOCUMENT REST API ROUTE
 		 */
-		//Route::get('standard/validating/{description}/{id?}', 'StandardController@validating')
-			//->where('description', '(.*)');
+         
+         
 		Route::post('standard/validating', 'StandardController@validating');
 		Route::resource('standard', 'StandardController', 
 			['except' => ['create', 'edit']]);
 
 		Route::get('standardDocument/standard/{id}', 'StandardDocumentController@standard');
-		//Route::get('standardDocument/validating/no/{no}/{id?}', 'StandardDocumentController@validatingNo')
-			//->where('no', '(.*)');
-		//Route::get('standardDocument/validating/description/{description}/{id?}', 'StandardDocumentController@validatingDescription')
-			//->where('description', '(.*)');
+
 		Route::post('standardDocument/validating/no', 'StandardDocumentController@validatingNo');
 		Route::post('standardDocument/validating/description', 'StandardDocumentController@validatingDescription');
 		Route::resource('standardDocument', 'StandardDocumentController',
 			['except'=> ['create', 'edit']]);
 
 		Route::get('guide/standardDocument/{id}', 'GuideController@standardDocument');
-		//Route::get('guide/validating/no/{no}/{id?}', 'GuideController@validatingNo')
-			//->where('no', '(.*)');
-		//Route::get('guide/validating/description/{description}/{id?}', 'GuideController@validatingDescription')
-			//->where('description', '(.*)');
+
 		Route::post('guide/validating/no', 'GuideController@validatingNo');
 		Route::post('guide/validating/description', 'GuideController@validatingDescription');
 		Route::resource('guide', 'GuideController', 
 			['except'=> ['create', 'edit']]);
 
 		Route::get('instruction/guide/{id}', 'InstructionController@guide');
-		//Route::get('instruction/validating/no/{no}/{id?}', 'InstructionController@validatingNo')
-			//->where('no', '(.*)');
-		//Route::get('instruction/validating/description/{description}/{id?}', 'InstructionController@validatingDescription')
-			//->where('description', '(.*)');
+
 		Route::post('instruction/validating/no', 'InstructionController@validatingNo');
 		Route::post('instruction/validating/description', 'InstructionController@validatingDescription');
 		Route::resource('instruction', 'InstructionController',
 			['except' => ['create', 'edit']]);
 
 		Route::get('form/instruction/{id}', 'FormController@instruction');
-		
-		//Route::get('form/validating/no/{no}/{id?}', 'FormController@validatingNo')
-			//->where('no', '(.*)');
-		//Route::get('form/validating/description/{description}/{id?}', 'FormController@validatingDescription')
-			//->where('description', '(.*)');
+
 		Route::post('form/validating/no', 'FormController@validatingNo');
 		Route::post('form/validating/description', 'FormController@validatingDescription');
 		Route::resource('form', 'FormController',
 			['except' => ['create', 'edit']]);
-
+        
+        
 		/**
 		 * WORK AND PROJECT REST API ROUTE
 		 */
+         
+        
 		Route::get('work/execute/all', 'WorkController@executeAllWork');
 		Route::get('work/execute/{id}', 'WorkController@execute');
 		Route::get('work/event/start', 'WorkController@startAllEvent');
@@ -174,10 +178,13 @@ Route::group(['middleware'=> ['jwt.auth']], function(){
 			['except' => ['create', 'edit']]);
 		Route::resource('work.form', 'WorkFormController', 
 			['only' => ['store', 'update', 'destroy']]);
-
+        
+        
 		/**
 		 * MISC REST API ROUTE (USER, SEMESTER, GROUBJOB)
 		 */
+         
+         
 		Route::get('user/administrator', 'UserController@administrator');//dummy service for checking if users is administrator
 		Route::resource('user', 'UserController',
 			['except' => ['index', 'create', 'edit']]);
@@ -198,5 +205,6 @@ Route::group(['middleware'=> ['jwt.auth']], function(){
 
 	});
 
+    
 
 });
