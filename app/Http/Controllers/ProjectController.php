@@ -509,6 +509,8 @@ class ProjectController extends Controller
         $project = Project::with('users')->with('assessors')->with(['projects' => function($query) {
             $query->with('delegations')->with('assessors');
         }])->find($id);
+        
+        //return response()->json($project);
 
         //add header attribute for frontend;
         foreach ($project->projects as $key => $value) {
@@ -566,6 +568,10 @@ class ProjectController extends Controller
     		} else {
     			$project->users[$key]['leader'] = false;
     		}
+            
+            $completeness = $this->countUser($id, $value->id);
+            $project->users[$key]['completeness'] = $completeness;
+            
     	}
     
     	$this->selectNode($project['projects'], $project);
@@ -746,6 +752,118 @@ class ProjectController extends Controller
         
     }
     
+    public function member($display, $initiation, $preparation, $progress, $grading, $complete, $terminated) {
+    
+        $user = JWTAuth::parseToken()->authenticate();
+        
+        $project = Project::with('leader')->where('deleted_at', 'IS', 'NULL');
+
+        if ($initiation == 'true') {
+            $project = $project->memberInitiation($user);
+        }
+        
+        if ($preparation == 'true') {
+            $project = $project->memberPreparation($user);
+        }
+        
+        if ($progress == 'true') {
+            $project = $project->memberProgress($user);
+        }
+        
+        if ($grading == 'true') {
+            $project = $project->memberGrading($user);
+        }
+        
+        if ($complete == 'true') {
+            $project = $project->memberComplete($user);
+        }
+        
+        if ($terminated == 'true') {
+            $project = $project->memberTerminated($user);
+        }
+        
+        $project = $project->paginate($display);
+
+        foreach($project as $key => $value) {
+ 
+            $this->totalScore = 0;
+            $this->totalWeight = 0;
+            
+            if ($value->status !== "0") {
+                $this->calculateOveralScore($value);
+                if ($this->totalWeight > 0) {
+                    $value->score = $this->totalScore / $this->totalWeight;
+                } else {
+                    $value->score = 0;
+                }
+                
+            } else {
+                $value->score = null;
+            }
+            
+            $this->totalScore = 0;
+            $this->totalWeight = 0;
+        }
+        return response()->json($project, 200, []);
+        
+    }
+    
+    public function assessor($display, $initiation, $preparation, $progress, $grading, $complete, $terminated) {
+        
+        $user = JWTAuth::parseToken()->authenticate();
+        
+        $project = Project::with('leader')->where('deleted_at', 'IS', 'NULL');
+
+        if ($initiation == 'true') {
+            $project = $project->assessorInitiation($user);
+        }
+        
+        if ($preparation == 'true') {
+            $project = $project->assessorPreparation($user);
+        }
+        
+        if ($progress == 'true') {
+            $project = $project->assessorProgress($user);
+        }
+        
+        if ($grading == 'true') {
+            $project = $project->assessorGrading($user);
+        }
+        
+        if ($complete == 'true') {
+            $project = $project->assessorComplete($user);
+        }
+        
+        if ($terminated == 'true') {
+            $project = $project->assessorTerminated($user);
+        }
+        
+        $project = $project->paginate($display);
+
+        foreach($project as $key => $value) {
+ 
+            $this->totalScore = 0;
+            $this->totalWeight = 0;
+            
+            if ($value->status !== "0") {
+                $this->calculateOveralScore($value);
+                if ($this->totalWeight > 0) {
+                    $value->score = $this->totalScore / $this->totalWeight;
+                } else {
+                    $value->score = 0;
+                }
+                
+            } else {
+                $value->score = null;
+            }
+            
+            $this->totalScore = 0;
+            $this->totalWeight = 0;
+        }
+        return response()->json($project, 200, []);
+    }
+    
+    
     /**
      * Method for showing upload history with its attachment
      */
@@ -833,6 +951,244 @@ class ProjectController extends Controller
         
         lockingSystem($project->projects, $lockStatus);
     }
+    
+    private function adjustAssessors($assessors) {
+         
+    }
+    
+    public function adjust (Request $request, $id) {
+        
+        $project = Project::with('users')->with('assessors')->with(['projects' => function($query) {
+            $query->with('delegations')->with('assessors');
+        }])->find($id);
+        
+        
+        if ($request->input('users')) {
+            $leader = null;
+            $users = $request->input('users');
+            foreach ($users as $key => $value) {
+                if ($value['leader'] == true) {
+                    $leader = $value['id'];
+                    break;
+                }
+            }
+            //delete old project members
+            $project->projectUsers()->delete();
+            
+            //add new project members
+            foreach($users as $key => $value) {
+                $projectUser = new ProjectUser;
+                $projectUser->project_id = $project->id;
+                $projectUser->user_id = $value['id'];
+                $projectUser->touch();
+                $projectUser->save();
+            }
+        }
+        
+        if ($request->input('assessors')) {
+            $assessors = $request->input('assessors');
+            
+            //delete project user via table;
+            $project->projectAssessors()->delete();
+            
+            //add project assessors
+            foreach($assessors as $key => $value) {
+                $projectAssessor = new ProjectAssessor;
+                $projectAssessor->project_id = $project->id;
+                $projectAssessor->user_id = $value['id'];
+                $projectAssessor->touch();
+                $projectAssessor->save();
+            }
+        }
+        
+        //declare new project
+        $project->name = $request->input('name');
+        $project->description = $request->input('description');
+        $project->date_start = $request->input('start');
+        $project->date_ended = $request->input('ended');
+        $project->type = $request->input('type');
+        $project->user_id = $leader;
+        $project->status = $request->input('status');
+        $project->touch();
+        
+        foreach($project->projects as $key => $value) {
+            $this->adjustAssessors($value);
+        }
+    }
+    
+    private function countNode(&$nodes, &$total, &$uploaded) {
+       
+      // $total++;
+       
+       foreach($nodes as $key => $value) {
+            
+            //$total++;
+            
+            $projectNode = ProjectNode::where('project_id', '=', $value->id)->where('project_type', '<>', 'App\Project')->get();
+            
+            if(count($projectNode) > 0) {
+                
+                $this->countNode($projectNode, $total, $uploaded);
+                
+            } else {
+                
+                $projectForm = ProjectForm::where('project_node_id', '=', $value->id)->get();
+                foreach($projectForm as $key1 => $value1) {
+                    
+                    $projectFormItem = ProjectFormItem::where('project_form_id', '=', $value1->id)->get();
+                    foreach ($projectFormItem as $key2 => $value2) {
+                        
+                        $projectFormItemUpload = ProjectFormUpload::where('project_form_item_id', '=', $value2->id)
+                            ->max('created_at') ;
+                        
+                        if ($projectFormItemUpload) {
+                            $total++;
+                            $uploaded++;
+                        } else {
+                            $total++;
+                        }
+                        
+                    }
+                }
+                
+            }
+       }
+       
+    }
+    
+    public function count($id) {
+        $totalForm = 0;
+        $uploadedForm = 0;
+        
+        $project = Project::with('projects')->find($id);
+        
+        $this->countNode($project->projects, $totalForm, $uploadedForm);
+        
+        return response()->json(['total' => $totalForm, 'upload' => $uploadedForm]);
+    }
+    
+    
+    private function countUserNode($nodes, &$total, &$uploaded, $userId) {
+       
+       //$total++;
+       
+       foreach($nodes as $key => $value) {
+            
+            //$total++;
+            
+            $projectNode = ProjectNode::where('project_id', '=', $value->id)
+                ->where('project_type', '<>', 'App\Project')->with('delegations')->get();
+            
+            $users = $value->delegations;
+            
+            if(count($projectNode) > 0) {
+                
+                $this->countUserNode($projectNode, $total, $uploaded, $userId);
+                
+            } else {
+                
+                $counter = 0;
+                foreach($users as $key0 => $value0) {
+                   if ($value0->id == $userId) {
+                       break;
+                   }
+                   $counter++;
+                }
+                
+                //check if user checked
+                if ($counter < count($users)) {
+                    $projectForm = ProjectForm::where('project_node_id', '=', $value->id)->get();
+                    foreach($projectForm as $key1 => $value1) {
+                        
+                        $projectFormItem = ProjectFormItem::where('project_form_id', '=', $value1->id)->get();
+                        foreach ($projectFormItem as $key2 => $value2) {
+                            
+                            $maxUpload = ProjectFormUpload::where('project_form_item_id', '=', $value2->id)
+                                ->max('created_at');
+                                
+                            $projectFormItemUpload = ProjectFormUpload::where('project_form_item_id', '=', $value2->id)
+                                ->where('created_at', '=', $maxUpload)->first();
+                            
+                            if ($projectFormItemUpload) {
+                                //if has uploaded form item
+                                $uploaded++;
+                                $total++;
+                            } else {
+                                //if has uploaded form item
+                                $total++;
+                            }
+                        }
+                    }
+                } 
+                
+            }
+       }
+       
+    }
+    
+    public function countUser($id, $userId)
+    {
+        $totalForm = 0;
+        $uploadedForm = 0;
+        
+        $project = Project::with('projects.delegations')->with('users')->find($id);
+        $users = $project->users;
+        
+        $counter = 0;
+        foreach($users as $key => $value) {
+            
+            if ($value->id == $userId) {
+                break;
+            }
+            $counter++;
+        }
+        
+        if ($counter == count($users)) {
+            return response()->json(['response' => 'member not found']);
+        }
+        
+        $this->countUserNode($project->projects, $totalForm, $uploadedForm, $userId);
+        
+        //return response()->json(['total' => $totalForm, 'upload' => $uploadedForm]);
+        return ['total' => $totalForm, 'upload' => $uploadedForm];
+        //return response()->json($project);
+    }
+    
+    public function enrollMember(Request $request, $id) {
+        $member = ProjectUser::where('project_id', '=', $id);
+        $member->delete();
+        
+        $newMember = json_decode(json_encode($request->input('users'), true));
+        
+        foreach($newMember as $key => $value) {
+            $newMember = new ProjectUser;
+            $newMember->project_id = $id;
+            $newMember->user_id = $value->id;
+            $newMember->touch();
+            $newMember->save();
+        }
+        
+    }
+    
+    public function enrollAssessor(Request $request, $id) {
+        
+        $assessor = ProjectAssessor::where('project_id', '=', $id);
+        $assessor->delete();
+        
+        $newAssessor = json_decode(json_encode($request->input('assessors'), true));
+        
+        //return response()->json($newAssessor);
+        
+        foreach($newAssessor as $key => $value) {
+            $projectAssessor = new ProjectAssessor;
+            $projectAssessor->project_id = $id;
+            $projectAssessor->user_id = $value->id;
+            $projectAssessor->touch();
+            $projectAssessor->save();
+        }
+        
+    }
+    
 
 
 }

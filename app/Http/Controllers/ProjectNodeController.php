@@ -62,7 +62,95 @@ class ProjectNodeController extends ProjectController
              $this->inheritDelegation($nodes, $delegations);
          }
      }
+     
+    
+    private function transposeAssessor ($node, &$result, $user) {
+        
+        
+            
+            $projectNode = ProjectNode::where('project_id', '=', $node->id)->where('project_type', '<>', 'App\Project')
+                ->with('assessors')->get(); 
+            
+            
+            if (count($projectNode) > 0) {
+                
+                $counter = 0;
+                foreach($projectNode as $key => $value) {
+                    $counter++;
+                    $value->numbering = $node->numbering . $counter . '.';
+                    $this->transposeAssessor($value, $result, $user);
+                }
+                $node['children'] = $projectNode;
+                
+            } else {
+                
+                foreach($node->assessors as $key => $value) {
+                    
+                    if ($value->id == $user->id) {
+                        $projectForm = ProjectForm::where('project_node_id', '=', $node->id)->with(['scores' => function($query) {
+                            $query->orderBy('created_at', 'DESC')->first();
+                        }])->where('lock', '<>', '0')->first();
+                        if ($projectForm) {
+                            $node['weight'] = $projectForm->weight;
+                            $node['lock'] = $projectForm->lock;
+                            $node['score'] = $projectForm->scores;
+                            array_push($result, $node);
+                            break;
+                        }
+                        
+                    }
+                    
+                   
+                    
+                }
+                
+                
+                    
+                
+            }
+        
+        
 
+        
+    } 
+     
+    /**
+      * Show All Project Node form only within project
+      */
+    
+    public function form($id) {
+        
+        $user = JWTAuth::parseToken()->authenticate();
+        $project = Project::with('projects')->with('assessors')->with('users')->find($id);
+        
+        
+        
+        
+        $result = [];
+        //$assessors = [];
+        
+        $counter = 0;
+        foreach($project->projects as $key => $value) {
+            $counter++;
+            $value->numbering = $counter . '.';
+            $this->transposeAssessor($value, $result, $user);
+        }
+        
+        $response = Project::with('assessors')->with('users')->find($id);
+        foreach ($response->users as $key => $value) {
+            if ($response->user_id == $value->id) {
+                $response->users[$key]['leader'] = true;
+            } else {
+                $response->users[$key]['leader'] = false;
+            }
+        }
+        $response->projects = $result;
+        
+        return response()->json($response);
+        
+    }
+    
+    
     /**
      * Delegate node for some user 
      *
@@ -145,7 +233,9 @@ class ProjectNodeController extends ProjectController
         $projectNode = ProjectNode::with('delegations')
             ->with(['forms' => function($query) {
                 $query->with(['forms' => function($query2) {
-                    $query2->with('form')->with('upload.users');
+                    $query2->with('form')->with(['upload' => function($query3) {
+                        $query3->with('users')->with('attachments');
+                    }]);
                 }])->with('scores.users');
             }])->find($nodeId);
 

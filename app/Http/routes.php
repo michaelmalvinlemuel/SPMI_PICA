@@ -77,6 +77,9 @@ Route::group(['middleware'=> ['jwt.auth']], function(){
 		['except' => ['create', 'edit']]);
 	
     //Route::get('project/node/{nodeId}/upload', 'ProjectNodeUploadController@index');
+    
+    
+    
     Route::post('project/node/upload', 'ProjectNodeUploadController@store');
     Route::get('project/node/upload/{id}', 'ProjectNodeUploadController@show');
     Route::patch('project/node/upload/{id}', 'ProjectNodeUploadController@update');
@@ -87,18 +90,31 @@ Route::group(['middleware'=> ['jwt.auth']], function(){
 	Route::get('project/node/assess/{nodeId}', 'ProjectNodeController@assess'); //retrive assessment history for some node
 	Route::post('project/node/score', 'ProjectNodeController@score'); //scoring project by admin or assessor
 	
+    Route::get('project/node/{id}', 'ProjectNodeController@form'); //for assessor to get direct to the project
+    
 	Route::get('project/last/{id}', 'ProjectController@showLast');  //shpw project with last uploaded form	
 	Route::get('project/form/{id}', 'ProjectController@form'); //custom selection for uploaded project document
 	Route::get('project/leader/{id}', 'ProjectController@leader'); //retrive the leader of the project
 	
+    
+    Route::patch('project/enroll/member/{id}', 'ProjectController@enrollMember'); //use to update member of the project;
+    Route::patch('project/enroll/assessor/{id}', 'ProjectController@enrollAssessor'); //use to update mefmber of assessor of the project;
+    
+    
 	Route::patch('project/mark/{id}', 'ProjectController@mark'); //admin mark project as completed or terminated
 	Route::post('project/upload', 'ProjectController@upload'); //users upload project form
 	Route::get('project/lock/{id}/{lockStatus}', 'ProjectController@lock'); //lock all project form
 	Route::post('project/validating/name', 'ProjectController@validatingName'); //validate project name for prevent duplication
-	Route::get('project/user/{dislplay}/{initiation}/{preparation}/{progress}/{grading}/{conplete}/{terminated}', 'ProjectController@user'); 	//show project that involved by user	
-	
     
-	Route::get('project/{dislplay}/{initiation}/{preparation}/{progress}/{grading}/{conplete}/{terminated}', 'ProjectController@index');//retrive project by filter
+	Route::get('project/user/{dislplay}/{initiation}/{preparation}/{progress}/{grading}/{conplete}/{terminated}', 'ProjectController@user'); 	//show project that involved by user	
+	Route::get('project/member/{display}/{initiation}/{preparation}/{progress}/{grading}/{complete}/{terminated}', 'ProjectController@member'); //Show only if users is member of the project
+    Route::get('project/assessor/{display}/{initiation}/{preparation}/{progress}/{grading}/{complete}/{terminated}', 'ProjectController@assessor'); //Show only if users is member of the project
+    
+    Route::get('project/count/user/{id}/{userId}', 'ProjectController@countUser');
+    Route::get('project/count/{id}', 'ProjectController@count');
+    
+	
+    Route::get('project/{dislplay}/{initiation}/{preparation}/{progress}/{grading}/{conplete}/{terminated}', 'ProjectController@index');//retrive project by filter
 	Route::resource('project', 'ProjectController',
 		['except' => ['index', 'create', 'edit']]); //PROJECT IS DOUBTFULL CAN BE USERS OR ADMIN
 
