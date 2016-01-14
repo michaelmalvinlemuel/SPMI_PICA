@@ -377,9 +377,9 @@ class ProjectController extends Controller
         
         //return response()->json('test');
         
-        $project = Project::with('leader')->whereNull('deleted_at');
+        $project = Project::with('leader')->where('deleted_at', 'IS', 'NULL');
         
-        //return $project->paginate();
+    
         
         if ($initiation == 'true') {
             $project = $project->initiation();
