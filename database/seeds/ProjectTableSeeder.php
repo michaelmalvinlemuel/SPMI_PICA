@@ -26,7 +26,7 @@ class ProjectTableSeeder extends Seeder
     public function run()
     {
         
-        include('spmilaravel (5).php');
+        include('spmilaravel (7).php');
         
         DB::table('projects')->delete();
         Project::insert($projects);
