@@ -260,7 +260,11 @@ class ProjectNodeController extends ProjectController
         $projectScore->project_form_id = $request->input('project_form_id');
         $projectScore->user_id = $user->id;
         $projectScore->score = $request->input('score');
-        $projectScore->description = $request->input('description');
+        
+        if ($request->input('description')) {
+            $projectScore->description = $request->input('description');
+        }
+        
         $projectScore->touch();
         $projectScore->save();
         
