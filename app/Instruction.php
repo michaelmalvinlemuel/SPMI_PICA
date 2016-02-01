@@ -10,6 +10,10 @@ class Instruction extends Model
 
     protected $dates = ['deleted_at'];
     
+    public function download() {
+        return $this->morphMany('App\HistoryDownload', 'document');
+    }
+    
 
     public function guide() {
     	return $this->belongsTo('App\Guide');

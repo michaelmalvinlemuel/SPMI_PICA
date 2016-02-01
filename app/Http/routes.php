@@ -47,6 +47,7 @@ Route::get('/user/logout', 'UserController@logout');
 Route::group(['middleware'=> ['jwt.auth']], function(){
 	
     
+    Route::post('history/download', 'HistoryDownloadController@store');
     
     
 	Route::get('user', 'UserController@index');
@@ -59,6 +60,7 @@ Route::group(['middleware'=> ['jwt.auth']], function(){
 	Route::get('job/lite/{id}', 'JobController@show');
     
 	Route::get('standard/all', 'StandardController@all');
+    Route::post('standard/combination/{display}/{standardDocument}/{guide}/{instruction}/{form}', 'StandardController@combination');
     
 	Route::get('groupJob/users', 'GroupJobController@users');
 	Route::get('groupJob/jobs/{id}', 'GroupJobController@jobs');
@@ -96,7 +98,7 @@ Route::group(['middleware'=> ['jwt.auth']], function(){
 	Route::get('project/form/{id}', 'ProjectController@form'); //custom selection for uploaded project document
 	Route::get('project/leader/{id}', 'ProjectController@leader'); //retrive the leader of the project
 	
-    
+    Route::patch('project/enroll/leader/{id}', 'ProjectController@enrollLeader');   //use to update leader for project;      
     Route::patch('project/enroll/member/{id}', 'ProjectController@enrollMember'); //use to update member of the project;
     Route::patch('project/enroll/assessor/{id}', 'ProjectController@enrollAssessor'); //use to update mefmber of assessor of the project;
     

@@ -19,7 +19,7 @@ class DocumentDatabaseSeeder extends Seeder
     public function run()
     {
         
-        include('spmilaravel (7).php');
+        include('spmilaravel (8).php');
         
         DB::table('standards')->delete();
         Standard::insert($standards);

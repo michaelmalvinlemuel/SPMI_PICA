@@ -102,8 +102,6 @@ class TaskController extends Controller
             $query->where('user_id', '=', $userId);
         }])->where('status', '=', 1000);
         
-        
-            
         if ( $progress == 'true' )
         $tasks = $tasks->progress($userId, $jobId);
         

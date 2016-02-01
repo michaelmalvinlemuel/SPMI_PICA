@@ -1154,6 +1154,83 @@ class ProjectController extends Controller
         //return response()->json($project);
     }
     
+    
+    /**
+     *
+     */
+     
+    private function delegateLeader($oldId, $newId, $nodes)
+    {
+        
+        
+        foreach($nodes as $key => $value) {
+            
+            $projectNodeDelegationOld = ProjectNodeDelegation::where('project_node_id', '=', $value->id)->where('user_id', '=', $oldId)->first();
+            $projectNodeDelegationNew = ProjectNodeDelegation::where('project_node_id', '=', $value->id)->where('user_id', '=', $newId)->first();
+            
+            //return $projectNodeDelegationOld;
+            
+            if (isset($projectNodeDelegationOld) && isset($projectNodeDelegationNew)) {
+                //delete old
+                $projectNodeDelegationOld->delete();
+            }
+            
+            if (!isset($projectNodeDelegationOld) && isset($projectNodeDelegationNew)) {
+                //do nothing
+            }
+            
+            if (isset($projectNodeDelegationOld) && !isset($projectNodeDelegationNew)) {
+                //replace
+                $newDelegation = ProjectNodeDelegation::where('project_node_id', '=', $value->id)->where('user_id', '=', $oldId)->first();
+                $newDelegation->user_id = $newId;
+                $newDelegation->touch();
+                $newDelegation->save();
+            }
+            
+            if (!isset($projectNodeDelegationOld) && !isset($projectNodeDelegationNew)) {
+                //insert new delegation
+                $newDelegation = new ProjectNodeDelegation;
+                $newDelegation->project_node_id = $value->id;
+                $newDelegation->user_id = $newId;
+                $newDelegation->touch();
+                $newDelegation->save();
+            }          
+            
+            $projectNode = ProjectNode::where('project_id', '=', $value->id)->where('project_type', '=', 'App\ProjectNode')->get();
+            if (count($projectNode) > 0) {
+                $this->delegateLeader($oldId, $newId, $projectNode);
+            }
+        }
+        
+        
+    }
+    
+    
+    /**
+     *
+     */
+     
+    public function enrollLeader(Request $request, $id) 
+    {
+        $project = Project::with('projects')->find($id);
+        
+        //$project = Project::with('projects')->first();
+        //return response()->json($project);
+        
+        $oldLeader = $project->user_id;
+        
+        $project->user_id = $request->input('id');
+        $project->touch();
+        $project->save();
+        
+        $projectNode = ProjectNode::where('project_id', '=', $id)->where('project_type', '=', 'App\Project')->get();
+        $this->delegateLeader($oldLeader, $request->input('id'), $projectNode);
+    }
+    
+    /*
+    *
+    */
+    
     public function enrollMember(Request $request, $id) {
         $member = ProjectUser::where('project_id', '=', $id);
         $member->delete();

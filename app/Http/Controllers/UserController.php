@@ -125,6 +125,8 @@ class UserController extends Controller
         $user->address = $request->input('address');
         $user->email = $request->input('email');
         $user->type = $request->input('type');
+        $user->phone = $request->input('phone');
+        $user->extension = $request->input('extension');
         $user->touch();
         $user->save();
     }

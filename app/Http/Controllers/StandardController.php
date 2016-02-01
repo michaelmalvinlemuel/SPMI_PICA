@@ -3,11 +3,16 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-
+use Illuminate\Pagination\LengthAwarePaginator as Paginator;
 use App\Http\Requests;
 use App\Http\Controllers\Controller;
 
 use App\Standard;
+use App\StandardDocument;
+use App\Guide;
+use App\Instruction;
+use App\Form;
+
 use Response;
 use Auth;
 
@@ -30,6 +35,67 @@ class StandardController extends Controller
 		return Response::json($standard, 200, [], JSON_PRETTY_PRINT);
 		
 	}
+    
+    public function combination(Request $request, $display, $withStandardDocument
+        , $withGuide, $withInstruction, $withForm) 
+    {
+        $response = [];
+        
+        if ($withStandardDocument == 'true') {
+            $standardDocument = StandardDocument::where('description', 'LIKE', '%' . $request->input('keyword') . '%')->get();
+            foreach ($standardDocument as $key => $value) {
+                
+                $value->type = "s";
+                array_push($response, $value);
+            }
+            
+        }
+        
+        if ($withGuide == 'true') {
+            $guide = Guide::where('description', 'LIKE', '%' . $request->input('keyword') . '%')->get();
+            foreach($guide as $key => $value) {
+                
+                $value->type = "g";
+                array_push($response, $value);
+                
+            }
+        }
+        
+        if ($withInstruction == 'true') {
+            $instruction = Instruction::where('description', 'LIKE', '%' . $request->input('keyword') . '%')->get();
+            foreach($instruction as $key => $value) {
+                
+                $value->type = "i";
+                array_push($response, $value);
+                
+            }
+        }
+        
+        if ($withForm == 'true') {
+            $form = Form::where('description', 'LIKE', '%' . $request->input('keyword') . '%')->get();
+            foreach($form as $key => $value) {
+                
+                $value->type = "f";
+                array_push($response, $value);
+                
+            }
+        } 
+        
+        //return $request->query()['page'];
+        $page = $request->query()['page'];
+        
+        $slice = array_slice($response, $display * ($page - 1), $display);
+        
+        $paginator = new Paginator($slice, count($response), $display, $page, [
+            'path'  => $request->url(),
+            'query' => $request->query(),
+        ]);
+        
+        return $paginator;
+        
+        //return response()->json($response);
+        
+    }
 	
     public function store(Request $request)
     {   

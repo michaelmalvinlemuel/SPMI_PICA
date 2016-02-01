@@ -10,11 +10,14 @@ class Form extends Model
 
     protected $dates = ['deleted_at'];
     
+    public function download() {
+        return $this->morphMany('App\HistoryDownload', 'document');
+    }
+    
     public function instruction() {
     	return $this->belongsTo('App\Instruction');
-
     }
-
+    
     public function works() {
     	return $this->belongsToMany('App\Work')->whereNull('work_forms.deleted_at');
     }
