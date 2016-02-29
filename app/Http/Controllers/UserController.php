@@ -246,9 +246,13 @@ class UserController extends Controller
             ]);
             
         }
-        
-         
-         
+     }
+     
+     public function adminReset($id) {
+         $user = User::find($id);
+         $user->password = Hash::make('12345');
+         $user->touch();
+         $user->save();
      }  
      
      

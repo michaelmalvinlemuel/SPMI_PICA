@@ -26,6 +26,9 @@ class DatabaseSeeder extends Seeder
         $this->call(ProjectTableSeeder::class);
         $this->call(ProjectTemplateTableSeeder::class);
         
+        $this->call(PhysicalCategoryTableSeeder::class);
+        $this->call(PhysicalTableSeeder::class);
+        
         Model::reguard();
     }
 }

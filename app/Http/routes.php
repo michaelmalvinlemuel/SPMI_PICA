@@ -54,6 +54,7 @@ Route::group(['middleware'=> ['jwt.auth']], function(){
 	Route::get('user/jobs', 'UserController@jobs'); //for generate subordinate hierarchy
 	Route::get('user/lite/{id}', 'UserController@show');
     Route::post('user/reset', 'UserController@reset');
+    Route::get('user/admin-reset/{id}', 'UserController@adminReset');
     
 	Route::get('job/users/{id}', 'JobController@users');
 	Route::get('job/subs/{id}', 'JobController@subs');
@@ -220,7 +221,19 @@ Route::group(['middleware'=> ['jwt.auth']], function(){
 			['except' => ['create', 'edit']]);
 		Route::resource('groupJob.job', 'GroupJobDetailController', 
 			['only' => ['store', 'show', 'update', 'destroy']]);
-
+            
+        
+        Route::get('physical/explore', 'PhysicalAddressController@explore');
+        
+        Route::get('physical/{id}/create', 'PhysicalAddressController@create');
+        Route::resource('physical', 'PhysicalAddressController', 
+            ['except' => ['create']]);
+        
+        
+        Route::post('physical-category/validating/physical', 'PhysicalAddressCategoryController@validatePhysical');
+        Route::get('physical-category/{id}/sub', 'PhysicalAddressCategoryController@sub');
+        Route::resource('physical-category', 'PhysicalAddressCategoryController', 
+            ['except' => ['create', 'edit']]);
 	});
 
     
