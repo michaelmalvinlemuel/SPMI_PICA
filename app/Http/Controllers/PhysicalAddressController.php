@@ -63,10 +63,13 @@ class PhysicalAddressController extends Controller
     public function store(Request $request)
     {
         $physical = new PhysicalAddress;
+        $physical->physical_address_category_id = $request->input('physical_address_category_id');
         $physical->code = $request->input('code');
         $physical->description = $request->input('description');
-        $physical->type = $request->input('type');
         $physical->physical_address_id = $request->input('physical_address_id');
+        
+        $physical->physical_address_category_id = $request->input('physical_address_category_id');
+        $physical->touch();
         $physical->save();
     }
 

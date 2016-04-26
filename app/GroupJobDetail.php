@@ -17,5 +17,9 @@ class GroupJobDetail extends Model
     public function job() {
     	return $this->belongsTo('App\Job');
     }
+    
+    public function users() {
+        return $this->hasManyThrough('App\Job', 'App\User', '', '');
+    }
 
 }

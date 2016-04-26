@@ -85,13 +85,6 @@ class GroupJobController extends Controller
         $groupjob->delete();
     }
 
-    public function users() 
-    {
-        return GroupJob::with(['groupJobDetail' => function($query) {
-            $query->has('job.userJob.user')->with('job.userJob.user');
-        }])->get();
-    }
-
     public function validatingName(Request $request)
     {
         if ($request->input('id')) {
@@ -109,4 +102,32 @@ class GroupJobController extends Controller
         $job = GroupJob::with('jobs')->find($id);
         return Response::json($job, $status=200, $header=[], $option=JSON_PRETTY_PRINT);
     }
+    
+    
+    public function users () {
+        
+         $groupJob = GroupJob::with('jobs.users')->get();
+         
+         $groupJobUsers = [];
+         foreach($groupJob as $key => $value) {
+             $value->search_type = 'Group Jobs';
+             
+             foreach($value->jobs as $key1 => $value1) {
+                 
+                 foreach($value1->users as $key2 => $value2) {
+                     unset($value2->pivot);
+                     array_push($groupJobUsers, $value2);
+                 }
+                 //array_push($groupJobUsers, $value1->users);
+             }
+             $value->users = $groupJobUsers;
+             
+             unset($value->jobs);
+         }
+         
+         $groupJob = json_decode(json_encode($groupJob), true);
+         
+         return response()->json($groupJob);
+    }
+    
 }

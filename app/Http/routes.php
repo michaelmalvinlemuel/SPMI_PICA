@@ -50,8 +50,11 @@ Route::group(['middleware'=> ['jwt.auth']], function(){
     Route::post('history/download', 'HistoryDownloadController@store');
     
     
+    Route::post('user/search', 'UserController@search');
+    
 	Route::get('user', 'UserController@index');
 	Route::get('user/jobs', 'UserController@jobs'); //for generate subordinate hierarchy
+    Route::get('user/subordinate', 'UserController@subordinate');
 	Route::get('user/lite/{id}', 'UserController@show');
     Route::post('user/reset', 'UserController@reset');
     Route::get('user/admin-reset/{id}', 'UserController@adminReset');
@@ -120,7 +123,16 @@ Route::group(['middleware'=> ['jwt.auth']], function(){
     Route::get('project/{dislplay}/{initiation}/{preparation}/{progress}/{grading}/{conplete}/{terminated}', 'ProjectController@index');//retrive project by filter
 	Route::resource('project', 'ProjectController',
 		['except' => ['index', 'create', 'edit']]); //PROJECT IS DOUBTFULL CAN BE USERS OR ADMIN
-
+        
+    
+    Route::post('assignment-user-attachment/delegate', 'AssignmentUserAttachmentController@delegate');
+    Route::resource('assignment-user-attachment', 'AssignmentUserAttachmentController');
+    
+    Route::resource('assignment-user', 'AssignmentUserController', 
+        [ 'except' => ['', '', '']]);
+    
+    
+    
 	Route::group(['middleware' => ['role']], function() {
 
 		/**
@@ -223,6 +235,10 @@ Route::group(['middleware'=> ['jwt.auth']], function(){
 			['only' => ['store', 'show', 'update', 'destroy']]);
             
         
+        /**
+		 * PHYSICAL STORAGE
+		 */
+         
         Route::get('physical/explore', 'PhysicalAddressController@explore');
         
         Route::get('physical/{id}/create', 'PhysicalAddressController@create');
@@ -234,6 +250,18 @@ Route::group(['middleware'=> ['jwt.auth']], function(){
         Route::get('physical-category/{id}/sub', 'PhysicalAddressCategoryController@sub');
         Route::resource('physical-category', 'PhysicalAddressCategoryController', 
             ['except' => ['create', 'edit']]);
+            
+        
+        
+        
+        
+        /**
+		 * ASSIGNMENT
+		 */
+         
+        Route::get('assignment/{id}/detail', 'AssignmentController@detail');    //for checking uploading progress by admin;
+        Route::resource('assignment', 'AssignmentController');
+        
 	});
 
     

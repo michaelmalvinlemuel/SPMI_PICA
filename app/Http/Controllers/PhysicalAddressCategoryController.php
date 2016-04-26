@@ -111,6 +111,14 @@ class PhysicalAddressCategoryController extends Controller
         }
     }
     
+    public function sub($id) {
+        
+        $physicalCategory = PhysicalAddressCategory::where('physical_address_category_id','=', $id)->first();
+        
+        return response()->json($physicalCategory);
+        
+    }
+    
     
     
 }

@@ -17,6 +17,9 @@ use Hash;
 use DB;
 use App\Task;
 
+use App\Department;
+use App\GroupJob;
+use App\GroupJobDetail;
 
 use JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
@@ -211,6 +214,130 @@ class UserController extends Controller
         
         return response()->json($jobs, $status = 200, $header=[], JSON_PRETTY_PRINT);
     }
+    
+    public function subordinate() {
+        
+        $result = [];
+        
+        $user = JWTAuth::parseToken()->authenticate();
+        $user = User::with('jobs')->find($user->id);
+        $jobs = $user->jobs;
+        
+        function pushIfUnique(&$result, $node) {
+            
+            foreach($result as $key => $value) {
+                if ($node == $value) {
+                    return 0;
+                }
+            }
+            
+            array_push($result, $node);
+        }
+        
+        function metamorph(&$result, $node) {
+            
+                unset($node->pivot);
+                pushIfUnique($result, $node);
+            
+            
+        }
+        
+        function subs(&$result, $jobs) {
+            foreach($jobs as $key => $value) {
+                $job = Job::with('users')->where('job_id', '=', $value->id)->get();
+                $jobs[$key]['subs'] = $job;
+                
+                foreach($job as $key1 => $value1) {
+                    foreach($value1->users as $key2 => $value2) {
+                        metamorph($result, $value2);
+                    }
+                    
+                }
+                
+                subs($result, $job);
+            }
+        }
+        
+        subs($result, $jobs);
+        
+        
+        
+        
+        function removeCurrentUser(&$result, $user) {
+            foreach($result as $key => $value) {
+                if ($user->id == $value->id) {
+                    array_splice($result, $key, 1);
+                    return 0;
+                }
+            }
+        }
+        
+        removeCurrentUser($result, $user);
+        
+        return response()->json($result);
+    }
+    
+    /*
+    public function subordinate() {
+        $result = [];
+        $temp = [];
+        
+        $user = JWTAuth::parseToken()->authenticate();
+        
+        $subordinate = User::with('jobs.users')->find($user->id);
+        $jobs = $subordinate->jobs;
+        
+        
+        
+        
+        function pushIfUnique(&$result, $node) {
+            
+            foreach($result as $key => $value) {
+                if ($node == $value) {
+                    return 0;
+                }
+            }
+            
+            array_push($result, $node);
+        }
+        
+        function metamorph(&$result, $nodes) {
+            
+            foreach($nodes as $key => $value) {
+                unset($value->pivot);
+                pushIfUnique($result, $value);
+            }
+            
+        }
+        
+      
+        
+        
+        $jobs = json_decode(json_encode($jobs), false);
+        foreach($jobs as $key => $value) {
+            
+            if(count($value->users) > 0) {
+                metamorph($result, $value->users);    
+            }
+            
+        }
+        
+        $result = json_decode(json_encode($result));
+        
+        foreach($result as $key => $value) {
+            $a = User::with('jobs')->find($value->id);
+            $a = json_decode(json_encode($a), false);
+            
+            array_push($temp, $a);
+        }
+        
+        
+        
+        return response()->json($temp);
+        
+        
+    }
+    */
 
     /**
      * Dummy route for checking if users are administrator
@@ -254,6 +381,60 @@ class UserController extends Controller
          $user->touch();
          $user->save();
      }  
+     
+     
+     public function search(Request $request) {
+         
+         $user = User::where('name', 'LIKE', '%' . $request->input('keyword') . '%')->get();
+         foreach($user as $key => $value) {
+             $value->search_type = 'Users';
+         }
+         
+         $department = Department::where('name', 'LIKE', '%' . $request->input('keyword') . '%')->get();
+         foreach($department as $key => $value) {
+             $value->search_type = 'Departments';
+         }
+         
+         $job = Job::with('users')->where('name', 'LIKE', '%' . $request->input('keyword') . '%')->get();
+         foreach($job as $key => $value) {
+             $value->search_type ='Jobs';
+         }
+         
+         
+         
+         
+         
+         $groupJob = GroupJob::with('jobs.users')->where('name', 'LIKE', '%' . $request->input('keyword') . '%')->get();
+         
+         $groupJobUsers = [];
+         foreach($groupJob as $key => $value) {
+             $value->search_type = 'Group Jobs';
+             
+             foreach($value->jobs as $key1 => $value1) {
+                 
+                 foreach($value1->users as $key2 => $value2) {
+                     array_push($groupJobUsers, $value2);
+                 }
+                 //array_push($groupJobUsers, $value1->users);
+             }
+             $value->users = $groupJobUsers;
+             
+             unset($value->jobs);
+         }
+         
+         
+         
+         $user = json_decode(json_encode($user), true);
+         $department = json_decode(json_encode($department), true);
+         $job = json_decode(json_encode($job), true);
+         $groupJob = json_decode(json_encode($groupJob), true);
+         
+         $response = array_merge($user, $department, $job, $groupJob);
+         
+         
+         return response()->json($response);
+         
+     }
      
      
 
