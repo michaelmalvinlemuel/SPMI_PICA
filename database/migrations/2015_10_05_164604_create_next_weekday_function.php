@@ -18,15 +18,15 @@ class CreateNextWeekdayFunction extends Migration
                 `day` INT
             ) RETURNS DATETIME
             BEGIN
-            IF (WEEKDAY(`date`) = `day`) THEN
-                RETURN DATE_ADD(`date`, INTERVAL 7 DAY);
-            ELSE
-                IF (WEEKDAY(`date`) < `day`) THEN   
-                    RETURN DATE_ADD(`date`, INTERVAL (`day` - WEEKDAY(`date`)) DAY);
+                IF (WEEKDAY(`date`) = `day`) THEN
+                    RETURN DATE_ADD(`date`, INTERVAL 7 DAY);
                 ELSE
-                    RETURN DATE_ADD(`date`, INTERVAL ( 7 - ABS(`day` - WEEKDAY(`date`))) DAY);
+                    IF (WEEKDAY(`date`) < `day`) THEN   
+                        RETURN DATE_ADD(`date`, INTERVAL (`day` - WEEKDAY(`date`)) DAY);
+                    ELSE
+                        RETURN DATE_ADD(`date`, INTERVAL ( 7 - ABS(`day` - WEEKDAY(`date`))) DAY);
+                    END IF;
                 END IF;
-            END IF;
             END;
         ");
     }

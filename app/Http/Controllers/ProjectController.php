@@ -551,7 +551,23 @@ class ProjectController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-     
+    
+    private function recursiveJsonUnsecured() 
+    {
+        
+    }
+    
+    public function showLastUnsecured($id) 
+    {
+        $project = Project::find($id);
+        
+        foreach ($project->projects as $key => $value) {
+            
+        }
+        
+        return response()->json($project);    
+    }
+    
     public function showLast($id)
     {
     	$project = Project::with('users')->with('assessors')->with(['projects' => function($query) {

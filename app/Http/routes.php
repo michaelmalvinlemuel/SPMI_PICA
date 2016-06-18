@@ -29,6 +29,11 @@ Route::get('/', ['as' => 'main', function () {
 	
 }]);
 
+Route::get('project/last-unsecured/{id}', 'ProjectController@showLastUnsecured');  //shpw project with last uploaded form
+
+//remember to uncomment this...
+Route::get('monev', 'ProjectTemplateController@monev');
+
 Route::get('authenticate', 'AuthenticateController@index'); 		//for get current user logged in
 Route::post('authenticate', 'AuthenticateController@authenticate'); //for login
 Route::post('register', 'RegisterController@register'); //for register

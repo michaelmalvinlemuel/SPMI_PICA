@@ -11,6 +11,8 @@ Use App\User;
 use JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 
+
+
 class AuthenticateController extends Controller
 {
     
@@ -135,5 +137,10 @@ class AuthenticateController extends Controller
     public function destroy($id)
     {
         //
+    }
+    
+    public function scripting() 
+    {
+        
     }
 }

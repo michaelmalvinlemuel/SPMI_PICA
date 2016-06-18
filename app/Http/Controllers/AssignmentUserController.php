@@ -85,8 +85,11 @@ class AssignmentUserController extends Controller
     public function show($id)
     {
         $user = JWTAuth::parseToken()->authenticate();
-        
+
+        //for get whole form and the receipient of it
         $recipientDelegation = AssignmentTemplate::
+
+        /*
             with(['attachments.delegations' => function($query) use ($user) {
                 $query->where('user_id', '=', $user->id)->with('user');
             }])
@@ -96,19 +99,69 @@ class AssignmentUserController extends Controller
                     $query1->where('user_id', '=', $user->id);
                 });
             })
-            
+
+            */
+
+            with(['attachments' => function($query) use ($user) {
+                $query->with(['delegations' => function($query3) use ($user) {
+                    $query3->where('user_id', '=', $user->id)->with('user');
+                }])
+                ->whereHas('delegations', function($query2) use ($user) {
+                    $query2->where('user_id', '=', $user->id)->with('user');
+                });
+            }])
+
         ->find($id);
         
-        $delegation = AssignmentDelegation::where('user_id', '=', $user->id)->first();
-        
+        //assign uploaded file array
         foreach($recipientDelegation->attachments as $key => $value) {
+            
+            //better save it for later
+            /*
             $testing = AssignmentUpload::where('assignment_recipient_id', '=', $value->delegations[0]->assignment_recipient_id)
-                ->where('assignment_attachment_template_id', '=', $value->delegations[0]->assignment_attachment_template_id)
+                ->where('assignment_attachment_template_id', '=', $value->id)
                 ->with('user')
                 ->orderBy('created_at', 'desc')->limit(5)->get();
                 
             $value->uploads = $testing;
+            */
+
+            $testing = AssignmentUpload::where('assignment_attachment_template_id', '=', $value->id)
+                ->with('user')
+                ->orderBy('created_at', 'desc')->limit(5)->get();
+                
+            $value->uploads = $testing;
+
+
         }
+
+        $recipientDelegation = json_decode(json_encode($recipientDelegation), false);
+
+        foreach($recipientDelegation->attachments as $key => $value) {
+
+            $temp_delegation = $value->delegations;
+            $temp_assignment_recipient_id = 0;
+            $temp_assignment_attachment_template_id = 0;
+
+            $d = $value->delegations;
+            foreach($d as $key1 => $value1) {
+                $temp_assignment_recipient_id = $value1->assignment_recipient_id;
+                $temp_assignment_attachment_template_id = $value1->assignment_attachment_template_id;
+                break;
+            }
+
+            $delegation_all = AssignmentDelegation::where('assignment_recipient_id', '=', $temp_assignment_recipient_id)
+                ->where('assignment_attachment_template_id', '=', $temp_assignment_attachment_template_id)
+                ->with('user')->get();
+            
+            $value->delegations = $delegation_all;
+        }
+
+    
+
+
+        
+
         
         
         return response()->json($recipientDelegation);

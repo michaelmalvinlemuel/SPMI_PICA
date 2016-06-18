@@ -18,6 +18,9 @@ use Tymon\JWTAuth\Exceptions\JWTException;
 
 class AssignmentUserAttachmentController extends Controller
 {
+
+    use UserTrait;
+
     /**
      * Display a listing of the resource.
      *
@@ -106,14 +109,26 @@ class AssignmentUserAttachmentController extends Controller
     
     public function delegate(Request $request) 
     {
-       
-        //return $request->all();
         
-        $user = $user = JWTAuth::parseToken()->authenticate();
         
-        $delegation = AssignmentDelegation::where('assignment_recipient_id', '=', $request->input('assignment_recipient_id'))
-            ->where('assignment_attachment_template_id', '=', $request->input('assignment_attachment_template_id'))
-            ->where('user_id', '<>', $user->id)->delete();
+        $subordinate = $this->coordinate();
+
+        
+
+        $user = JWTAuth::parseToken()->authenticate();
+        $temp_assignment_recipient_id = $request->input('assignment_recipient_id');
+        $temp_assignment_attachment_template_id = $request->input('assignment_attachment_template_id');
+        //get subordinate level only
+
+        foreach ($subordinate as $key => $value) {
+
+            AssignmentDelegation::where('assignment_recipient_id', '=', $temp_assignment_recipient_id)
+                ->where('assignment_attachment_template_id', '=', $temp_assignment_attachment_template_id)
+                ->where('user_id', '=', $value->id) 
+                ->delete();
+        }
+
+        
             
         
         
@@ -130,6 +145,12 @@ class AssignmentUserAttachmentController extends Controller
             $new->touch();
             $new->save();
         }
+
+        $response = AssignmentDelegation::where('assignment_recipient_id', '=', $request->input('assignment_recipient_id'))
+            ->where('assignment_attachment_template_id', '=', $request->input('assignment_attachment_template_id'))
+            ->with('user')->get();
+
+        return response()->json($response);
         
         /*
         $delegation = AssignmentDelegation::where('assignment_attachment_id', '=', $request->input('assignment_attachment_id'))

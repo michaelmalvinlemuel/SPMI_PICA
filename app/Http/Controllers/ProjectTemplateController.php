@@ -16,6 +16,8 @@ use App\Form;
 use JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 
+use App\Standard;
+
 class ProjectTemplateController extends Controller
 {
     
@@ -263,6 +265,72 @@ class ProjectTemplateController extends Controller
         $this->recursiveDelete($project);
         
         $project->delete();
+    }
+    
+    public function monev()
+    {
+        
+        
+        /*
+        $monev = ProjectNodeTemplate::where('id', '>', '1537');
+        $monev->delete();
+        
+        $standards = Standard::with('standardDocuments')->where('id', '<', '4')->get();
+        
+        
+        foreach ($standards as $key => $value) {
+            $projectTemplate = new ProjectNodeTemplate;
+            $projectTemplate->name = $value->description;
+            $projectTemplate->description = $value->description;
+            $projectTemplate->project_template_id = 2;
+            $projectTemplate->project_template_type = 'App\ProjectTemplate';
+            $projectTemplate->touch();
+            $projectTemplate->save();
+            
+            $projectTemplateChildren = ->standard_documents;
+            $projectTemplateChildren = json_decode(json_encode($projectTemplateChildren), false);
+            //var_dump($projectTemplateChildren);
+            
+            
+            foreach($projectTemplateChildren as $key2 => $value2) {
+                
+                $projectTemplateChild = new ProjectNodeTemplate;
+                $projectTemplateChild->name = $value2->$description;
+                $projectTemplateChild->description = $value2->description;
+                $projectTemplateChild->project_template_id = $projectTemplate->id;
+                $projectTemplateChild->project_template_type = 'App\ProjectNodeTemplate';
+                $projectTemplateChild->touch();
+                $projectTemplateChild->save();
+                
+                $projectTemplateChildMonev = new ProjectNodeTemplate;
+                $projectTemplateChildMonev->name = 'Perencanaan';
+                $projectTemplateChildMonev->description = 'Perencanaan';
+                $projectTemplateChildMonev->project_template_id = $projectTemplateChild->id;
+                $projectTemplateChildMonev->project_template_type = 'App\ProjectNodeTemplate';
+                $projectTemplateChildMonev->touch();
+                $projectTemplateChildMonev->save();
+                
+                $projectTemplateChildMonev = new ProjectNodeTemplate;
+                $projectTemplateChildMonev->name = 'Pelaksanaan';
+                $projectTemplateChildMonev->project_template_id = $projectTemplateChild->id;
+                $projectTemplateChildMonev->project_template_type = 'App\ProjectNodeTemplate';
+                $projectTemplateChildMonev->touch();
+                $projectTemplateChildMonev->save();
+                
+                $projectTemplateChildMonev = new ProjectNodeTemplate;
+                $projectTemplateChildMonev->name = 'Evaluasi, Pengendalian dan, Pengembangan';
+                $projectTemplateChildMonev->project_template_id = $projectTemplateChild->id;
+                $projectTemplateChildMonev->project_template_type = 'App\ProjectNodeTemplate';
+                $projectTemplateChildMonev->touch();
+                $projectTemplateChildMonev->save();
+            }
+            
+        }
+        
+        
+        //$standards = json_decode(json_encode($standards), false);
+        return response()->json($standards);
+        */
     }
 
 }
