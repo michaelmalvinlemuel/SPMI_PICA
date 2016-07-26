@@ -59,6 +59,8 @@ class AssignmentUserAttachmentController extends Controller
         $attachment->document = $request->input('filename');
         $attachment->touch();
         $attachment->save();
+
+        return response()->json($attachment->load('user'));
         
     }
 

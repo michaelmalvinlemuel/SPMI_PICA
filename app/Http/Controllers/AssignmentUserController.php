@@ -9,7 +9,7 @@ use App\Http\Controllers\Controller;
 
 use App\AssignmentTemplate;
 use App\AssignmentAttachmentTemplate;
-use App\AssignmentRecepient;
+use App\AssignmentRecipient;
 use App\AssignmentRecipientAttachment;
 use App\AssignmentDelegation;
 
@@ -149,6 +149,9 @@ class AssignmentUserController extends Controller
                 $temp_assignment_attachment_template_id = $value1->assignment_attachment_template_id;
                 break;
             }
+
+            $main_recipient = AssignmentRecipient::with('user')->find($temp_assignment_recipient_id);
+            $recipientDelegation->user = $main_recipient->user;
 
             $delegation_all = AssignmentDelegation::where('assignment_recipient_id', '=', $temp_assignment_recipient_id)
                 ->where('assignment_attachment_template_id', '=', $temp_assignment_attachment_template_id)

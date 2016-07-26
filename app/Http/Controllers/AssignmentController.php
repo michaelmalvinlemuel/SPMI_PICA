@@ -12,7 +12,7 @@ use App\AssignmentAttachmentTemplate;
 
 use App\AssignmentRecipient;
 use App\AssignmentDelegation;
-
+use App\AssignmentUpload;
 use JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 
@@ -119,17 +119,6 @@ class AssignmentController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -162,8 +151,28 @@ class AssignmentController extends Controller
         $assignment = json_decode(json_encode($assignment), false);
         
         $attachment = AssignmentAttachmentTemplate::where('assignment_template_id', '=', $id)->get();
+        
+        //lood inside recipients
         foreach($assignment->recipients as $key => $value) {
-            $value->user->attachment = $attachment;
+
+            //loop inside attachment
+            foreach($attachment as $key1 => $value1) {
+                $temp_assignment_recipient_id = $value->id;
+                $temp_assignment_attachment_template_id = $value1->id;
+                $upload = AssignmentUpload::where('assignment_recipient_id', '=', $temp_assignment_recipient_id)
+                    ->where('assignment_attachment_template_id', '=', $temp_assignment_attachment_template_id)
+                    ->whereRaw('`updated_at` = (
+                        SELECT MAX(`updated_at`) 
+                        FROM `assignment_uploads` 
+                        WHERE (`assignment_recipient_id` = ' . $temp_assignment_recipient_id . ') AND (`assignment_attachment_template_id` = ' . $temp_assignment_attachment_template_id . '))')
+                    ->with('user')->first();
+                
+                $attachment[$key1]['upload'] = $upload;
+            }
+
+        
+
+            $value->user->attachment = json_decode($attachment);
         }
         
         return response()->json($assignment); 

@@ -65,9 +65,7 @@ class ProjectNodeController extends ProjectController
      
     
     private function transposeAssessor ($node, &$result, $user) {
-        
-        
-            
+
             $projectNode = ProjectNode::where('project_id', '=', $node->id)->where('project_type', '<>', 'App\Project')
                 ->with('assessors')->get(); 
             
@@ -97,21 +95,9 @@ class ProjectNodeController extends ProjectController
                             array_push($result, $node);
                             break;
                         }
-                        
                     }
-                    
-                   
-                    
                 }
-                
-                
-                    
-                
             }
-        
-        
-
-        
     } 
      
     /**
@@ -123,7 +109,7 @@ class ProjectNodeController extends ProjectController
         $user = JWTAuth::parseToken()->authenticate();
         $project = Project::with('projects')->with('assessors')->with('users')->find($id);
         
-        
+        return response()->json($project);
         
         
         $result = [];
@@ -135,6 +121,8 @@ class ProjectNodeController extends ProjectController
             $value->numbering = $counter . '.';
             $this->transposeAssessor($value, $result, $user);
         }
+
+       // return $result;
         
         $response = Project::with('assessors')->with('users')->find($id);
         foreach ($response->users as $key => $value) {

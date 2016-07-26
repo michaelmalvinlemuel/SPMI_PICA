@@ -122,6 +122,16 @@ class TaskController extends Controller
     public function update(Request $request, $id)
     {
        
+       
+        
+        $taskForm = Task::find($request->id);
+        $taskForm->upload = $request->upload;
+        $taskForm->status = 2;
+        $taskForm->touch();
+        $taskForm->save();
+
+        return $request->all();
+       /*
         $task = $request->input('tasks');
         
         
@@ -138,6 +148,7 @@ class TaskController extends Controller
             $taskForm->touch();
             $taskForm->save();
         }
+        */
         
         /*
         
