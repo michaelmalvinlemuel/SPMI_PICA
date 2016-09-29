@@ -13,12 +13,6 @@
 use Illuminate\Http\Response;
 
 
-//header('Access-Control-Allow-Origin: *');
-
-//header('Access-Control-Allow-Credentials: true');
-
-
-
 Route::get('/', ['as' => 'main', function () {
 	if (App::environment('local')) {
 		return redirect()->to('http://localhost:3000');
