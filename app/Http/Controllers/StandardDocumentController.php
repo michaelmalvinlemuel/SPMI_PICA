@@ -41,7 +41,7 @@ class StandardDocumentController extends Controller
      */
     public function store(Request $request)
     {
-        
+
         $document = new StandardDocument;
         $document->standard_id = $request->input('standard_id');
         $document->no = $request->input('no');
@@ -64,6 +64,7 @@ class StandardDocumentController extends Controller
         return StandardDocument::find($id);
     }
 
+
     /**
      * Show the form for editing the specified resource.
      *
@@ -84,18 +85,18 @@ class StandardDocumentController extends Controller
      */
     public function update(Request $request, $id)
     {
-        
-       
+
+
         $document = StandardDocument::find($id);
         $document->standard_id = $request->input('standard_id');
         $document->no = $request->input('no');
         $document->date = $request->input('date');
         $document->description = $request->input('description');
-        
+
         if ($request->input('filename')) {
             $document->document = $request->input('filename');
         }
-        
+
         $document->touch();
         $document->save();
     }
@@ -116,7 +117,7 @@ class StandardDocumentController extends Controller
         return StandardDocument::with('standard')->where('standard_id', '=', $id)->get();
     }
 
-    public function validatingNo(Request $request) 
+    public function validatingNo(Request $request)
     {
         if ($request->input('id')) {
             return StandardDocument::where('no', '=', $request->input('no'))
@@ -124,11 +125,11 @@ class StandardDocumentController extends Controller
                 ->get();
         } else {
             return StandardDocument::where('no', '=', $request->input('no'))
-                ->get();    
+                ->get();
         }
     }
 
-    public function validatingDescription(Request $request) 
+    public function validatingDescription(Request $request)
     {
         if ($request->input('id')) {
             return StandardDocument::where('description', '=', $request->input('description'))
@@ -136,7 +137,7 @@ class StandardDocumentController extends Controller
                 ->get();
         } else {
             return StandardDocument::where('description', '=', $request->input('description'))
-                ->get();    
+                ->get();
         }
     }
 }

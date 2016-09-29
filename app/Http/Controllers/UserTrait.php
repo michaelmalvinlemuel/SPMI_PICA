@@ -10,50 +10,50 @@ use App\Job;
 trait UserTrait {
 
     public function coordinate() {
-        
+
         $result = [];
-        
+
         $user = JWTAuth::parseToken()->authenticate();
         $user = User::with('jobs')->find($user->id);
         $jobs = $user->jobs;
-        
+
         function pushIfUnique(&$result, $node) {
-            
+
             foreach($result as $key => $value) {
                 if ($node == $value) {
                     return 0;
                 }
             }
-            
+
             array_push($result, $node);
         }
-        
+
         function metamorph(&$result, $node) {
-            
+
                 unset($node->pivot);
                 pushIfUnique($result, $node);
-            
-            
+
+
         }
-        
+
         function subs(&$result, $jobs) {
             foreach($jobs as $key => $value) {
                 $job = Job::with('users')->where('job_id', '=', $value->id)->get();
                 $jobs[$key]['subs'] = $job;
-                
+
                 foreach($job as $key1 => $value1) {
                     foreach($value1->users as $key2 => $value2) {
                         metamorph($result, $value2);
                     }
-                    
+
                 }
-                
+
                 subs($result, $job);
             }
         }
-        
+
         subs($result, $jobs);
-        
+
         function removeCurrentUser(&$result, $user) {
             foreach($result as $key => $value) {
                 if ($user->id == $value->id) {
@@ -62,11 +62,11 @@ trait UserTrait {
                 }
             }
         }
-        
+
         removeCurrentUser($result, $user);
 
         function removeDuplicate(&$result) {
-            
+
             $temporary_distinct = [];
 
             foreach ($result as $key => $value) {
@@ -76,7 +76,7 @@ trait UserTrait {
 
                     if ($value->id == $value1->id) {
                         break;
-                    }   
+                    }
                     $counter++;
                 }
 
@@ -91,7 +91,7 @@ trait UserTrait {
         }
 
         removeDuplicate($result);
-        
+
         return $result;
     }
 

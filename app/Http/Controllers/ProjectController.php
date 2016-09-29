@@ -28,7 +28,8 @@ use Exception;
 
 class ProjectController extends Controller
 {
-
+    use ProjectTrait;
+    
     private $leader = [];
     
     /**

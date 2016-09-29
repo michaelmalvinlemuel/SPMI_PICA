@@ -35,4 +35,8 @@ class ProjectNode extends Model
     public function forms() {
         return $this->hasOne('App\ProjectForm');
     }
+
+    public function pica() {
+        return $this->hasOne('App\Pica');
+    }
 }

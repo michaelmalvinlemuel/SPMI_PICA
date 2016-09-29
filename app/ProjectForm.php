@@ -32,4 +32,8 @@ class ProjectForm extends Model
     public function score() {
         return $this->hasOne('App\ProjectFormScore')->latest();
     }
+
+    public function indicators() {
+        return $this->hasMany('App\ProjectFormIndicator');
+    }
 }

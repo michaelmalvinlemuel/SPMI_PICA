@@ -31,7 +31,7 @@ class CreateUsersTable extends Migration
             $table->string('password', 60);
             $table->char('type',1)->nullable();
             $table->char('status', 1);
-            $table->unique(['nik', 'email', 'deleted_at']);
+            $table->unique(['nik', 'email', 'deleted_at'], 'asd123');
             $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();

@@ -1,0 +1,88 @@
+ //$test = Excel::selectSheetsByIndex(1)->load('D:\Skripsi\SPMI_PICAform\pica.xlsx')->resetValueBinder()->ignoreEmpty()->get();
+     // $group = Excel::selectSheetsByIndex(1)->load('D:\Skripsi\SPMI_PICAform\pica.xlsx')->get();
+      //$newarr = json_decode(json_encode($group),true);
+      //return response()->json($group);
+
+     /* $first = [];
+      $last = [];
+      $picaHeader = ['bagian', 'tanggal', 'standar', 'user', 'problem', 'rencana', 'pic', 'expired'];
+      $pica = [];
+      $picaDetail = [];
+
+      $dateToString = function(&$arr, $obj) {
+        if (is_object($obj)) {
+          $arr = $obj->toDateTimeString();
+        } else {
+          $arr = $obj;
+        }
+      };
+
+      //get all row
+      foreach ($group as $key => $value) {
+
+        if($key == 0) {
+
+            $i = 0;
+            foreach($value as $prop => $object) {
+
+                if ($i <= 4) {
+                    $dateToString($pica[$picaHeader[$i]], $object);
+                } else {
+                    $dateToString($picaDetail[$picaHeader[$i]], $object);
+                }
+
+                $i++;
+
+            }
+
+            array_push($first, $pica);
+            array_push($last, $picaDetail);
+
+        } else {
+          //hanya untuk insert $picaDetail yang di push ke $last;
+
+          $i = 0;
+          foreach($value as $prop => $object) {
+
+            if ($i > 4) {
+              $dateToString($picaDetail[$picaHeader[$i]], $object);
+            }
+            $i++;
+
+          }
+
+          array_push($last, $picaDetail);
+
+        }
+
+      }
+
+      //return response()->json($first)
+      $first = json_decode(json_encode($first), false);
+      $last = json_decode(json_encode($last), false);
+
+      $pica = new Pica;
+      $pica->bagian = $first[0]->bagian;
+      $pica->tanngal = $first[0]->tanggal;
+      $pica->standar = $first[0]->standar;
+      $pica->user = $first[0]->user;
+      $pica->problem = $first[0]->problem;
+      $pica->touch();
+      $pica->save();
+
+      foreach($last as $key => $row) {
+          $picaDetail = new PicaDetail;
+          $picaDetail->pica_id = $pica->id;
+          $picaDetail->rencana = $row->rencana;
+          $picaDetail->pic = $row->pic;
+          $picaDetail->expired = $row->expired;
+          $picaDetail->touch();
+          $picaDetail->save();
+      }*/
+
+
+
+
+
+
+      //return response()->json($last);

@@ -18,25 +18,8 @@ use JWTAuth;
 use Tymon\JWTAuth\Exceptions\JWTException;
 
 class ProjectNodeController extends ProjectController
-{
-
-    
-    private function findRoot($node) {
-        $projectNode = ProjectNode::find($node->project_id);
-        
-        if ($projectNode) {
-            if ($projectNode->project_type == 'App\Project') {
-                return Project::with('assessors')->with('leader')->find($projectNode->project_id);
-            } else {
-                //if (isset($this->findRoot)) {
-                    return $this->findRoot($projectNode);
-                //}
-            }
-        } else {
-            return Project::with('assessors')->with('leader')->find($node->project_id);
-        }
-            
-    }
+{   
+    use ProjectTrait;
 
     /**
      * Display a listing of the resource.
@@ -215,8 +198,6 @@ class ProjectNodeController extends ProjectController
      */
 
     public function assess($nodeId) {
-
-        
 
         $projectNode = ProjectNode::with('delegations')
             ->with(['forms' => function($query) {

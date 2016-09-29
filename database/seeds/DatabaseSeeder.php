@@ -18,18 +18,21 @@ class DatabaseSeeder extends Seeder
     {
         Model::unguard();
 
-        
+
         
         $this->call(HierarchyDatabaseSeeder::class);
         $this->call(DocumentDatabaseSeeder::class);
         $this->call(UserTableSeeder::class);
         $this->call(ProjectTableSeeder::class);
         $this->call(ProjectTemplateTableSeeder::class);
-        
+
         $this->call(PhysicalCategoryTableSeeder::class);
         $this->call(PhysicalTableSeeder::class);
+
+        $this->call(PicaTableSeeder::class);
+        
+        $this->call(ProjectFormIndicatorTableSeeder::class);
         
         Model::reguard();
     }
 }
-
